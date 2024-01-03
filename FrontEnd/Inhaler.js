@@ -1,3 +1,4 @@
+
 class Dosage{
     constructor(time){
         this.reminderTime = Date.parse(time);
@@ -105,6 +106,10 @@ class Inhaler{
         //this.isAlmostEmpty();
     }
 
+    getLastIntake(){
+        return this.lastIntake
+    }
+
     removeLastIntake(){
         this.allIntakes.slice(0, -1)
         this.lastIntake = this.allIntakes[0];
@@ -141,5 +146,6 @@ class Inhaler{
     setFav(){
         Inhaler.favInhaler=this;
     }
-
 }
+
+export{Dosage,Intake,Inhaler}
