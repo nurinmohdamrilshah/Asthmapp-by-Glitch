@@ -68,7 +68,8 @@ class Inhaler{
     }
 
     setDose(intakeTime){
-        this.dose.push(new Dosage(intakeTime));
+        this.newDose = new Dosage(intakeTime)
+        this.dose.push(this.newDose);
         let now = Date.now();
         // setting next dose using for loop
         for (let i = 0; i >= this.getAllDoses().length();i++){
@@ -83,6 +84,10 @@ class Inhaler{
             }
             else this.dose.splice(i,1)
         }
+    }
+
+    getNewDose(){
+        return this.newDose
     }
 
     getDose(index){
