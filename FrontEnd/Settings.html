@@ -129,11 +129,12 @@
             name="userNameVar"
             placeholder="Username"
             type="text"
+            id="usernamevar"
           />
         </div>
         <div class="area">
           <h3 class="usernamelabel">Password</h3>
-          <input class="textinput1" placeholder="********" type="text" />
+          <input class="textinput1" placeholder="********" type="text"  id="passwordvar"/>
         </div>
         <div class="area">
           <h3 class="usernamelabel">Email</h3>
@@ -143,6 +144,7 @@
               name="emailVar"
               placeholder="example@gmail.com"
               type="email"
+              id="emailvar"
             />
           </div>
         </div>
@@ -176,7 +178,7 @@
             id="phonenb3"
           />
         </div>
-        <button id="update-button">Update Contact</button>
+        <button id="update-button">Update Account</button>
         <div class="notifications">
           <h2 class="notificationslabel">Notifications</h2>
           <div class="toggle">
@@ -198,15 +200,5 @@
         </section>
       </main>
     </div>
-<!-- check -->
-    <script>
-      var signOutLink = document.getElementById("signOutLink");
-      if (signOutLink) {
-        signOutLink.addEventListener("click", function (e) {
-          window.location.href = "./index.html";
-        });
-      }
-      </script>
- <!-- check -->
   </body>
 </html>
