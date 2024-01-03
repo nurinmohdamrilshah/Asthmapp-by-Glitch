@@ -49,9 +49,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = barking.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = barking.SO2;
+        PM10value.innerText = barking.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = barking.SO2;
+        PM25value.innerText = barking.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barking.AQI;
     }
@@ -68,9 +68,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = barnet.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = barnet.SO2;
+        PM10value.innerText = barnet.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = barnet.SO2;
+        PM25value.innerText = barnet.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barnet.AQI;
     }
@@ -92,9 +92,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = bexley.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = bexley.SO2;
+        PM10value.innerText = bexley.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = bexley.SO2;
+        PM25value.innerText = bexley.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bexley.AQI;
     }
@@ -115,9 +115,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = brent.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = brent.SO2;
+        PM10value.innerText = brent.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = brent.SO2;
+        PM25value.innerText = brent.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = brent.AQI;
     }
@@ -137,9 +137,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = bromley.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = bromley.SO2;
+        PM10value.innerText = bromley.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = bromley.SO2;
+        PM25value.innerText = bromley.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bromley.AQI;
     }
@@ -161,9 +161,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = camden.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = camden.SO2;
+        PM10value.innerText = camden.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = camden.SO2;
+        PM25value.innerText = camden.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = camden.AQI;
     }
@@ -180,15 +180,15 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = city.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = city.SO2;
+        PM10value.innerText = city.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = city.SO2;
+        PM25value.innerText = city.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = city.AQI;
     }
     //croydon
     const croydon = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
-    croydon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[0].Species["@AirQualityIndex"];
+    croydon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[1].Species["@AirQualityIndex"];
     croydon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[2].Species["@AirQualityIndex"];
     croydon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[3].Species[1]["@AirQualityIndex"];
     croydon.AQI = setAPI(croydon);
@@ -202,9 +202,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = croydon.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = croydon.SO2;
+        PM10value.innerText = croydon.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = croydon.SO2;
+        PM25value.innerText = croydon.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = croydon.AQI;
     }
@@ -223,9 +223,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = ealing.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = ealing.SO2;
+        PM10value.innerText = ealing.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = ealing.SO2;
+        PM25value.innerText = ealing.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = ealing.AQI;
     }
@@ -244,9 +244,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = enfield.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = enfield.SO2;
+        PM10value.innerText = enfield.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = enfield.SO2;
+        PM25value.innerText = enfield.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = enfield.AQI;
     }
@@ -268,9 +268,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = greenwich.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = greenwich.SO2;
+        PM10value.innerText = greenwich.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = greenwich.SO2;
+        PM25value.innerText = greenwich.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = greenwich.AQI;
     }
@@ -291,9 +291,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = hackney.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = hackney.SO2;
+        PM10value.innerText = hackney.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = hackney.SO2;
+        PM25value.innerText = hackney.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hackney.AQI;
     }
@@ -310,9 +310,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = hammersmith.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = hammersmith.SO2;
+        PM10value.innerText = hammersmith.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = hammersmith.SO2;
+        PM25value.innerText = hammersmith.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hammersmith.AQI;
     }
@@ -332,9 +332,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = haringey.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = haringey.SO2;
+        PM10value.innerText = haringey.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = haringey.SO2;
+        PM25value.innerText = haringey.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = haringey.AQI;
     }
@@ -351,9 +351,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = harrow.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = harrow.SO2;
+        PM10value.innerText = harrow.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = harrow.SO2;
+        PM25value.innerText = harrow.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = harrow.AQI;
     }
@@ -374,9 +374,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = havering.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = havering.SO2;
+        PM10value.innerText = havering.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = havering.SO2;
+        PM25value.innerText = havering.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = havering.AQI;
     }
@@ -398,9 +398,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = hillingdon.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = hillingdon.SO2;
+        PM10value.innerText = hillingdon.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = hillingdon.SO2;
+        PM25value.innerText = hillingdon.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hillingdon.AQI;
     }
@@ -418,9 +418,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = hounslow.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = hounslow.SO2;
+        PM10value.innerText = hounslow.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = hounslow.SO2;
+        PM25value.innerText = hounslow.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hounslow.AQI;
     }
@@ -440,9 +440,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = islington.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = islington.SO2;
+        PM10value.innerText = islington.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = islington.SO2;
+        PM25value.innerText = islington.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = islington.AQI;
     }
@@ -465,9 +465,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = kc.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = kc.SO2;
+        PM10value.innerText = kc.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = kc.SO2;
+        PM25value.innerText = kc.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kc.AQI;
     }
@@ -488,9 +488,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = kingston.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = kingston.SO2;
+        PM10value.innerText = kingston.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = kingston.SO2;
+        PM25value.innerText = kingston.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kingston.AQI;
     }
@@ -512,9 +512,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = lambeth.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = lambeth.SO2;
+        PM10value.innerText = lambeth.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = lambeth.SO2;
+        PM25value.innerText = lambeth.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lambeth.AQI;
     }
@@ -536,9 +536,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = lewisham.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = lewisham.SO2;
+        PM10value.innerText = lewisham.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = lewisham.SO2;
+        PM25value.innerText = lewisham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lewisham.AQI;
     }
@@ -558,9 +558,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = merton.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = merton.SO2;
+        PM10value.innerText = merton.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = merton.SO2;
+        PM25value.innerText = merton.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = merton.AQI;
     }
@@ -581,9 +581,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = newham.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = newham.SO2;
+        PM10value.innerText = newham.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = newham.SO2;
+        PM25value.innerText = newham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = newham.AQI;
     }
@@ -604,9 +604,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = redbridge.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = redbridge.SO2;
+        PM10value.innerText = redbridge.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = redbridge.SO2;
+        PM25value.innerText = redbridge.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = redbridge.AQI;
     }
@@ -628,9 +628,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = richmond.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = richmond.SO2;
+        PM10value.innerText = richmond.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = richmond.SO2;
+        PM25value.innerText = richmond.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = richmond.AQI;
     }
@@ -652,9 +652,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = southwark.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = southwark.SO2;
+        PM10value.innerText = southwark.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = southwark.SO2;
+        PM25value.innerText = southwark.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = southwark.AQI;
     }
@@ -675,9 +675,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = sutton.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = sutton.SO2;
+        PM10value.innerText = sutton.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = sutton.SO2;
+        PM25value.innerText = sutton.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = sutton.AQI;
     }
@@ -698,9 +698,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = towerhamlet.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = towerhamlet.SO2;
+        PM10value.innerText = towerhamlet.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = towerhamlet.SO2;
+        PM25value.innerText = towerhamlet.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = towerhamlet.AQI;
     }
@@ -718,9 +718,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = waltham.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = waltham.SO2;
+        PM10value.innerText = waltham.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = waltham.SO2;
+        PM25value.innerText = waltham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = waltham.AQI;
     }
@@ -741,9 +741,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = wandsworth.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = wandsworth.SO2;
+        PM10value.innerText = wandsworth.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = wandsworth.SO2;
+        PM25value.innerText = wandsworth.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = wandsworth.AQI;
     }
@@ -765,9 +765,9 @@ async function setlocation(input){
         const O3value = document.getElementById("O3");
         O3value.innerText = westminster.O3;
         const PM10value = document.getElementById("PM10");
-        PM10value.innerText = westminster.SO2;
+        PM10value.innerText = westminster.PM10;
         const PM25value = document.getElementById("PM25");
-        PM25value.innerText = westminster.SO2;
+        PM25value.innerText = westminster.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = westminster.AQI;
     }
