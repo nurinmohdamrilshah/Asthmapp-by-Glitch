@@ -297,3 +297,16 @@
   color: #fff;
   font-family: "Plus Jakarta Sans";
 }
+.symptomButton.true,
+.allergenButton.true,
+.locationButton.true,
+.resolutionButton.true {
+    background-color: #B2E1E7 ;
+}
+
+.symptomButton.false,
+.allergenButton.false,
+.locationButton.false,
+.resolutionButton.false {
+    background-color: #f0ecec;
+}

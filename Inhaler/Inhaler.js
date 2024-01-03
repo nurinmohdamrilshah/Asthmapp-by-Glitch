@@ -1,63 +1,77 @@
 class Dosage{
-    constructor(time,dose){
-        this.reminderTime = time;
-        this.maxDoseAllowed = dose;
+    constructor(time){
+        this.reminderTime = Date.parse(time);
+        this.maxPuffAllowed = 2;
     }
     getReminderTime(){
         return this.reminderTime
     }
     getMaxDose(){
-        return this.maxDoseAllowed
+        return this.maxPuffAllowed*5
     }
 }
 
 class Intake{
-    constructor(intakeTime, puffs){
-        this.timestamp = new Date(Date.parse(intakeTime));
+    static allIntakes=[]
+    constructor(intakeTime, puffs, whichInhaler){
+        this.timestamp = Date.parse(intakeTime);
         this.puffTaken = puffs; // 1 puff is 100mg
+        this.inhaler = whichInhaler
+        Intake.allIntakes.push(this)
     }
 
-    getDate(){
-        return this.timestamp.getDate()
-    }
     getTime(){
-        return this.timestamp.getTime()
+        return this.timestamp.toLocaleString()
     }
     getPuffs(){
         return this.puffTaken
+    }
+    forWhichInhaler(){
+        return this.inhaler.getName()
+    }
+    static getAllIntakes(){
+        return Intake.allIntakes;
+    }
+    static getIntake(index){
+        return Intake.allIntakes[index]
     }
 }
 
 class Inhaler{
     static inhalers = [];
+    static favInhaler = null;
 
     constructor(inhalerName,vol,expDate,type){
         this.volume = vol;
         this.name = inhalerName;
-        this.expiryDate = new Date(Date.parse(expDate));
+        this.expiryDate = Date.parse(expDate);
         this.type = type;
 
         this.dose =  [];
         this.allIntakes = [];
         Inhaler.inhalers.push(this);
-        this.isExpired();
+    }
+    getAllInhalerIntakes(){
+        return this.allIntakes
+    }
+
+    getExpDate(){
+        return this.expiryDate
     }
 
     isExpired(){
-        if (this.expiryDate<Date.now()){
-            return true;}
-        else return false
+        return this.getExpDate() < Date.now();
     }
     getName(){
         return this.name
     }
 
-    setDose(intakeTime, proposedDose){
-        this.dose.push(new Dosage(intakeTime,proposedDose));
+    setDose(intakeTime){
+        this.dose.push(new Dosage(intakeTime));
         let now = Date.now();
         // setting next dose using for loop
-        for (let i = 0; i >= this.getInhalerDoses().length();i++){
-            let doses = this.getInhalerDoses();
+        for (let i = 0; i >= this.getAllDoses().length();i++){
+            let doses = this.getAllDoses();
             let allDiff = [];
             if (doses(i).getTime()>now.getTime()){
                 let diff = doses(i).getTime()-now.getTime();
@@ -66,6 +80,7 @@ class Inhaler{
                     this.nextDose = doses(i);
                 }
             }
+            else this.dose.splice(i,1)
         }
     }
 
@@ -81,20 +96,24 @@ class Inhaler{
 
 
     addIntake(time,puff){
-        this.lastIntake = new Intake(time,puff);
+        this.lastIntake = new Intake(time,puff,this);
         this.allIntakes.push(this.lastIntake);
         this.lastIntakeTime = this.lastIntake.getTime();
 
         //if (this.lastIntakeTime<(this.nextDose.getTime()-3600000)){}
-        this.volume = this.volume - (this.lastIntakeTime.getPuffs()*5);
+        this.volume = this.volume - (this.lastIntake.getPuffs()*5);
         //this.isAlmostEmpty();
     }
 
+    removeLastIntake(){
+        this.allIntakes.slice(0, -1)
+        this.lastIntake = this.allIntakes[0];
+        this.lastIntakeTime = this.lastIntake.getTime();
+        this.volume = this.volume + (this.lastIntake.getPuffs()*5);
+    }
+
     isOverused(){ //intake is earlier by 1 hour or more
-        if (this.getLastIntakeTime()<(this.getNextDoseTime()-3600000)){
-            return true
-        }
-        else return false
+        return this.getLastIntakeTime() < (this.getNextDoseTime() - 3600000);
     }
 
     getLastIntakeTime(){
@@ -102,22 +121,25 @@ class Inhaler{
     }
 
     getNextDoseTime(){
-        return this.nextDose.getTime()
+        return this.nextDose.getReminderTime().toLocaleTimeString()
     }
 
     isAlmostEmpty(){
-        if (this.volume<10){
-            return true
-        }
-        else return false
+        return this.volume < 10;
     }
 
     static getInhaler(index){
         return Inhaler.inhalers[index];
     }
+    static getFavInhaler(){
+        return Inhaler.favInhaler
+    }
 
     static getAllInhalers(){
         return Inhaler.inhalers;
+    }
+    setFav(){
+        Inhaler.favInhaler=this;
     }
 
 }

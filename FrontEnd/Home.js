@@ -24,26 +24,46 @@ if (profilePicture) {
 var quickIntakeBtn = document.getElementById("quickIntakeBtn");
 if (quickIntakeBtn) {
     quickIntakeBtn.addEventListener("click", function () {
-        var popup = document.getElementById("quickIntakePopup");
-        if (!popup) return;
-        var popupStyle = popup.style;
-        if (popupStyle) {
-            popupStyle.display = "flex";
-            popupStyle.zIndex = 100;
-            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-            popupStyle.alignItems = "center";
-            popupStyle.justifyContent = "center";
-        }
-        popup.setAttribute("closable", "");
+            if (Inhaler.favInhaler == null) {
+                window.alert("You haven't chose a favourite inhaler yet!")
+            } else {
+                var popup = document.getElementById("quickIntakePopup");
+                if (!popup) return;
+                var popupStyle = popup.style;
+                if (popupStyle) {
+                    popupStyle.display = "flex";
+                    popupStyle.zIndex = 100;
+                    popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                    popupStyle.alignItems = "center";
+                    popupStyle.justifyContent = "center";
+                }
+                popup.setAttribute("closable", "");
 
-        var onClick = popup.onClick || function (e) {
-            if (e.target === popup && popup.hasAttribute("closable")) {
-                popupStyle.display = "none";
+                var onClick = popup.onClick || function (e) {
+                    if (e.target === popup && popup.hasAttribute("closable")) {
+                        popupStyle.display = "none";
+                    }
+                };
+                popup.addEventListener("click", onClick);
             }
-        };
-        popup.addEventListener("click", onClick);
-    });
+        }
+        );
 }
+    if (Inhaler.favInhaler == null) {
+        window.alert("You haven't chose a favourite inhaler yet!")
+    }
+    else {
+        const nextReminderTime = document.getElementById('nextReminderVar');
+        nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDoseTime();
+
+        const intakeExpiresIn = document.getElementById("expiryDateFavVar");
+        milliUntilIntake = Inhaler.getFavInhaler().getNextDoseTime()-Date.now();
+
+        hoursUntilIntake = (milliUntilIntake/86400000)
+        intakeExpiresIn.textContent = hoursUntilIntake.toString()+" hours";
+    }
+
+
 
 var home = document.getElementById("999Home");
 if (home) {
@@ -79,3 +99,4 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
+

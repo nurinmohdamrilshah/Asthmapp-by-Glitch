@@ -62,6 +62,6 @@
     quickIntakeBtn.addEventListener('click', function () {
         let quickIntakeDate = new Date();
         let quickIntakeTime = quickIntakeDate.getTime();
-        favInhaler.addIntake(quickIntakeDate.toDateString(),quickIntakeTime,1); //default number of puff is one
+        favInhaler.addIntake(quickIntakeDate.toDateString(),quickIntakeTime,1,favInhaler); //default number of puff is one
         favInhaler.checkDose();
     })

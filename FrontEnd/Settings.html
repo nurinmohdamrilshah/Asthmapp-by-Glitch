@@ -153,6 +153,7 @@
             name="emergencyContactVar1"
             placeholder="+44 1234567890"
             type="tel"
+            id="phonenb1"
           />
         </div>
         <div class="area">
@@ -162,6 +163,7 @@
             name="emergencyContactVar2"
             placeholder="+44 1234567890"
             type="tel"
+            id="phonenb2"
           />
         </div>
         <div class="area">
@@ -171,8 +173,10 @@
             name="emergencyContactVar3"
             placeholder="+44 1234567890"
             type="tel"
+            id="phonenb3"
           />
         </div>
+        <button id="update-button">Update Contact</button>
         <div class="notifications">
           <h2 class="notificationslabel">Notifications</h2>
           <div class="toggle">
@@ -180,7 +184,9 @@
               <div class="button"></div>
             </div>
           </div>
-        </div>
+        </div>     
+        <script src="/emergencyPage/editcontact.js" type="module"></script>
+        <script src="./Settings.js" type="module"></script>
         <section class="signout">
           <h2 class="signoutlabel">Sign out</h2>
           <button class="sign-up7" id="sighOut">
@@ -193,7 +199,15 @@
         </section>
       </main>
     </div>
-
-    <script src="./Settings.js" type="module"></script>
+<!-- check -->
+    <script>
+      var signOutLink = document.getElementById("signOutLink");
+      if (signOutLink) {
+        signOutLink.addEventListener("click", function (e) {
+          window.location.href = "./index.html";
+        });
+      }
+      </script>
+ <!-- check -->
   </body>
 </html>

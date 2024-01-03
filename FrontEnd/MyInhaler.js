@@ -16,7 +16,7 @@ function openPopup(popupId) {
 
     const popupStyle = popup.style;
     popupStyle.display = "flex";
-    popupStyle.zIndex = 100;
+    popupStyle.zIndex = "100";
     popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
     popupStyle.alignItems = "center";
     popupStyle.justifyContent = "center";
@@ -41,3 +41,12 @@ document.getElementById("usageHistoryBtn")?.addEventListener("click", () => wind
 document.getElementById("homeBtn")?.addEventListener("click", () => window.location.href = "./Home.html");
 document.getElementById("cloudContainer")?.addEventListener("click", () => window.location.href = "./AirQuality01.html");
 document.getElementById("emergencyBtn")?.addEventListener("click", () => window.location.href = "./Emergency1.html");
+
+//Display inhaler list as script inside html
+
+//
+
+
+
+
+

@@ -37,6 +37,7 @@
           <input
             class="intaketimevar"
             name="intakeTimeVar"
+            id="intakeTimeVar"
             placeholder="Time Of Intake"
             type="datetime-local"
           />
@@ -49,6 +50,7 @@
           <input
             class="intaketimevar"
             name="nbPuffsVar"
+            id="nbPuffsVar"
             placeholder="Number Of Puffs"
             type="number"
           />
@@ -56,13 +58,31 @@
       </section>
       <section class="inputtimeintakesecion" id="selectInhalerSection">
         <b class="add-intake">Select Inhaler</b>
-        <section class="btnssection" id="symptomsSection">
-          <button class="inhaler11" id="inhaler1Btn">
-            <div class="inhaler12">Inhaler1</div>
-          </button>
-          <button class="inhaler11" id="inhaler2Btn">
-            <div class="inhaler12">Inhaler2</div>
-          </button>
+        <section class="btnssection" id="pickInhaler">
+          <script>
+            const inhalerSection = document.getElementById("pickInhaler");
+            let newIntakeInhaler = 0;
+
+            function createSelectInhalerBtn(inhaler){
+              let selectInhalerBtn;
+              selectInhalerBtn = document.createElement('button');
+              selectInhalerBtn.className = 'selectInhaler';
+              selectInhalerBtn.addEventListener('click', function () {
+                newIntakeInhaler = inhaler;
+              })
+              selectInhalerBtn.id = 'select'+inhaler.getName()
+              let divBtn = document.createElement('div')
+              let name = document.createElement('name');
+              name.textContent = inhaler.getName(); //reference:https://www.tutorialspoint.com/how-to-append-data-to-div-element-using-javascript
+              divBtn.appendChild(name)
+              divBtn.appendChild(inhaler.getName())
+              selectInhalerBtn.appendChild(divBtn)
+              inhalerSection.appendChild(selectInhalerBtn);
+            }
+            for (let i=0;i<Inhaler.getAllInhalers().length;i++){
+              createSelectInhalerBtn(Inhaler.getInhaler(i))
+            }
+          </script>
         </section>
       </section>
       <button class="addintakebtn" id="addIntakeBtn">
@@ -72,6 +92,8 @@
       </button>
     </div>
 
-    <script src="./AddIntakePopup.js" type = "module"></script>
+    <script src="./AddIntakePopup.js" type = "module">
+      
+    </script>
   </body>
 </html>

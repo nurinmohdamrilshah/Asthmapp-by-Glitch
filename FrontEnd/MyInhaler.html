@@ -36,68 +36,113 @@
       </header>
       <main class="mainmyinhaler" id="mainMyInhaler">
         <button class="newinhalerintake1" id="newInhalerIntakeBtn">
-          <b class="btntext1">New Inhaler Intake</b>
+          <b class="btntext1">New Intake</b>
         </button>
-        <h1 class="reminders">Prevention</h1>
-        <ul class="inhalerfield" id="inhalerField">
-          <button class="inhalerimage" id="editInhalerBtn"></button>
-          <button class="love" id="FavBtn">
-            <img class="love-icon" alt="" src="./public/love@2x.png" />
-          </button>
-          <section class="inhalertext">
-            <h2 class="reminders" id="inhalerName">Aerius</h2>
-            <section class="statsinhaler" id="statsInhaler">
-              <div class="lastusagediv" id="lastUsageDiv">
-                <h3 class="lastusage" id="lastUsage">Last usage</h3>
-                <b class="lastusagevar" id="lastUsageVar">10:00AM</b>
-              </div>
-              <div class="lastusagediv" id="expiryDateDiv">
-                <h3 class="lastusage" id="expiryDate">Expiry date</h3>
-                <b class="expirydatevar" id="expiryDateVar">01/12/23</b>
-              </div>
-              <div class="lastusagediv" id="usagesLeftDiv">
-                <h3 class="lastusage" id="usagesLeft">Usages left</h3>
-                <b class="usagesleftvar" id="usagesLeftVar">03</b>
-              </div>
-            </section>
-            <section class="reminderssection" id="remindersSection">
-              <h2 class="reminders" id="Reminders">Reminders:</h2>
-              <ul class="reminderul1" id="ReminderUL">
-                <i class="remindervar" id="ReminderVar">5:00 PM</i>
-              </ul>
-            </section>
-          </section>
-        </ul>
-        <h1 class="reminders">Crisis</h1>
-        <ul class="inhalerfield" id="inhalerField">
-          <button class="inhalerimage2" id="editInhalerBtn"></button>
-          <button class="love" id="FavBtn">
-            <img class="love-icon" alt="" src="./public/love@2x.png" />
-          </button>
-          <section class="inhalertext">
-            <h2 class="reminders" id="inhalerName">Ventolin</h2>
-            <section class="statsinhaler" id="statsInhaler">
-              <div class="lastusagediv" id="lastUsageDiv">
-                <h3 class="lastusage" id="lastUsage">Last usage</h3>
-                <b class="lastusagevar" id="lastUsageVar">10:00AM</b>
-              </div>
-              <div class="lastusagediv" id="expiryDateDiv">
-                <h3 class="lastusage" id="expiryDate">Expiry date</h3>
-                <b class="expirydatevar" id="expiryDateVar">01/12/23</b>
-              </div>
-              <div class="lastusagediv" id="usagesLeftDiv">
-                <h3 class="lastusage" id="usagesLeft">Usages left</h3>
-                <b class="usagesleftvar" id="usagesLeftVar">03</b>
-              </div>
-            </section>
-            <section class="reminderssection" id="remindersSection">
-              <h2 class="reminders" id="Reminders">Reminders:</h2>
-              <ul class="reminderul1" id="ReminderUL">
-                <i class="remindervar" id="ReminderVar">5:00 PM</i>
-              </ul>
-            </section>
-          </section>
-        </ul>
+        <!--from here-->
+        <script>
+          let inhalerList = document.getElementById("mainMyInhaler")
+          function displayInhalerInfo(inhaler) {
+            let inhalerType = document.createElement('h1');
+            inhalerType.className = "reminders"
+            inhalerType.textContent = inhaler.getType();
+
+            let inhalerField = document.createElement('ul')
+            inhalerField.className = "inhalerfield"
+
+            let inhalerImage = document.createElement('button')
+            inhalerImage.id = "editInhalerBtn"
+            if (inhalerType.textContent === "Prevention"){inhalerImage.className = "inhalerimage"}
+            else{inhalerImage.className ="inhalerimage2"}
+            inhalerField.appendChild(inhalerImage)
+
+            let favBtn = document.createElement('button');
+            favBtn.className = "love"
+            let favImg = document.createElement('img');
+            favImg.src = "./public/love@2x.png"
+            favImg.className = "love-icon"
+            favImg.alt = "Set as Favourite"
+            favImg.addEventListener('click', () => {
+              inhaler.setFav()
+            })
+            favBtn.appendChild(favImg)
+            inhalerField.appendChild(favBtn)
+
+            let inhalerSection = document.createElement('section')
+            inhalerSection.className = "inhalertext"
+            let inhalerName = document.createElement('h2')
+            inhalerName.className = "reminders"
+            inhalerName.textContent = inhaler.getName()
+            inhalerSection.appendChild(inhalerName)
+
+            let inhalerStats = document.createElement('section')
+            inhalerStats.className = "statsinhaler"
+            let lastUsageDiv = document.createElement('div')
+            lastUsageDiv.className = "lastusagediv"
+            let lastUsage = document.createElement('h3')
+            lastUsage.className = "lastusage"
+            lastUsage.textContent = "Last Usage:"
+            let lastUsageVar = document.createElement('b')
+            lastUsageVar.className = "lastusagevar"
+            lastUsageVar.textContent = inhaler.getNextDoseTime()
+            lastUsageDiv.appendChild(lastUsage)
+            lastUsageDiv.appendChild(lastUsageVar)
+
+
+            let expDateDiv = document.createElement('div')
+            expDateDiv.className = "lastusagediv"
+            let expDate = document.createElement('h3')
+            expDate.className = "lastusage"
+            expDate.textContent = "Expiry Date:"
+            let expDateVar = document.createElement('b')
+            expDateVar.className = "expirydatevar"
+            expDateVar.textContent = inhaler.getExpDate().toLocaleString()
+            expDateDiv.appendChild(expDate)
+            expDateDiv.appendChild(expDateVar)
+
+            let usagesLeftDiv = document.createElement('div')
+            usagesLeftDiv.className = "lastusagediv"
+            let usagesLeft = document.createElement('h3')
+            usagesLeft.className = "lastusage"
+            usagesLeft.textContent = "Usages Left:"
+            let usagesLeftVar = document.createElement('b')
+            usagesLeftVar.className = "expirydatevar"
+            usagesLeft.textContent = inhaler.getAllDoses().length.toString()
+            usagesLeftDiv.appendChild(usagesLeft)
+            usagesLeftDiv.appendChild(usagesLeftVar)
+
+            inhalerStats.appendChild(lastUsageDiv)
+            inhalerStats.appendChild(expDateDiv)
+            inhalerStats.appendChild(usagesLeftDiv)
+
+            let reminderSection = document.createElement('section')
+            reminderSection.className = "reminderssection"
+            let reminders = document.createElement('h2')
+            reminders.className = "reminders"
+            reminders.textContent = "Reminders:"
+            let remindersList = document.createElement('ul')
+            remindersList.className = "reminderul1"
+
+            for (let i = 0; i <= inhaler.getAllDoses().length; i++) {
+              let reminderVar = document.createElement('i')
+              reminderVar.className = "remindervar"
+              reminderVar.textContent = inhaler.getDose(i).getReminderTime().toLocaleTimeString()
+              remindersList.append(reminderVar)
+            }
+            reminderSection.appendChild(reminders)
+            reminderSection.appendChild(remindersList)
+            inhalerSection.appendChild(inhalerStats)
+            inhalerSection.appendChild(reminderSection)
+
+            inhalerField.appendChild(inhalerSection)
+            inhalerList.appendChild(inhalerType)
+            inhalerList.append(inhalerField)
+          }
+
+          for (let j=0; j<Inhaler.getAllInhalers().length; j++) {
+            displayInhalerInfo(Inhaler.getInhaler(j))
+          }
+        </script>
+        <!--to here-->
         <button class="newinhalerbtn" id="newInhalerBtn">
           <div class="widget-home1"></div>
           <b class="new-inhaler">New Inhaler</b>

@@ -91,3 +91,11 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
+
+
+
+
+
+
+
+

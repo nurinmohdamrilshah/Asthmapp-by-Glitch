@@ -68,40 +68,49 @@
           alt=""
           src="./public/vector-41.svg"
         />
+        <script>
+          function createIntakeLog(intake) {
+            let intakeLogSection = document.createElement('ul')
+            intakeLogSection.className = "intakelogsection"
 
-        <ul class="intakelogsection" id="intakeLogSection">
-          <h1 class="intaketime" id="intakeTime">10:00pm 30/11/2023</h1>
-          <div class="intakelogsection1" id="intakeLogSection">
-            <h2 class="numberofpuffs" id="Inhaler">Inhaler:</h2>
-            <b class="inhalernamevar" id="inhalerNameVar">Inhaler 1</b>
-          </div>
-          <div class="intakelogsection1">
-            <h2 class="numberofpuffs" id="numberOfPuffs">Number of puffs:</h2>
-            <b class="inhalernamevar" id="puffNbVar">2</b>
-          </div>
-        </ul>
-        <ul class="intakelogsection" id="intakeLogSection">
-          <h1 class="intaketime" id="intakeTime">8:00pm 29/11/2023</h1>
-          <div class="intakelogsection1">
-            <h2 class="numberofpuffs" id="Inhaler">Inhaler:</h2>
-            <b class="inhalernamevar" id="inhalerNameVar">Inhaler 3</b>
-          </div>
-          <div class="intakelogsection1">
-            <h2 class="numberofpuffs" id="numberOfPuffs">Number of puffs:</h2>
-            <b class="inhalernamevar" id="puffNbVar">1</b>
-          </div>
-        </ul>
-        <ul class="intakelogsection" id="intakeLogSection">
-          <h1 class="intaketime" id="intakeTime">9:00pm 13/11/2023</h1>
-          <div class="intakelogsection1">
-            <h2 class="numberofpuffs" id="Inhaler">Inhaler:</h2>
-            <b class="inhalernamevar" id="inhalerNameVar">Inhaler 1</b>
-          </div>
-          <div class="intakelogsection1">
-            <h2 class="numberofpuffs" id="numberOfPuffs">Number of puffs:</h2>
-            <b class="inhalernamevar" id="puffNbVar">2</b>
-          </div>
-        </ul>
+            let intakeTime = document.createElement('h1')
+            intakeTime.className = "intaketime"
+            intakeTime.textContent = intake.getTime()
+            intakeLogSection.appendChild(intakeTime)
+
+            let intakeLogSection1 = document.createElement('div')
+            intakeLogSection1.className = "intakelogsection1"
+            let inhalerPointer = document.createElement('h2')
+            inhalerPointer.className = "numberofpuffs"
+            inhalerPointer.textContent = "Inhaler:"
+            intakeLogSection1.appendChild(inhalerPointer)
+
+            let inhalerNameVar = document.createElement('b')
+            inhalerNameVar.className = "inhalernamevar";
+            inhalerNameVar.textContent = intake.forWhichInhaler()
+            intakeLogSection1.appendChild(inhalerNameVar)
+
+            let intakeLogSection2 = document.createElement('div')
+            intakeLogSection2.className = "intakelogsection1"
+            let puffsPointer = document.createElement('h2')
+            puffsPointer.className = "numberofpuffs"
+            puffsPointer.textContent = "Number of Puffs"
+            intakeLogSection2.appendChild(puffsPointer)
+
+            let puffsNumVar = document.createElement('b')
+            puffsNumVar.className = "inhalernamevar";
+            puffsNumVar.textContent = intake.getPuffs().toString()
+            intakeLogSection2.appendChild(puffsNumVar)
+
+            intakeLogSection.appendChild(intakeLogSection1)
+            intakeLogSection.appendChild(intakeLogSection2)
+          }
+
+          for (let i=0;i<=Intake.getAllIntakes().length;i++){
+            createIntakeLog(Intake.getIntake(i))
+          }
+        </script>
+
       </main>
       <nav class="navbarmyinhaler" id="navBarMyInhaler">
         <button class="home7" id="homeBtn">
