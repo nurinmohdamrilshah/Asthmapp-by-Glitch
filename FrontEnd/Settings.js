@@ -48,11 +48,66 @@ if (backPageLink) {
 }
 
 
-
 // link to signOut.js
 var signOutLink = document.getElementById("signOutLink");
 if (signOutLink) {
     signOutLink.addEventListener("click", function (e) {
         window.location.href = "./index.html";
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Dyslexia mode
+    const dyslexiaToggle = document.getElementById('dyslexiaToggle');
+    const dyslexiaButton = document.getElementById('dyslexiaButton');
+
+    dyslexiaToggle.addEventListener('click', function () {
+        toggleButton(dyslexiaButton);
+        document.body.classList.toggle('dyslexia-mode');
+    });
+
+    // High contrast mode
+    const highContrastToggle = document.getElementById('highContrastToggle');
+    const highContrastButton = document.getElementById('highContrastButton');
+
+    highContrastToggle.addEventListener('click', function () {
+        toggleButton(highContrastButton);
+        document.body.classList.toggle('high-contrast-mode');
+    });
+
+    // Dark mode
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const darkModeButton = document.getElementById('darkModeButton');
+
+    darkModeToggle.addEventListener('click', function () {
+        toggleButton(darkModeButton);
+        document.body.classList.toggle('dark-mode');
+    });
+
+    // Notification mode
+    const notifToggle = document.getElementById('notifToggle');
+    const notifButton = document.getElementById('notifButton');
+    notifToggle.addEventListener('click', function () {
+        toggleButton(notifButton);
+        document.body.classList.toggle('notifications-mode');
+        // You can add further logic for handling notifications toggling
+    });
+    
+    // Function to toggle button state
+    function toggleButton(button) {
+        button.style.transform === 'translate(0%, -50%)' ?
+            button.style.transform = 'translate(100%, -50%)' :
+            button.style.transform = 'translate(0%, -50%)';
+    }
+});
+
+
+//link to home page
+
+
+var backPageLink = document.getElementById("backBtn");
+if (backPageLink) {
+    backPageLink.addEventListener("click", function (e) {
+        window.location.href = "./Home.html";
     });
 }
