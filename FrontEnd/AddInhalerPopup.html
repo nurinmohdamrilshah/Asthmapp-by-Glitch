@@ -53,7 +53,7 @@
             class="text-input3"
             name="inhalerVolumeVar"
             id = "newInhalerVolume"
-            placeholder="Volume of Inhaler - see packaging"
+            placeholder="see packaging"
             type="number"
           />
         </div>
@@ -76,13 +76,12 @@
         <section class="inhalertypebtns" id="InhalerTypeBtns">
           <button class="schedule-parent" id="preventionBtn">
             <img class="schedule-icon" alt="" src="./public/schedule@2x.png" />
-
-            <div class="prevention">Prevention</div>
+            <div class="prevention" id="preventionText">Prevention</div>
           </button>
           <button class="coughing-parent" id="crisisInhalerBtn">
             <img class="schedule-icon" alt="" src="./public/coughing@2x.png" />
 
-            <div class="prevention">Crisis</div>
+            <div class="prevention" id="crisisText">Crisis</div>
           </button>
         </section>
       </section>
@@ -110,6 +109,7 @@
             id ="newDose"
             type="datetime-local"
           />
+
         </ul>
       </section>
       <button class="button-primary8" id="applyBtn">
