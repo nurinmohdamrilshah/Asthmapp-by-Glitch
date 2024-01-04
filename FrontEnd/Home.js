@@ -58,7 +58,7 @@ if (quickIntakeBtn) {
 }
     const nextReminderTime = document.getElementById('nextReminderVar');
     if(Inhaler.getFavInhaler()){ //need to replace with data from firebase
-        nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDoseTime();
+        nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDose().getReminderTime().toLocaleTimeString();
     }
     else{
         nextReminderTime.textContent = "N/A"
