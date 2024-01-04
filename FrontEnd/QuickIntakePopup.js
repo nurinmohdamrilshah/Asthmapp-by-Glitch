@@ -1,4 +1,7 @@
+
 // popupHandler.js
+import {Inhaler} from "./Inhaler.js";
+
 var popupclose = document.getElementById("closeBtn");
 if (popupclose) {
     popupclose.addEventListener("click", function (e) {
@@ -34,3 +37,8 @@ if (popupcancelBtnContainer) {
 
     let favInhalerName = document.getElementById("favInhalerVar");
     favInhalerName.textContent = "Favourite Inhaler: "+Inhaler.favInhaler.getName();
+    const cancelBtn = document.getElementById("cancelBtn");
+
+    cancelBtn.addEventListener('click', function () {
+        Inhaler.favInhaler.removeLastIntake();
+    })
