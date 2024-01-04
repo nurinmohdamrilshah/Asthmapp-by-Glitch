@@ -1,6 +1,6 @@
     import { initializeApp } from "firebase/app";
     import { getAnalytics } from "firebase/analytics";
-    import {getDatabase, push, ref, onValue} from "firebase/database";
+    import {getDatabase, push, ref, onValue, child} from "firebase/database";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
     import {Inhaler,Intake,Dosage} from "./Inhaler.js";
     // TODO: Add SDKs for Firebase products that you want to use
@@ -25,18 +25,20 @@
     const analytics = getAnalytics(app);
 
     const auth = getAuth();
-    const currentUser = auth.currentUser;
-    const currentUID = currentUser.uid;
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            const currentUser = auth.currentUser;
-            const currentUID = user.uid;
-        }
-        else{alert('Sorry, you are not signed in!')}
-    })
+    // const currentUser = auth.currentUser;
+    // const currentUID = currentUser.uid;
+    // onAuthStateChanged(auth, (user) => {
+    //     if (user) {
+    //         const currentUser = auth.currentUser;
+    //         const currentUID = user.uid;
+    //     }
+    //     else{alert('Sorry, you are not signed in!')}
+    // })
 
-    const currentUserDB = ref(database,'/users/'+currentUID)
-    const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+
+    const currentUser = 'testDosage2'
+    const currentUserDB = ref(database,'/users/'+currentUser)
+    let inhalerDB = child(currentUserDB,'/inhalers');
     let inhalers = onValue(inhalerDB, (snapshot) => {
         return snapshot.val();
     });
@@ -93,6 +95,7 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
     let inhalerList = document.getElementById("mainMyInhaler")
 
     function displayInhalerInfo(inhaler) {
+
         let inhalerType = document.createElement('h1');
         inhalerType.className = "reminders"
         inhalerType.textContent = inhaler.getType();
@@ -187,14 +190,25 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
         inhalerField.appendChild(inhalerSection)
         inhalerList.appendChild(inhalerType)
-        inhalerList.append(inhalerField)
+        inhalerList.appendChild(inhalerField)
     }
 
-    if (inhalerCount){
-        for (let j=0; j<inhalerCount; j++) {
-            displayInhalerInfo(inhalers[j])
-        }
+
+    let inhaler1 = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
+    inhaler1.setDose(new Date("2024-01-17T21:14:00"))
+    inhaler1.setDose(new Date("2024-01-04T21:15:00"))
+    window.onload = function(){
+        displayInhalerInfo(inhaler1)
     }
+
+    // for (let j=0;
+    //      j<onValue(inhalerDB, (snapshot) => {
+    //          return snapshot.size;
+    //      });
+    //      j++) {
+    //
+    //         displayInhalerInfo(inhalers[j])
+    // }
 
 
 
