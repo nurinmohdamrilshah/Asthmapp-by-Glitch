@@ -1,11 +1,51 @@
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "firebase/app";
     import { getAnalytics } from "firebase/analytics";
-    import {getDatabase, push, ref} from "firebase/database";
+    import {child, getDatabase, push, ref, set} from "firebase/database";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
     import {Inhaler,Intake,Dosage} from "./Inhaler.js";
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
+
+    var popupclose = document.getElementById("closeBtn");
+    if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                        node &&
+                        node.classList &&
+                        node.classList.contains("popup-overlay")
+                    );
+                }
+                while (popup && !isOverlay(popup)) {
+                    popup = popup.parentNode;
+                }
+                if (isOverlay(popup)) {
+                    popup.style.display = "none";
+                }
+            });
+        }
+
+    var popupbuttonPrimary = document.getElementById("applyBtn");
+    if (popupbuttonPrimary) {
+        popupbuttonPrimary.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                    node &&
+                    node.classList &&
+                    node.classList.contains("popup-overlay")
+                );
+            }
+            while (popup && !isOverlay(popup)) {
+                popup = popup.parentNode;
+            }
+            if (isOverlay(popup)) {
+                popup.style.display = "none";
+            }
+        });
+    }
 
     // Your web app's Firebase configuration
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -27,64 +67,19 @@
     const analytics = getAnalytics(app);
     const auth = getAuth();
     const currentUser = auth.currentUser;
-    if (currentUser){
-        const currentUID = currentUser.uid;
-    }
-
+    if (currentUser){const currentUID = currentUser.uid;}
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const currentUser = auth.currentUser;
             const currentUID = user.uid;
         }
-        //else{alert('Sorry, you are not signed in!')}
     })
 
     let currentUserDB = null;
     let inhalerDB = null;
     if (currentUser) {
         let currentUserDB = ref(database, '/users/' + currentUID)
-        let inhalerDB = ref(database, '/users/' + currentUID + '/inhalers')
-    }
-
-
-var popupclose = document.getElementById("closeBtn");
-    if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-            function isOverlay(node) {
-                return !!(
-                    node &&
-                    node.classList &&
-                    node.classList.contains("popup-overlay")
-                );
-            }
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
-    var popupbuttonPrimary = document.getElementById("applyBtn");
-    if (popupbuttonPrimary) {
-        popupbuttonPrimary.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-            function isOverlay(node) {
-                return !!(
-                    node &&
-                    node.classList &&
-                    node.classList.contains("popup-overlay")
-                );
-            }
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
+        let inhalerDB = child(currentUserDB, '/inhalers')
     }
 
     const addInhalerBtn = document.getElementById("applyBtn");
@@ -141,34 +136,25 @@ var popupclose = document.getElementById("closeBtn");
         }
         else{
             if (inhalerDB){
-                push(inhalerDB,{newInhaler}).then((snap) => {
-                    const newIntakeInhalerKeyKey = snap.key;
-                })
-            }
-        }
+                let newInhalerDB = child(inhalerDB,'/'+newInhaler.getName())
+                set(inhalerDB, {
+                    volume: newInhaler.getVol(),
+                    expDate: newInhaler.getExpDate(),
+                    type: newInhaler.getType()
+                }).then(r => {})
 
-        for(let i=0;i<=reminderTimes.length;i++) {
-            newInhaler.setDose(new Date(reminderTimes[i]));
-            let newDose = newInhaler.getNewDose();
-            if (newDose.getReminderTime().getTime() > Date.now()) {
-                alert('here')
-                setTimeout(() => {
-                    if (Notification.permission === 'granted') {
-                        new Notification("Time to Use " + newInhalerName + "!", {
-                            body: "Based on your dosage, it is recommended to use your inhaler now.",
-                            icon: "./public/inhaler2@2x.png",
-                            tag: "dose-notify"
-                        })
+                for(let i=0;i<=reminderTimes.length;i++) {
+                    newInhaler.setDose(new Date(reminderTimes[i]));
+                    let newDose = newInhaler.getNewDose();
+                    let dosageDB = child(inhalerDB,'/dosage/reminder'+(i+1).toString())
+                    if (newDose.getReminderTime().getTime() > Date.now()) {
+                        let dosageString = newDose.getReminderTime().getTime().toString()
+                        set(dosageDB,{
+                            time: dosageString
+                        }).then(r => {})
+                        }
                     }
-                    else {
-                        alert('You need to allow notification to receive dosage reminders!')
-                    }
-                }, newDose.getReminderTime().getTime() - Date.now())
-            }
-            const dosageDB = ref(database,
-                '/users/' + currentUID + '/inhalers/' + newIntakeInhalerKey + '/dosage')
-            if(dosageDB){
-            push(dosageDB, newDose)
+                }
             }
         }
-    })
+    )
