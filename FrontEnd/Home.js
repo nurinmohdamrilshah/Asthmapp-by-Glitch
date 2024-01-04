@@ -1,3 +1,24 @@
+function loadAddCrisisContent() {
+    // Fetch the content of AddCrisis.html
+    fetch('./QuickIntake.html')
+        .then(response => response.text())
+        .then(data => {
+            // Set the innerHTML of the addCrisisPopup div with the content of AddCrisis.html
+            document.getElementById('quickIntakePopup').innerHTML = data;
+
+            // Display the overlay with the specified color and opacity
+            var overlay = document.getElementById('overlay');
+            if (overlay) {
+                overlay.style.backgroundColor = 'rgba(30, 56, 95, 0.8)';
+                overlay.style.display = 'block';
+            }
+
+            // Display the popup
+            document.getElementById('quickIntakePopup').style.display = 'block';
+        })
+        .catch(error => console.error('Error loading quickIntakePopup content:', error));
+}
+
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 Notification.requestPermission().then(permission => {
     if (permission === 'denied') {
