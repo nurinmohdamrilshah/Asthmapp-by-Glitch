@@ -1,7 +1,7 @@
 
-class Dosage{
+export class Dosage{
     constructor(time){
-        this.reminderTime = Date.parse(time);
+        this.reminderTime = time;
         this.maxPuffAllowed = 2;
     }
     getReminderTime(){
@@ -12,7 +12,7 @@ class Dosage{
     }
 }
 
-class Intake{
+export class Intake{
     static allIntakes=[]
     constructor(intakeTime, puffs, whichInhaler){
         this.timestamp = Date.parse(intakeTime);
@@ -38,7 +38,7 @@ class Intake{
     }
 }
 
-class Inhaler{
+export class Inhaler{
     static inhalers = [];
     static favInhaler = null;
 
@@ -68,21 +68,20 @@ class Inhaler{
     }
 
     setDose(intakeTime){
-        this.newDose = new Dosage(intakeTime)
+        this.newDose = new Dosage(intakeTime);
         this.dose.push(this.newDose);
         let now = Date.now();
         // setting next dose using for loop
-        for (let i = 0; i >= this.getAllDoses().length();i++){
+        for (let i = 0; i < this.getAllDoses().length;i++){
             let doses = this.getAllDoses();
             let allDiff = [];
-            if (doses(i).getTime()>now.getTime()){
-                let diff = doses(i).getTime()-now.getTime();
+            if (doses[i].getReminderTime().getTime()>now){
+                let diff = (doses[i].getReminderTime().getTime())-now;
                 allDiff.push(diff);
-                if (allDiff.min() === diff){
-                    this.nextDose = doses(i);
+                if (Math.min.apply(Math,allDiff) === diff){
+                    this.nextDose = doses[i];
                 }
             }
-            else this.dose.splice(i,1)
         }
     }
 
@@ -152,5 +151,3 @@ class Inhaler{
         Inhaler.favInhaler=this;
     }
 }
-
-export{Dosage,Intake,Inhaler}
