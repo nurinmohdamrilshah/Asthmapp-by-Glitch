@@ -128,9 +128,7 @@
         const newInhalerName = document.getElementById("newInhalerName").value;
         const newInhalerVol = document.getElementById("newInhalerVolume").value;
         const newInhalerExpDate = document.getElementById("newInhalerExpDate").value;
-
         let newInhaler = new Inhaler(newInhalerName,newInhalerVol,newInhalerExpDate,newInhalerType);
-
         if (newInhaler.isExpired()){
             alert("Inhaler "+ newInhaler.getName() + " is expired, add a different one!")
         }
@@ -142,7 +140,6 @@
                     expDate: newInhaler.getExpDate(),
                     type: newInhaler.getType()
                 }).then(r => {})
-
                 for(let i=0;i<=reminderTimes.length;i++) {
                     newInhaler.setDose(new Date(reminderTimes[i]));
                     let newDose = newInhaler.getNewDose();
@@ -153,8 +150,8 @@
                             time: dosageString
                         }).then(r => {})
                         }
-                    }
                 }
             }
         }
+    }
     )
