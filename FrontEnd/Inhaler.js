@@ -84,6 +84,13 @@ export class Inhaler{
             }
         }
     }
+    getVol(){
+        return this.volume
+    }
+
+    getNextDose(){
+        return this.nextDose
+    }
 
     getNewDose(){
         return this.newDose
