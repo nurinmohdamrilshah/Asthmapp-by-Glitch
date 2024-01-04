@@ -8,7 +8,9 @@ const appSettings = {
 const app = initializeApp(appSettings)
 const database = getDatabase(app)
 const phoneNumbersInDB = ref(database, "phoneNumber")
+const myBoroughInDB = ref(database, "myBorough"); // assuming "meArea" is the key you want to add
 
+const inputMyBorough = document.getElementById("myBoroughVar");
 const inputContact1 = document.getElementById("phonenb1")
 const inputContact2 = document.getElementById("phonenb2")
 const inputContact3 = document.getElementById("phonenb3")
@@ -16,6 +18,15 @@ const inputUsername = document.getElementById("usernamevar")
 const inputEmail = document.getElementById("emailvar")
 const inputPassword = document.getElementById("passwordvar")
 const updateButtonEl = document.getElementById("update-button")
+
+// Display myPostcode in the input box when the page loads
+onValue(myBoroughInDB, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        // Update input box with the latest value
+        inputMyBorough.value = data.myBorough || "";
+    }
+});
 
 // Display phone numbers in input boxes when the page loads
 onValue(phoneNumbersInDB, (snapshot) => {
@@ -29,11 +40,13 @@ onValue(phoneNumbersInDB, (snapshot) => {
 });
 
 updateButtonEl.addEventListener("click", function() {
+    let myBoroughVar = inputMyBorough.value;
     let phoneNumber1 = inputContact1.value;
     let phoneNumber2 = inputContact2.value;
     let phoneNumber3 = inputContact3.value;
 
     // Use set instead of push to update the values
+    set(myBoroughInDB, { myBorough: myBoroughVar });
     set(phoneNumbersInDB, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 });
 });
 
@@ -92,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.toggle('notifications-mode');
         // You can add further logic for handling notifications toggling
     });
-    
+
     // Function to toggle button state
     function toggleButton(button) {
         button.style.transform === 'translate(0%, -50%)' ?
