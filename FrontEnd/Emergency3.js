@@ -1,6 +1,5 @@
 // This is eventHandlers.js
 // Function to load the AddCrisis content into the popup
-
 function loadAddCrisisContent() {
     // Fetch the content of AddCrisis.html
     fetch('./AddCrisis.html')
@@ -9,11 +8,20 @@ function loadAddCrisisContent() {
             // Set the innerHTML of the addCrisisPopup div with the content of AddCrisis.html
             document.getElementById('addCrisisPopup').innerHTML = data;
 
+            // Display the overlay with the specified color and opacity
+            var overlay = document.getElementById('overlay');
+            if (overlay) {
+                overlay.style.backgroundColor = 'rgba(30, 56, 95, 0.8)';
+                overlay.style.display = 'block';
+            }
+
             // Display the popup
             document.getElementById('addCrisisPopup').style.display = 'block';
         })
         .catch(error => console.error('Error loading AddCrisis content:', error));
 }
+
+
 // Close popup event
 var popupclose = document.getElementById("close");
 if (popupclose) {
