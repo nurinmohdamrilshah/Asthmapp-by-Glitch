@@ -1,3 +1,10 @@
+import {Inhaler,Intake,Dosage} from "./Inhaler.js";
+Notification.requestPermission().then(permission => {
+    if (permission === 'denied') {
+        alert("You need to allow notifications to receive dosage reminders.")
+    }
+})
+
 var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
 if (popupcancelBtnContainer) {
     popupcancelBtnContainer.addEventListener("click", function (e) {
@@ -49,19 +56,22 @@ if (quickIntakeBtn) {
         }
         );
 }
-    if (Inhaler.favInhaler == null) {
-        window.alert("You haven't chose a favourite inhaler yet!")
-    }
-    else {
-        const nextReminderTime = document.getElementById('nextReminderVar');
+    const nextReminderTime = document.getElementById('nextReminderVar');
+    if(Inhaler.getFavInhaler()){ //need to replace with data from firebase
         nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDoseTime();
+    }
+    else{
+        nextReminderTime.textContent = "N/A"
+    }
 
-        const intakeExpiresIn = document.getElementById("expiryDateFavVar");
-        milliUntilIntake = Inhaler.getFavInhaler().getNextDoseTime()-Date.now();
-
-        hoursUntilIntake = (milliUntilIntake/86400000)
+    const intakeExpiresIn = document.getElementById("expiryDateFavVar");
+    if(Inhaler.getFavInhaler()){
+        let milliUntilIntake = Inhaler.getFavInhaler().getNextDoseTime()-Date.now();
+        let hoursUntilIntake = (milliUntilIntake/86400000)
         intakeExpiresIn.textContent = hoursUntilIntake.toString()+" hours";
     }
+    else{intakeExpiresIn.textContent = "N/A"}
+
 
 
 
@@ -87,8 +97,8 @@ if (cloud) {
 }
 
 var inhaler = document.getElementById("inhalerBar");
-if (inhaler) {
-    inhaler.addEventListener("click", function (e) {
+if (inhaler==null) {
+    inhaler.addEventListener("click",  function (e) {
         window.location.href = "./MyInhaler.html";
     });
 }
