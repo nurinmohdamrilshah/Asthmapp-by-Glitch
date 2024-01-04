@@ -569,6 +569,20 @@
   padding: 1rem;
   box-sizing: border-box;
 }
+/* Change colour of button when selected */
+.symptomButton.true,
+.allergenButton.true,
+.locationButton.true,
+.resolutionButton.true {
+    background-color: #B2E1E7 ;
+}
+
+.symptomButton.false,
+.allergenButton.false,
+.locationButton.false,
+.resolutionButton.false {
+    background-color: #f0ecec;
+} 
 .add-crisis,
 .addcrisisbtn,
 .text-input2 {
