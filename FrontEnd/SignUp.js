@@ -1,10 +1,11 @@
-/* === Imports === */
+/*
+// === Imports ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 // import {getAnalytics} from "firebase/analytics";
 // import {getDatabase, ref, set} from "firebase/database";
 
-/* === Firebase Setup === */
+// === Firebase Setup ===
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
@@ -18,18 +19,18 @@ const firebaseConfig = {
     measurementId: "G-PLRLWFR1X7"
 };
 //
-// /* == Firebase Variables & Constants == */
+// == Firebase Variables & Constants ==
 const app = initializeApp(firebaseConfig)
 const analytics = getAnalytics(app)
 const db = getDatabase(app)
 
-/* == Variables from HTML == */
+// == Variables from HTML ==
 const emailAddress = document.getElementById("emailAdress")
 const userName = document.getElementById("userName")
 const newPassword = document.getElementById("newPassword")
 const confirmPassword = document.getElementById("passwordConfirm")
 
-/* == Event Listeners == */
+// == Event Listeners == 
 var topNav = document.getElementById("backBtn");
 if (topNav) {
     topNav.addEventListener("click", function (e) {
@@ -50,14 +51,14 @@ if (buttonPrimary) {
 }
 
 
-/* == Event Listeners == */
+// == Event Listeners ==
 
-/* == Function - Navigate to new page == */
+// == Function - Navigate to new page ==
 function navigateTo(url){
     window.location.href = url;
 }
 
-/* === Async Functions == */
+// === Async Functions == 
 async function registerNewUser() {
     console.log("A")
 
@@ -80,4 +81,4 @@ async function registerNewUser() {
         console.error("Failed to read value", error.message);
     }
 }
-
+*/
