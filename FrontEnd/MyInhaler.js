@@ -192,7 +192,7 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
     if (inhalerCount){
         for (let j=0; j<inhalerCount; j++) {
-            displayInhalerInfo(inhalers(j))
+            displayInhalerInfo(inhalers[j])
         }
     }
 

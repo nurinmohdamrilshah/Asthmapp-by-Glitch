@@ -3,6 +3,7 @@
     import { getAnalytics } from "firebase/analytics";
     import {getDatabase, push, ref} from "firebase/database";
     import {getAuth, onAuthStateChanged} from "firebase/auth";
+    import {Inhaler,Intake,Dosage} from "./Inhaler.js";
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
 
