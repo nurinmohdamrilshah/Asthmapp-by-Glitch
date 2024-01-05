@@ -92,16 +92,19 @@ document.getElementById("cloudContainer")?.addEventListener("click", () => windo
 document.getElementById("emergencyBtn")?.addEventListener("click", () => window.location.href = "./Emergency1.html");
 
 //Display inhaler list as script inside html
-    let inhalerList = document.getElementById("mainMyInhaler")
 
-    function displayInhalerInfo(inhaler) {
-
+        let inhaler = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
+        inhaler.setDose(new Date("2024-01-17T21:14:00"))
+        inhaler.setDose(new Date("2024-01-04T21:15:00"))
+        let inhalerList = document.getElementById("mainMyInhaler")
         let inhalerType = document.createElement('h1');
         inhalerType.className = "reminders"
         inhalerType.textContent = inhaler.getType();
+        inhalerList.appendChild(inhalerType)
 
         let inhalerField = document.createElement('ul')
         inhalerField.className = "inhalerfield"
+        inhalerList.appendChild(inhalerField)
 
         let inhalerImage = document.createElement('button')
         inhalerImage.id = "editInhalerBtn"
@@ -114,7 +117,7 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
         let favImg = document.createElement('img');
         favImg.src = "./public/love@2x.png"
         favImg.className = "love-icon"
-        favImg.alt = "Set as Favourite"
+        //favImg.alt = "Set as Favourite"
         favImg.addEventListener('click', () => {
             inhaler.setFav()
         })
@@ -123,6 +126,7 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
         let inhalerSection = document.createElement('section')
         inhalerSection.className = "inhalertext"
+        inhalerField.appendChild(inhalerSection)
         let inhalerName = document.createElement('h2')
         inhalerName.className = "reminders"
         inhalerName.textContent = inhaler.getName()
@@ -130,8 +134,10 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
         let inhalerStats = document.createElement('section')
         inhalerStats.className = "statsinhaler"
+        inhalerSection.appendChild(inhalerStats)
         let lastUsageDiv = document.createElement('div')
         lastUsageDiv.className = "lastusagediv"
+        inhalerSection.appendChild(lastUsageDiv)
         let lastUsage = document.createElement('h3')
         lastUsage.className = "lastusage"
         lastUsage.textContent = "Last Usage:"
@@ -141,26 +147,28 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
         lastUsageDiv.appendChild(lastUsage)
         lastUsageDiv.appendChild(lastUsageVar)
 
-
         let expDateDiv = document.createElement('div')
         expDateDiv.className = "lastusagediv"
+        inhalerSection.appendChild(expDateDiv)
         let expDate = document.createElement('h3')
         expDate.className = "lastusage"
         expDate.textContent = "Expiry Date:"
         let expDateVar = document.createElement('b')
         expDateVar.className = "expirydatevar"
-        expDateVar.textContent = inhaler.getExpDate().toLocaleString()
+        let expiryDate = new Date(inhaler.getExpDate())
+        expDateVar.textContent = expiryDate.toDateString()
         expDateDiv.appendChild(expDate)
         expDateDiv.appendChild(expDateVar)
 
         let usagesLeftDiv = document.createElement('div')
         usagesLeftDiv.className = "lastusagediv"
+        inhalerSection.appendChild(usagesLeftDiv)
         let usagesLeft = document.createElement('h3')
         usagesLeft.className = "lastusage"
-        usagesLeft.textContent = "Usages Left:"
+        usagesLeft.textContent = "Usage Left:"
         let usagesLeftVar = document.createElement('b')
         usagesLeftVar.className = "expirydatevar"
-        usagesLeft.textContent = inhaler.getAllDoses().length.toString()
+        usagesLeftVar.textContent = inhaler.getAllDoses().length.toString()
         usagesLeftDiv.appendChild(usagesLeft)
         usagesLeftDiv.appendChild(usagesLeftVar)
 
@@ -170,45 +178,33 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
         let reminderSection = document.createElement('section')
         reminderSection.className = "reminderssection"
+        inhalerStats.appendChild(reminderSection)
         let reminders = document.createElement('h2')
         reminders.className = "reminders"
         reminders.textContent = "Reminders:"
+        reminderSection.appendChild(reminders)
         let remindersList = document.createElement('ul')
         remindersList.className = "reminderul1"
+        reminderSection.appendChild(remindersList)
+
 
         for (let i = 0; i <= inhaler.getAllDoses().length; i++) {
             let reminderVar = document.createElement('i')
             reminderVar.className = "remindervar"
-            reminderVar.textContent = inhaler.getDose(i).getReminderTime().toLocaleTimeString()
+            reminderVar.textContent = inhaler.getDose(i).getReminderTime().toLocaleTimeString() + "||"
             remindersList.append(reminderVar)
         }
 
-        reminderSection.appendChild(reminders)
-        reminderSection.appendChild(remindersList)
-        inhalerSection.appendChild(inhalerStats)
-        inhalerSection.appendChild(reminderSection)
-
-        inhalerField.appendChild(inhalerSection)
-        inhalerList.appendChild(inhalerType)
-        inhalerList.appendChild(inhalerField)
-    }
-
-
-    let inhaler1 = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
-    inhaler1.setDose(new Date("2024-01-17T21:14:00"))
-    inhaler1.setDose(new Date("2024-01-04T21:15:00"))
-    window.onload = function(){
-        displayInhalerInfo(inhaler1)
-    }
-
-    // for (let j=0;
-    //      j<onValue(inhalerDB, (snapshot) => {
-    //          return snapshot.size;
-    //      });
-    //      j++) {
+    // let inhaler1 = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
+    // inhaler1.setDose(new Date("2024-01-17T21:14:00"))
+    // inhaler1.setDose(new Date("2024-01-04T21:15:00"))
     //
-    //         displayInhalerInfo(inhalers[j])
-    // }
+    //
+    // let inhalerList = document.getElementById("mainMyInhaler")
+    // let inhalerType = document.createElement('h1');
+    // inhalerType.className = "reminders"
+    // inhalerType.textContent = inhaler1.getType();
+    // inhalerList.appendChild(inhalerType)
 
 
 
