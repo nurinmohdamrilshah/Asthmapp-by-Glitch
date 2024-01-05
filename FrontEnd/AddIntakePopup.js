@@ -27,16 +27,24 @@
 
     const auth = getAuth();
     const currentUser = auth.currentUser;
-    const currentUID = currentUser.uid;
+    if (currentUser){
+        const currentUID = currentUser.uid;
+        const currentUserDB = ref(database,'/users/'+currentUID)
+        const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+    }
+    else{
+        const currentUID = null
+        const currentUserDB = null
+        const inhalerDB = null
+    }
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUser = auth.currentUser;
-            const currentUID = user.uid;
+            const currentUID = currentUser.uid;
+            const currentUserDB = ref(database,'/users/'+currentUID)
+            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
-        else{alert('Sorry, you are not signed in!')}
     })
-    const currentUserDB = ref(database,'/users/'+currentUID)
-    const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+
 
     var popupclose = document.getElementById("closeBtn");
     if (popupclose) {
@@ -73,6 +81,26 @@
     const addIntakeBtn = document.getElementById("addIntakeBtn");
     const newIntakeTime = document.getElementById("intakeTimeVar");
     const newIntakePuffs = document.getElementById("nbPuffsVar");
+
+    const inhalerSection = document.getElementById("symptomsSection");
+    function createSelectInhalerBtn(inhaler){
+        let selectInhalerBtn;
+        selectInhalerBtn = document.createElement('button');
+        selectInhalerBtn.className = "inhaler11";
+        inhalerSection.appendChild(selectInhalerBtn)
+        selectInhalerBtn.addEventListener('click', function () {
+            let newIntakeInhaler = inhaler;
+        })
+        selectInhalerBtn.id = 'select'+inhaler.getName()
+        let divBtn = document.createElement('div')
+        divBtn.textContent = inhaler.getName();
+        selectInhalerBtn.appendChild(divBtn);
+
+    }
+    for (let i=0;i<Inhaler.getAllInhalers().length;i++){
+        createSelectInhalerBtn(Inhaler.getInhaler(i))
+    }
+
 
     addIntakeBtn.addEventListener('click', function () {
         newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
