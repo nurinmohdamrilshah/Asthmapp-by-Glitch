@@ -97,7 +97,7 @@ export class Inhaler{
     }
 
     getDose(index){
-        return this.dose(index);
+        return this.dose[index];
     }
 
     getAllDoses(){
