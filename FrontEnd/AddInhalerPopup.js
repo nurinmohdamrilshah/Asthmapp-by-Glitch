@@ -65,20 +65,20 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
+    let currentUserDB = null;
+    let inhalerDB = null;
     const auth = getAuth();
     const currentUser = auth.currentUser;
     if (currentUser){const currentUID = currentUser.uid;}
+    else{const currentUID = null;}
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const currentUser = auth.currentUser;
             const currentUID = user.uid;
         }
     })
-
-    let currentUserDB = null;
-    let inhalerDB = null;
     if (currentUser) {
-        let currentUserDB = ref(database, '/users/' + currentUID)
+        let currentUserDB = ref(database, '/users/'+currentUID)
         let inhalerDB = child(currentUserDB, '/inhalers')
     }
 
@@ -135,10 +135,12 @@
         else{
             if (inhalerDB){
                 let newInhalerDB = child(inhalerDB,'/'+newInhaler.getName())
-                set(inhalerDB, {
+                set(newInhalerDB, {
+                    name: newInhaler.getName(),
                     volume: newInhaler.getVol(),
                     expDate: newInhaler.getExpDate(),
-                    type: newInhaler.getType()
+                    type: newInhaler.getType(),
+                    inhaler: newInhaler
                 }).then(r => {})
                 for(let i=0;i<=reminderTimes.length;i++) {
                     newInhaler.setDose(new Date(reminderTimes[i]));
