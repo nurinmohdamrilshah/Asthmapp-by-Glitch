@@ -203,6 +203,10 @@
   height: 3.13rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 0.31rem;
 }
 /* Change colour of button when selected */
 .symptomButton.true,
@@ -231,4 +235,113 @@
   z-index: 998; /* Set a lower z-index than the popup to ensure it appears behind the popup */
 }
 
- 
+
+.framebtns {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.more-detailoptional {
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.more,
+.text-input1,
+.text27 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.more,
+.text-input1 {
+  justify-content: space-between;
+}
+.text-input1 {
+  border-radius: 12px;
+  background-color: #f0ecec;
+  width: 5.19rem;
+  height: 0.88rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+.more {
+  align-self: stretch;
+  text-align: left;
+  font-size: 0.69rem;
+}
+.breathing-exercises,
+.more,
+.text-input2 {
+  font-family: "Plus Jakarta Sans";
+  color: #1e385f;
+}
+.breathing-exercises {
+  align-self: stretch;
+  position: relative;
+  font-size: 0.5rem;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.text-input2 {
+  border: 0;
+  outline: 0;
+  font-size: 0.69rem;
+  background-color: #f0ecec;
+  width: 5.19rem;
+  height: 0.88rem;
+  flex-shrink: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+.add-crisis,
+.addcrisisbtn,
+.text-input2 {
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+}
+.addcrisisbtn {
+  cursor: pointer;
+  border: 0;
+  padding: 0.63rem;
+  background-color: #b2e1e7;
+  align-self: stretch;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.add-crisis {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  overflow: auto;
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  width: 20.31rem;
+  max-width: 90%;
+  max-height: 90%;
+  padding: 0.44rem 1.25rem 0.63rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.31rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #000; /* Changed text color to black, you can adjust it as needed */
+  font-family: "Plus Jakarta Sans", sans-serif; /* Added a generic font-family */
+  z-index: 999;
+}

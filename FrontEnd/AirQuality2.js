@@ -1,6 +1,19 @@
 AQIdata = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0'};
+function handleButtonClick(selectedButtonId) {
+    // Remove 'highlight' class from all buttons
+    var buttons = document.querySelectorAll('.yourareabtn');
+    buttons.forEach(function (button) {
+        button.classList.remove('active');
+    });
 
-//for SO2 data display
+    // Add 'active' class to the clicked button
+    var selectedButton = document.getElementById(selectedButtonId);
+    selectedButton.classList.add('active');
+
+    // Add your existing setmap function calls here
+
+}
+//for clearing data display
 function clear(){
     //barking
     const Barking = document.getElementById('barking');
@@ -103,7 +116,9 @@ function clear(){
     Westminster.src = "./public/londonmaps/westminster_white.png";
 
 }
+//for SO2 data display
 async function setmapSO2() {
+    handleButtonClick('SO2')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     clear();
@@ -263,6 +278,7 @@ async function setmapSO2() {
 
 //for NO2 reading display
 async function setmapNO2(){
+    handleButtonClick('NO2')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     clear();
@@ -614,6 +630,7 @@ async function setmapNO2(){
 
 //for O3 data display
 async function setmapO3(){
+    handleButtonClick('O3')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     clear();
@@ -848,6 +865,7 @@ async function setmapO3(){
 
 //for PM10 data display
 async function setmapPM10(){
+    handleButtonClick('PM10')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     clear();
@@ -1191,6 +1209,7 @@ async function setmapPM10(){
 
 //for PM2.5 data display
 async function setmapPM25(){
+    handleButtonClick('PM2.5')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     clear();
