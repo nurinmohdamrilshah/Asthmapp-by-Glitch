@@ -1,7 +1,7 @@
     // Import the functions you need from the SDKs you need
     import { initializeApp } from "firebase/app";
     import { getAnalytics } from "firebase/analytics";
-    import {child, getDatabase, push, ref, set} from "firebase/database";
+    import {child, get, getDatabase, push, ref, set} from "firebase/database";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
     import {Inhaler,Intake,Dosage} from "./Inhaler.js";
     // TODO: Add SDKs for Firebase products that you want to use
@@ -65,42 +65,42 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
-    let currentUserDB = null;
-    let inhalerDB = null;
+
     const auth = getAuth();
-    const currentUser = auth.currentUser;
-    if (currentUser){const currentUID = currentUser.uid;}
-    else{const currentUID = null;}
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            const currentUser = auth.currentUser;
-            const currentUID = user.uid;
-        }
-    })
-    if (currentUser) {
-        let currentUserDB = ref(database, '/users/'+currentUID)
-        let inhalerDB = child(currentUserDB, '/inhalers')
+    var currentUser = auth.currentUser;
+    if (currentUser){
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/'+currentUID)
+        var inhalerDB = child(currentUserDB, '/inhalers')
     }
     else{
-        let currentUserUID = 'testDosage2'
-        let currentUserDB = ref(database,'/users/'+currentUserUID);
-        let inhalerDB = child(currentUserDB,'/inhalers');
+        currentUID = null;
+        currentUserDB = ref(database,'/users/'+currentUID);
+        inhalerDB = child(currentUserDB,'/inhalers');
     }
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = auth.currentUser;
+            currentUID = user.uid;
+        }
+    })
+
     const addInhalerBtn = document.getElementById("applyBtn");
     const newInhalerCrisisBtn = document.getElementById("crisisInhalerBtn");
     const newInhalerPreventionBtn = document.getElementById("preventionBtn");
 
-    let newInhalerType = "Type Unknown";
+    var newInhalerType = "Type Unknown";
     let preventionBtnText = document.getElementById("preventionText")
     let crisisBtnText = document.getElementById("crisisText")
 
     newInhalerCrisisBtn.addEventListener('click', function () {
-        let newInhalerType = "Crisis";
+        newInhalerType = "Crisis";
         crisisBtnText.textContent = "Crisis (selected)"
         preventionBtnText.textContent = "Prevention"
     })
     newInhalerPreventionBtn.addEventListener('click', function () {
-        let newInhalerType = "Prevention";
+        newInhalerType = "Prevention";
         preventionBtnText.textContent = "Prevention (selected)"
         crisisBtnText.textContent = "Crisis"
     })
@@ -140,16 +140,16 @@
             if (inhalerDB){
                 let newInhalerDB = child(inhalerDB,'/'+newInhaler.getName())
                 set(newInhalerDB, {
-                    name: newInhaler.getName(),
-                    volume: newInhaler.getVol(),
-                    expDate: new Date(newInhaler.getExpDate()).toDateString(),
-                    type: newInhaler.getType(),
+                    //name: newInhaler.getName(),
+                    //volume: newInhaler.getVol(),
+                    //expDate: new Date(newInhaler.getExpDate()).toDateString(),
+                    //type: newInhaler.getType(),
                     inhaler: newInhaler
                 }).then(r => {})
                 for(let i=0;i<=reminderTimes.length;i++) {
                     newInhaler.setDose(new Date(reminderTimes[i]));
                     let newDose = newInhaler.getNewDose();
-                    let dosageDB = child(inhalerDB,'/dosage/reminder'+(i+1).toString())
+                    let dosageDB = child(newInhalerDB,'/dosage/reminder'+(i+1).toString())
                     if (newDose.getReminderTime().getTime() > Date.now()) {
                         let dosageString = newDose.getReminderTime().getTime().toString()
                         set(dosageDB,{
@@ -157,6 +157,8 @@
                         }).then(r => {})
                         }
                 }
+                alert('Inhaler added!')
+                window.reload()
             }
         }
     }
