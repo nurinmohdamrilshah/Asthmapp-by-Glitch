@@ -81,7 +81,11 @@
         let currentUserDB = ref(database, '/users/'+currentUID)
         let inhalerDB = child(currentUserDB, '/inhalers')
     }
-
+    else{
+        let currentUserUID = 'testDosage2'
+        let currentUserDB = ref(database,'/users/'+currentUserUID);
+        let inhalerDB = child(currentUserDB,'/inhalers');
+    }
     const addInhalerBtn = document.getElementById("applyBtn");
     const newInhalerCrisisBtn = document.getElementById("crisisInhalerBtn");
     const newInhalerPreventionBtn = document.getElementById("preventionBtn");
@@ -138,7 +142,7 @@
                 set(newInhalerDB, {
                     name: newInhaler.getName(),
                     volume: newInhaler.getVol(),
-                    expDate: newInhaler.getExpDate(),
+                    expDate: new Date(newInhaler.getExpDate()).toDateString(),
                     type: newInhaler.getType(),
                     inhaler: newInhaler
                 }).then(r => {})

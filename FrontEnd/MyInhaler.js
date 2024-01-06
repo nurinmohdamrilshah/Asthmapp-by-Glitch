@@ -40,11 +40,12 @@
     const currentUserDB = ref(database,'/users/'+currentUser)
     let inhalerDB = child(currentUserDB,'/inhalers');
     let inhalers = onValue(inhalerDB, (snapshot) => {
-        return snapshot.val();
-    });
+        console.log(snapshot.val());
+    }); //retrieve list of inhalers
     let inhalerCount = onValue(inhalerDB, (snapshot) => {
-        return snapshot.size;
-    });
+        console.log(snapshot.size);
+    })// retrieve number of inhalers currently added
+
 
 
         // Function to close a popup by traversing up the DOM tree
@@ -91,12 +92,15 @@ document.getElementById("homeBtn")?.addEventListener("click", () => window.locat
 document.getElementById("cloudContainer")?.addEventListener("click", () => window.location.href = "./AirQuality01.html");
 document.getElementById("emergencyBtn")?.addEventListener("click", () => window.location.href = "./Emergency1.html");
 
-//Display inhaler list as script inside html
+//Display inhaler list
 
-        let inhaler = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
-        inhaler.setDose(new Date("2024-01-17T21:14:00"))
-        inhaler.setDose(new Date("2024-01-04T21:15:00"))
-        let inhalerList = document.getElementById("mainMyInhaler")
+        // let inhaler = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
+        // inhaler.setDose(new Date("2024-01-17T21:14:00"))
+        // inhaler.setDose(new Date("2024-01-04T21:15:00"))
+        //
+
+
+     let inhalerList = document.getElementById("mainMyInhaler")
         let inhalerType = document.createElement('h1');
         inhalerType.className = "reminders"
         inhalerType.textContent = inhaler.getType();
@@ -108,8 +112,11 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
         let inhalerImage = document.createElement('button')
         inhalerImage.id = "editInhalerBtn"
-        if (inhalerType.textContent === "Prevention"){inhalerImage.className = "inhalerimage"}
-        else{inhalerImage.className ="inhalerimage2"}
+        if (inhalerType.textContent === "Prevention") {
+            inhalerImage.className = "inhalerimage"
+        } else {
+            inhalerImage.className = "inhalerimage2"
+        }
         inhalerField.appendChild(inhalerImage)
 
         let favBtn = document.createElement('button');
@@ -194,6 +201,7 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
             reminderVar.textContent = inhaler.getDose(i).getReminderTime().toLocaleTimeString() + "||"
             remindersList.append(reminderVar)
         }
+
 
     // let inhaler1 = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
     // inhaler1.setDose(new Date("2024-01-17T21:14:00"))

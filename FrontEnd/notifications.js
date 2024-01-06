@@ -42,9 +42,11 @@ let inhalerDB = child(currentUserDB,'/inhalers');
 let inhaler1 = new Inhaler('inhaler1',50,'04 Feb 2024 00:12:00 GMT','Crisis')
 let inhaler1DB = child(inhalerDB,'/'+inhaler1.getName())
 set(inhaler1DB, {
-    volume: inhaler1.getVol(),
-    expDate: inhaler1.getExpDate(),
-    type: inhaler1.getType()
+    //name: inhaler1.getName(),
+    // volume: inhaler1.getVol(),
+    // expDate: new Date(inhaler1.getExpDate()).toDateString(),
+    // type: inhaler1.getType(),
+    inhaler: inhaler1
 }).then(r => {})
 
 inhaler1.setDose(new Date("2024-01-17T21:14:00"))
@@ -82,7 +84,7 @@ function reminderNotification(inhalerName) {
     //})
     //}
 }
-
-setInterval(function(){
-    checkReminder(inhaler1)
-},30000)
+//
+// setInterval(function(){
+//     checkReminder(inhaler1)
+// },30000)
