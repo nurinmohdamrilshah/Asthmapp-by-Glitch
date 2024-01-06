@@ -1,10 +1,10 @@
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "firebase/app";
-    import { getAnalytics } from "firebase/analytics";
-    import {getDatabase, push, ref} from "firebase/database";
-    import {getAuth, onAuthStateChanged} from "firebase/auth";
-    import {Inhaler,Intake,Dosage} from "./Inhaler.js";
-    // TODO: Add SDKs for Firebase products that you want to use
+// Import the functions you need from the SDKs you need
+import {initializeApp} from "firebase/app";
+import {getAnalytics} from "firebase/analytics";
+import {child, get, getDatabase, push, ref} from "firebase/database";
+import {getAuth, onAuthStateChanged} from "firebase/auth";
+import {Inhaler, Dosage, Intake} from "./Inhaler.js";
+// TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
 
     // Your web app's Firebase configuration
@@ -27,16 +27,6 @@
 
     const auth = getAuth();
     const currentUser = auth.currentUser;
-    if (currentUser){
-        const currentUID = currentUser.uid;
-        const currentUserDB = ref(database,'/users/'+currentUID)
-        const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
-    }
-    else{
-        const currentUID = null
-        const currentUserDB = null
-        const inhalerDB = null
-    }
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const currentUID = currentUser.uid;
@@ -44,8 +34,73 @@
             const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
+    if (currentUser){
+        const currentUID = currentUser.uid;
+        const currentUserDB = ref(database,'/users/'+currentUID)
+        const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+    }
+    else {
+        const currentUID = 'testDosage2'
+        const currentUserDB = ref(database, '/users/' + currentUID)
+        const inhalerDB = child(currentUserDB, '/inhalers')
+
+        get(inhalerDB).then((snapshot) => {
+            if (snapshot.exists()) {
+                const addIntakeBtn = document.getElementById("addIntakeBtn");
+                const newIntakeTime = document.getElementById("intakeTimeVar");
+                const newIntakePuffs = document.getElementById("nbPuffsVar");
+                const inhalerSection = document.getElementById("symptomsSection");
+
+                let newIntakeInhaler = null;
+
+                function createSelectInhalerBtn(inhaler) {
+                    let choiceInhaler = new Inhaler(inhaler.name, inhaler.volume, inhaler.expiryDate, inhaler.type)
+                    let selectInhalerBtn;
+                    selectInhalerBtn = document.createElement('button');
+                    selectInhalerBtn.className = "inhaler11";
+                    inhalerSection.appendChild(selectInhalerBtn)
+                    selectInhalerBtn.id = 'select' + choiceInhaler.getName()
+                    let divBtn = document.createElement('div')
+                    divBtn.className = "intaketimevar"
+                    divBtn.textContent = choiceInhaler.getName();
+                    selectInhalerBtn.appendChild(divBtn);
+                    selectInhalerBtn.addEventListener('click', function () {
+                        let newIntakeInhaler = choiceInhaler;
+                        divBtn.textContent = '*' + choiceInhaler.getName();
+                        addIntakeBtn.addEventListener('click', function () {
+                            newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
+                            const newIntake = newIntakeInhaler.getLastIntake()
+                            let intakesDB = child(inhalerDB, '/intakes/')
+                            let intakeTimeLocale = newIntake.getTime()
+                            push(intakesDB, {
+                                time: intakeTimeLocale,
+                                puffNum: newIntakePuffs
+                            })
+                            if (newIntakeInhaler.isOverused()) {
+                                alert("Warning:" + newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.")
+                            }
+                        })
+                    })
+                }
+                snapshot.forEach(function (childSnapshot) {
+                    let inhalerChoice = childSnapshot.val().inhaler
+                    createSelectInhalerBtn(inhalerChoice)
+                })
+            }
+            else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
 
 
+
+
+
+
+    //page popup feature
     var popupclose = document.getElementById("closeBtn");
     if (popupclose) {
         popupclose.addEventListener("click", function (e) {
@@ -78,43 +133,7 @@
         });
     }
 
-    const addIntakeBtn = document.getElementById("addIntakeBtn");
-    const newIntakeTime = document.getElementById("intakeTimeVar");
-    const newIntakePuffs = document.getElementById("nbPuffsVar");
 
-    const inhalerSection = document.getElementById("symptomsSection");
-    function createSelectInhalerBtn(inhaler){
-        let selectInhalerBtn;
-        selectInhalerBtn = document.createElement('button');
-        selectInhalerBtn.className = "inhaler11";
-        inhalerSection.appendChild(selectInhalerBtn)
-        selectInhalerBtn.addEventListener('click', function () {
-            let newIntakeInhaler = inhaler;
-        })
-        selectInhalerBtn.id = 'select'+inhaler.getName()
-        let divBtn = document.createElement('div')
-        divBtn.textContent = inhaler.getName();
-        selectInhalerBtn.appendChild(divBtn);
-
-    }
-    for (let i=0;i<Inhaler.getAllInhalers().length;i++){
-        createSelectInhalerBtn(Inhaler.getInhaler(i))
-    }
-
-
-    addIntakeBtn.addEventListener('click', function () {
-        newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
-        const newIntake = newIntakeInhaler.getLastIntake()
-        const newIntakeInhalerKey = newIntakeInhaler.key;
-        const intakesDB = ref(database,
-            '/users/'+currentUID+'/inhalers/'+newIntakeInhalerKey+'/intakes')
-
-        push(intakesDB,{newIntake})
-
-        if (newIntakeInhaler.isOverused()) {
-            alert("Warning:"+newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.")
-        }
-    })
 
 
 
