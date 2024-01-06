@@ -28,7 +28,7 @@ export class Intake{
         return this.puffTaken
     }
     forWhichInhaler(){
-        return this.inhaler.getName()
+        return this.inhaler
     }
     static getAllIntakes(){
         return Intake.allIntakes;

@@ -59,30 +59,7 @@
       <section class="inputtimeintakesecion" id="selectInhalerSection">
         <b class="add-intake">Select Inhaler</b>
         <section class="btnssection" id="pickInhaler">
-          <script>
-            const inhalerSection = document.getElementById("pickInhaler");
-            let newIntakeInhaler = 0;
 
-            function createSelectInhalerBtn(inhaler){
-              let selectInhalerBtn;
-              selectInhalerBtn = document.createElement('button');
-              selectInhalerBtn.className = 'selectInhaler';
-              selectInhalerBtn.addEventListener('click', function () {
-                newIntakeInhaler = inhaler;
-              })
-              selectInhalerBtn.id = 'select'+inhaler.getName()
-              let divBtn = document.createElement('div')
-              let name = document.createElement('name');
-              name.textContent = inhaler.getName(); //reference:https://www.tutorialspoint.com/how-to-append-data-to-div-element-using-javascript
-              divBtn.appendChild(name)
-              divBtn.appendChild(inhaler.getName())
-              selectInhalerBtn.appendChild(divBtn)
-              inhalerSection.appendChild(selectInhalerBtn);
-            }
-            for (let i=0;i<Inhaler.getAllInhalers().length;i++){
-              createSelectInhalerBtn(Inhaler.getInhaler(i))
-            }
-          </script>
         </section>
       </section>
       <button class="addintakebtn" id="addIntakeBtn">

@@ -74,7 +74,7 @@
         var inhalerDB = child(currentUserDB, '/inhalers')
     }
     else{
-        currentUID = null;
+        currentUID = 'testDosage2';
         currentUserDB = ref(database,'/users/'+currentUID);
         inhalerDB = child(currentUserDB,'/inhalers');
     }
@@ -83,6 +83,8 @@
         if (user) {
             currentUser = auth.currentUser;
             currentUID = user.uid;
+            currentUserDB = ref(database,'/users/'+currentUID);
+            inhalerDB = child(currentUserDB,'/inhalers');
         }
     })
 
@@ -158,7 +160,7 @@
                         }
                 }
                 alert('Inhaler added!')
-                window.reload()
+                location.reload()
             }
         }
     }
