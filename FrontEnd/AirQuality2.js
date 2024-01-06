@@ -11,19 +11,9 @@ function handleButtonClick(selectedButtonId) {
     selectedButton.classList.add('active');
 
     // Add your existing setmap function calls here
-    if (selectedButtonId === 'NO2') {
-        setmapNO2();
-    } else if (selectedButtonId === 'SO2') {
-        setmapSO2();
-    } else if (selectedButtonId === 'O3') {
-        setmapO3();
-    } else if (selectedButtonId === 'PM10') {
-        setmapPM10();
-    } else if (selectedButtonId === 'PM2.5') {
-        setmapPM25();
-    }
+
 }
-//for SO2 data display
+//for clearing data display
 function clear(){
     //barking
     const Barking = document.getElementById('barking');
@@ -126,6 +116,7 @@ function clear(){
     Westminster.src = "./public/londonmaps/westminster_white.png";
 
 }
+//for SO2 data display
 async function setmapSO2() {
     handleButtonClick('SO2')
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
