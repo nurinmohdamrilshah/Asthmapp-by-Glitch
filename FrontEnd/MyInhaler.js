@@ -214,6 +214,227 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
     // inhalerType.textContent = inhaler1.getType();
     // inhalerList.appendChild(inhalerType)
 
+    //Front end script
+    // not working... Why???
+    var popupclose = document.getElementById("closeBtn");
+    if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                    node &&
+                    node.classList &&
+                    node.classList.contains("popup-overlay")
+                );
+            }
+            while (popup && !isOverlay(popup)) {
+                popup = popup.parentNode;
+            }
+            if (isOverlay(popup)) {
+                popup.style.display = "none";
+            }
+        });
+    }
+
+    var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
+    if (popupaddIntakeBtn) {
+        popupaddIntakeBtn.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                    node &&
+                    node.classList &&
+                    node.classList.contains("popup-overlay")
+                );
+            }
+            while (popup && !isOverlay(popup)) {
+                popup = popup.parentNode;
+            }
+            if (isOverlay(popup)) {
+                popup.style.display = "none";
+            }
+        });
+    }
+
+    var popupclose = document.getElementById("closeBtn");
+    if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                    node &&
+                    node.classList &&
+                    node.classList.contains("popup-overlay")
+                );
+            }
+            while (popup && !isOverlay(popup)) {
+                popup = popup.parentNode;
+            }
+            if (isOverlay(popup)) {
+                popup.style.display = "none";
+            }
+        });
+    }
+
+    var popupbuttonPrimary = document.getElementById("applyBtn");
+    if (popupbuttonPrimary) {
+        popupbuttonPrimary.addEventListener("click", function (e) {
+            var popup = e.currentTarget.parentNode;
+            function isOverlay(node) {
+                return !!(
+                    node &&
+                    node.classList &&
+                    node.classList.contains("popup-overlay")
+                );
+            }
+            while (popup && !isOverlay(popup)) {
+                popup = popup.parentNode;
+            }
+            if (isOverlay(popup)) {
+                popup.style.display = "none";
+            }
+        });
+    }
+
+    var close = document.getElementById("closeBtn");
+    if (close) {
+        close.addEventListener("click", function (e) {
+            window.location.href = "./Home.html";
+        });
+    }
+
+    var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
+    if (newInhalerIntake) {
+        newInhalerIntake.addEventListener("click", function () {
+            var popup = document.getElementById("addIntakePopup");
+            if (!popup) return;
+            var popupStyle = popup.style;
+            if (popupStyle) {
+                popupStyle.display = "flex";
+                popupStyle.zIndex = 100;
+                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                popupStyle.alignItems = "center";
+                popupStyle.justifyContent = "center";
+            }
+            popup.setAttribute("closable", "");
+
+            var onClick =
+                popup.onClick ||
+                function (e) {
+                    if (e.target === popup && popup.hasAttribute("closable")) {
+                        popupStyle.display = "none";
+                    }
+                };
+            popup.addEventListener("click", onClick);
+        });
+    }
+
+    var inhalerImage = document.getElementById("editInhalerBtn");
+    if (inhalerImage) {
+        inhalerImage.addEventListener("click", function () {
+            var popup = document.getElementById("addInhalerPopup");
+            if (!popup) return;
+            var popupStyle = popup.style;
+            if (popupStyle) {
+                popupStyle.display = "flex";
+                popupStyle.zIndex = 100;
+                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                popupStyle.alignItems = "center";
+                popupStyle.justifyContent = "center";
+            }
+            popup.setAttribute("closable", "");
+
+            var onClick =
+                popup.onClick ||
+                function (e) {
+                    if (e.target === popup && popup.hasAttribute("closable")) {
+                        popupStyle.display = "none";
+                    }
+                };
+            popup.addEventListener("click", onClick);
+        });
+    }
+
+    var inhalerImage2 = document.getElementById("editInhalerBtn");
+    if (inhalerImage2) {
+        inhalerImage2.addEventListener("click", function () {
+            var popup = document.getElementById("addInhalerPopup");
+            if (!popup) return;
+            var popupStyle = popup.style;
+            if (popupStyle) {
+                popupStyle.display = "flex";
+                popupStyle.zIndex = 100;
+                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                popupStyle.alignItems = "center";
+                popupStyle.justifyContent = "center";
+            }
+            popup.setAttribute("closable", "");
+
+            var onClick =
+                popup.onClick ||
+                function (e) {
+                    if (e.target === popup && popup.hasAttribute("closable")) {
+                        popupStyle.display = "none";
+                    }
+                };
+            popup.addEventListener("click", onClick);
+        });
+    }
+
+    var newInhalerBtn = document.getElementById("newInhalerBtn");
+    if (newInhalerBtn) {
+        newInhalerBtn.addEventListener("click", function () {
+            var popup = document.getElementById("addInhalerPopup");
+            if (!popup) return;
+            var popupStyle = popup.style;
+            if (popupStyle) {
+                popupStyle.display = "flex";
+                popupStyle.zIndex = 100;
+                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                popupStyle.alignItems = "center";
+                popupStyle.justifyContent = "center";
+            }
+            popup.setAttribute("closable", "");
+
+            var onClick =
+                popup.onClick ||
+                function (e) {
+                    if (e.target === popup && popup.hasAttribute("closable")) {
+                        popupStyle.display = "none";
+                    }
+                };
+            popup.addEventListener("click", onClick);
+        });
+    }
+
+    var usageHistoryBtn = document.getElementById("usageHistoryBtn");
+    if (usageHistoryBtn) {
+        usageHistoryBtn.addEventListener("click", function (e) {
+            window.location.href = "./MyUsageLog.html";
+        });
+    }
+
+    var home = document.getElementById("homeBtn");
+    if (home) {
+        home.addEventListener("click", function (e) {
+            window.location.href = "./Home.html";
+        });
+    }
+
+    var cloudContainer = document.getElementById("cloudContainer");
+    if (cloudContainer) {
+        cloudContainer.addEventListener("click", function (e) {
+            window.location.href = "./AirQuality2.html";
+        });
+    }
+
+    var hospital = document.getElementById("emergencyBtn");
+    if (hospital) {
+        hospital.addEventListener("click", function (e) {
+            window.location.href = "./Emergency1.html";
+        });
+    }
+
 
 
 
