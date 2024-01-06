@@ -94,14 +94,16 @@ if (quickIntakeBtn) {
     else{intakeExpiresIn.textContent = "N/A"}
 
 
+// Call 999
+const call999Btn = document.getElementById("999Home");
+// Event listener for calling 999
+call999Btn.addEventListener("click", initiateEmergencyCall);
 
-
-var home = document.getElementById("999Home");
-if (home) {
-    home.addEventListener("click", function (e) {
-        //TODO: <a href="tel:999">
-    });
+function initiateEmergencyCall() {
+    // Use the tel: URI scheme to initiate a call to 999
+    window.location.href = "tel:999";
 }
+
 
 var crisisStepsBtn = document.getElementById("crisisStepsBtn");
 if (crisisStepsBtn) {
@@ -124,10 +126,11 @@ if (inhaler==null) {
     });
 }
 
-var hospital = document.getElementById("emergencyBar");
+var hospital = document.getElementById("999Home");
 if (hospital) {
     hospital.addEventListener("click", function (e) {
         window.location.href = "./Emergency1.html";
     });
 }
+
 
