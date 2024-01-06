@@ -1,25 +1,41 @@
 // This is eventHandlers.js
 // Function to load the AddCrisis content into the popup
 function loadAddCrisisContent() {
-    // Fetch the content of AddCrisis.html
     fetch('./AddCrisis.html')
-        .then(response => response.text())
-        .then(data => {
-            // Set the innerHTML of the addCrisisPopup div with the content of AddCrisis.html
-            document.getElementById('addCrisisPopup').innerHTML = data;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load AddCrisis.html');
+            }
+            return response.text();
+        })
+        .then(htmlData => {
+            document.getElementById('addCrisisPopup').innerHTML = htmlData;
+            return fetch('./AddCrisis.js');
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load AddCrisis.js');
+            }
+            return response.text();
+        })
+        .then(jsData => {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.text = jsData;
 
-            // Display the overlay with the specified color and opacity
+            document.getElementById('addCrisisPopup').appendChild(script);
+
             var overlay = document.getElementById('overlay');
             if (overlay) {
                 overlay.style.backgroundColor = 'rgba(30, 56, 95, 0.8)';
                 overlay.style.display = 'block';
             }
 
-            // Display the popup
             document.getElementById('addCrisisPopup').style.display = 'block';
         })
         .catch(error => console.error('Error loading AddCrisis content:', error));
 }
+
 
 
 // Close popup event
