@@ -1,3 +1,11 @@
+const requestNotificationPermission = async () => {
+    const permission = await window.Notification.requestPermission();
+    if(permission !== 'granted'){
+        alert('You need to allow notifications to receive dosage reminders!')
+        throw new Error('Permission not granted for Notification');
+    }
+}
+
 function loadAddCrisisContent() {
     // Fetch the content of AddCrisis.html
     fetch('./QuickIntake.html')
@@ -20,11 +28,7 @@ function loadAddCrisisContent() {
 }
 
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
-Notification.requestPermission().then(permission => {
-    if (permission === 'denied') {
-        alert("You need to allow notifications to receive dosage reminders.")
-    }
-})
+
 
 var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
 if (popupcancelBtnContainer) {
@@ -77,6 +81,8 @@ if (quickIntakeBtn) {
         }
         );
 }
+
+// load inhaler widget content
     const nextReminderTime = document.getElementById('nextReminderVar');
     if(Inhaler.getFavInhaler()){ //need to replace with data from firebase
         nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDose().getReminderTime().toLocaleTimeString();
@@ -92,9 +98,6 @@ if (quickIntakeBtn) {
         intakeExpiresIn.textContent = hoursUntilIntake.toString()+" hours";
     }
     else{intakeExpiresIn.textContent = "N/A"}
-
-
-
 
 var home = document.getElementById("999Home");
 if (home) {
