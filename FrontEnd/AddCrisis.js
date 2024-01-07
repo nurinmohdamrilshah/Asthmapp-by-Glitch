@@ -22,6 +22,7 @@ crisisForm.addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
     submitForm();
     resetForm();
+    closePopup(e);
 });
 
 // Toggle state when symptom buttons are clicked
