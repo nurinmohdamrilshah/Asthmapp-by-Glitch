@@ -101,16 +101,6 @@ if (home) {
     });
 }
 
-// Call 999
-const call999Btn = document.getElementById("999Home");
-// Event listener for calling 999
-call999Btn.addEventListener("click", initiateEmergencyCall);
-
-function initiateEmergencyCall() {
-    // Use the tel: URI scheme to initiate a call to 999
-    window.location.href = "tel:999";
-}
-
 
 var crisisStepsBtn = document.getElementById("crisisStepsBtn");
 if (crisisStepsBtn) {
