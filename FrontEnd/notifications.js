@@ -85,6 +85,6 @@ function reminderNotification(inhalerName) {
     //}
 }
 //
-// setInterval(function(){
-//     checkReminder(inhaler1)
-// },30000)
+setInterval(function(){
+    checkReminder(inhaler1)
+},30000)
