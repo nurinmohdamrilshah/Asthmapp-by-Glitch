@@ -146,7 +146,8 @@
                     //volume: newInhaler.getVol(),
                     //expDate: new Date(newInhaler.getExpDate()).toDateString(),
                     //type: newInhaler.getType(),
-                    inhaler: newInhaler
+                    inhaler: newInhaler,
+                    fav: null
                 }).then(r => {})
                 for(let i=0;i<=reminderTimes.length;i++) {
                     newInhaler.setDose(new Date(reminderTimes[i]));
