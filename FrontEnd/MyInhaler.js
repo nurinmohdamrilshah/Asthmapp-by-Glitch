@@ -1,6 +1,6 @@
     import { initializeApp } from "firebase/app";
     import { getAnalytics } from "firebase/analytics";
-    import {getDatabase, push, ref, onValue, child, get} from "firebase/database";
+    import {getDatabase, push, ref, onValue, child, get, set, update,orderByChild,equalTo} from "firebase/database";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
     import {Inhaler,Intake,Dosage} from "./Inhaler.js";
     // TODO: Add SDKs for Firebase products that you want to use
@@ -36,7 +36,7 @@
     if (currentUser){
         var currentUID = currentUser.uid;
         var currentUserDB = ref(database,'/users/'+currentUID)
-        var inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+        var inhalerDB = child(currentUserDB, '/inhalers')
     }
     else {
         currentUID = 'testDosage2'
@@ -73,89 +73,101 @@
                 favImg.className = "love-icon"
                 //favImg.alt = "Set as Favourite"
                 favImg.addEventListener('click', () => {
-                    inhaler.setFav()
-                })
-                favBtn.appendChild(favImg)
-                inhalerField.appendChild(favBtn)
+                    var thisInhalerKey = childSnapshot.key
+                    inhalerDB.child(thisInhalerKey).update({fav: 'yes'})
+                    get(inhalerDB).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            snapshot.forEach(function (childSnapshot) {
+                                var inhalerKey = childSnapshot.key
+                                if (inhalerKey !== thisInhalerKey) {
+                                    inhalerDB.child(childSnapshot.key).update({fav: 'yes'})
+                                }
+                            })
+                        }
+                    })
+                    favBtn.appendChild(favImg)
+                    inhalerField.appendChild(favBtn)
 
-                let inhalerSection = document.createElement('section')
-                inhalerSection.className = "inhalertext"
-                inhalerField.appendChild(inhalerSection)
-                let inhalerName = document.createElement('h2')
-                inhalerName.className = "reminders"
-                inhalerName.textContent = inhaler.getName()
-                inhalerSection.appendChild(inhalerName)
+                    let inhalerSection = document.createElement('section')
+                    inhalerSection.className = "inhalertext"
+                    inhalerField.appendChild(inhalerSection)
+                    let inhalerName = document.createElement('h2')
+                    inhalerName.className = "reminders"
+                    inhalerName.textContent = inhaler.getName()
+                    inhalerSection.appendChild(inhalerName)
 
-                let inhalerStats = document.createElement('section')
-                inhalerStats.className = "statsinhaler"
-                inhalerSection.appendChild(inhalerStats)
-                let lastUsageDiv = document.createElement('div')
-                lastUsageDiv.className = "lastusagediv"
-                inhalerSection.appendChild(lastUsageDiv)
-                let lastUsage = document.createElement('h3')
-                lastUsage.className = "lastusage"
-                lastUsage.textContent = "Last Usage:"
-                let lastUsageVar = document.createElement('b')
-                lastUsageVar.className = "lastusagevar"
-                lastUsageVar.textContent = inhaler.getNextDoseTime()
-                lastUsageDiv.appendChild(lastUsage)
-                lastUsageDiv.appendChild(lastUsageVar)
+                    let inhalerStats = document.createElement('section')
+                    inhalerStats.className = "statsinhaler"
+                    inhalerSection.appendChild(inhalerStats)
+                    let lastUsageDiv = document.createElement('div')
+                    lastUsageDiv.className = "lastusagediv"
+                    inhalerSection.appendChild(lastUsageDiv)
+                    let lastUsage = document.createElement('h3')
+                    lastUsage.className = "lastusage"
+                    lastUsage.textContent = "Last Usage:"
+                    let lastUsageVar = document.createElement('b')
+                    lastUsageVar.className = "lastusagevar"
+                    lastUsageVar.textContent = inhaler.getNextDoseTime()
+                    lastUsageDiv.appendChild(lastUsage)
+                    lastUsageDiv.appendChild(lastUsageVar)
 
-                let expDateDiv = document.createElement('div')
-                expDateDiv.className = "lastusagediv"
-                inhalerSection.appendChild(expDateDiv)
-                let expDate = document.createElement('h3')
-                expDate.className = "lastusage"
-                expDate.textContent = "Expiry Date:"
-                let expDateVar = document.createElement('b')
-                expDateVar.className = "expirydatevar"
-                let expiryDate = new Date(inhaler.getExpDate())
-                expDateVar.textContent = expiryDate.toDateString()
-                expDateDiv.appendChild(expDate)
-                expDateDiv.appendChild(expDateVar)
+                    let expDateDiv = document.createElement('div')
+                    expDateDiv.className = "lastusagediv"
+                    inhalerSection.appendChild(expDateDiv)
+                    let expDate = document.createElement('h3')
+                    expDate.className = "lastusage"
+                    expDate.textContent = "Expiry Date:"
+                    let expDateVar = document.createElement('b')
+                    expDateVar.className = "expirydatevar"
+                    let expiryDate = new Date(inhaler.getExpDate())
+                    expDateVar.textContent = expiryDate.toDateString()
+                    expDateDiv.appendChild(expDate)
+                    expDateDiv.appendChild(expDateVar)
 
-                let usagesLeftDiv = document.createElement('div')
-                usagesLeftDiv.className = "lastusagediv"
-                inhalerSection.appendChild(usagesLeftDiv)
-                let usagesLeft = document.createElement('h3')
-                usagesLeft.className = "lastusage"
-                usagesLeft.textContent = "Usage Left:"
-                let usagesLeftVar = document.createElement('b')
-                usagesLeftVar.className = "expirydatevar"
-                usagesLeftVar.textContent = inhaler.getAllDoses().length.toString()
-                usagesLeftDiv.appendChild(usagesLeft)
-                usagesLeftDiv.appendChild(usagesLeftVar)
+                    let usagesLeftDiv = document.createElement('div')
+                    usagesLeftDiv.className = "lastusagediv"
+                    inhalerSection.appendChild(usagesLeftDiv)
+                    let usagesLeft = document.createElement('h3')
+                    usagesLeft.className = "lastusage"
+                    usagesLeft.textContent = "Usage Left:"
+                    let usagesLeftVar = document.createElement('b')
+                    usagesLeftVar.className = "expirydatevar"
+                    usagesLeftVar.textContent = inhaler.getAllDoses().length.toString()
+                    usagesLeftDiv.appendChild(usagesLeft)
+                    usagesLeftDiv.appendChild(usagesLeftVar)
 
-                inhalerStats.appendChild(lastUsageDiv)
-                inhalerStats.appendChild(expDateDiv)
-                inhalerStats.appendChild(usagesLeftDiv)
+                    inhalerStats.appendChild(lastUsageDiv)
+                    inhalerStats.appendChild(expDateDiv)
+                    inhalerStats.appendChild(usagesLeftDiv)
 
-                let reminderSection = document.createElement('section')
-                reminderSection.className = "reminderssection"
-                inhalerStats.appendChild(reminderSection)
-                let reminders = document.createElement('h2')
-                reminders.className = "reminders"
-                reminders.textContent = "Reminders:"
-                reminderSection.appendChild(reminders)
-                let remindersList = document.createElement('ul')
-                remindersList.className = "reminderul1"
-                reminderSection.appendChild(remindersList)
+                    let reminderSection = document.createElement('section')
+                    reminderSection.className = "reminderssection"
+                    inhalerStats.appendChild(reminderSection)
+                    let reminders = document.createElement('h2')
+                    reminders.className = "reminders"
+                    reminders.textContent = "Reminders:"
+                    reminderSection.appendChild(reminders)
+                    let remindersList = document.createElement('ul')
+                    remindersList.className = "reminderul1"
+                    reminderSection.appendChild(remindersList)
 
-                let reminderDB = child(inhalerDB, '/dosage/reminder')
-                get(inhalerDB).then((snapshot) => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach(function (childSnapshot) {
-                            let reminderVar = document.createElement('i')
-                            reminderVar.className = "remindervar"
-                            let reminder = new Date(snapshot.val())
-                            reminderVar.textContent = reminder.toLocaleTimeString() + "||"
-                            remindersList.append(reminderVar)
-                        })
-                    }
+                    let reminderDB = child(inhalerDB, '/dosage/reminder')
+                    get(inhalerDB).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            snapshot.forEach(function (childSnapshot) {
+                                let reminderVar = document.createElement('i')
+                                reminderVar.className = "remindervar"
+                                let reminder = new Date(snapshot.val())
+                                reminderVar.textContent = reminder.toLocaleTimeString() + "||"
+                                remindersList.append(reminderVar)
+                            })
+                        }
+                    })
                 })
             })
         }
     })
+
 
  // Function to close a popup by traversing up the DOM tree
 function closePopup(event) {
