@@ -1,14 +1,53 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import {child, get, getDatabase, push, ref} from "firebase/database";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const appSettings = {
-    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app/"
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
+    authDomain: "asthmapp-121a8.firebaseapp.com",
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "asthmapp-121a8",
+    storageBucket: "asthmapp-121a8.appspot.com",
+    messagingSenderId: "583573518616",
+    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
+    measurementId: "G-PLRLWFR1X7"
 };
 
-const app = initializeApp(appSettings)
-const database = getDatabase(app)
-const phoneNumbersInDB = ref(database, "phoneNumber")
-const myBoroughInDB = ref(database, "myBorough"); // assuming "meArea" is the key you want to add
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const analytics = getAnalytics(app);
+
+const auth = getAuth();
+var currentUser = auth.currentUser;
+if (currentUser){
+    var currentUID = currentUser.uid;
+    var currentUserDB = ref(database, '/users/'+currentUID)
+    var myContactsDB = child(currentUserDB, '/myContacts')
+    var myBoroughDB = child(currentUserDB, '/myBorough')
+}
+else{
+    currentUID = 'generalDB';
+    currentUserDB = ref(database,'/users/'+currentUID);
+    myBoroughDB = child(currentUserDB, '/myBorough')
+    myContactsDB = child(currentUserDB, '/myContacts')
+}
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = auth.currentUser;
+        currentUID = user.uid;
+        currentUserDB = ref(database,'/users/'+currentUID);
+        myBoroughDB = child(currentUserDB, '/myBorough')
+        myContactsDB = child(currentUserDB, '/myContacts')
+    }
+})
+const phoneNumbersInDB = ref(myContactsDB)
+const myBoroughInDB = ref(myBoroughDB);
+
 
 const inputMyBorough = document.getElementById("myBoroughVar");
 const inputContact1 = document.getElementById("phonenb1")
