@@ -46,8 +46,22 @@ updateButtonEl.addEventListener("click", function() {
     let phoneNumber3 = inputContact3.value;
 
     // Use set instead of push to update the values
-    set(myBoroughInDB, { myBorough: myBoroughVar });
-    set(phoneNumbersInDB, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 });
+    set(myBoroughInDB, { myBorough: myBoroughVar })
+    .then(() => {
+        console.log("Data set successfully");
+    })
+    .catch((error) => {
+        console.error("Error setting data:", error);
+    });
+
+set(phoneNumbersInDB, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 })
+    .then(() => {
+        console.log("Data set successfully");
+    })
+    .catch((error) => {
+        console.error("Error setting data:", error);
+    });
+
 });
 
 
