@@ -40,7 +40,7 @@ export class Intake{
 
 export class Inhaler{
     static inhalers = [];
-    static favInhaler = null;
+    //static favInhaler = null;
 
     constructor(inhalerName,vol,expDate,type){
         this.volume = vol;
@@ -148,13 +148,14 @@ export class Inhaler{
         return Inhaler.inhalers[index];
     }
     static getFavInhaler(){
+
         return Inhaler.favInhaler
     }
 
     static getAllInhalers(){
         return Inhaler.inhalers;
     }
-    setFav(){
-        Inhaler.favInhaler=this;
-    }
+    // setFav(){
+    //     this.name = this.name + '(fav)';
+    // }
 }
