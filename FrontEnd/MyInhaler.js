@@ -215,15 +215,3 @@ document.getElementById("emergencyBtn")?.addEventListener("click", () => window.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-

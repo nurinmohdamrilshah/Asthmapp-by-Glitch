@@ -1,4 +1,46 @@
+import {Inhaler,Intake,Dosage} from "./Inhaler.js";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import {getDatabase, push, ref, onValue, child, get, set, update,orderByChild,equalTo} from "firebase/database";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
+    authDomain: "asthmapp-121a8.firebaseapp.com",
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "asthmapp-121a8",
+    storageBucket: "asthmapp-121a8.appspot.com",
+    messagingSenderId: "583573518616",
+    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
+    measurementId: "G-PLRLWFR1X7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const analytics = getAnalytics(app);
+
+const auth = getAuth();
+const currentUser = auth.currentUser;
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const currentUID = currentUser.uid;
+        const currentUserDB = ref(database,'/users/'+currentUID)
+        const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+    }
+})
+if (currentUser){
+    var currentUID = currentUser.uid;
+    var currentUserDB = ref(database,'/users/'+currentUID)
+    var inhalerDB = child(currentUserDB, '/inhalers')
+}
+else {
+    currentUID = 'testDosage2'
+    currentUserDB = ref(database, '/users/' + currentUID)
+    inhalerDB = child(currentUserDB, '/inhalers')
+}
 
 function loadAddCrisisContent() {
     // Fetch the content of AddCrisis.html
@@ -20,8 +62,6 @@ function loadAddCrisisContent() {
         })
         .catch(error => console.error('Error loading quickIntakePopup content:', error));
 }
-
-import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 
 
 var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
@@ -77,13 +117,38 @@ if (quickIntakeBtn) {
 }
 
 // load inhaler widget content
-    const nextReminderTime = document.getElementById('nextReminderVar');
-    if(Inhaler.getFavInhaler()){ //need to replace with data from firebase
-        nextReminderTime.textContent =Inhaler.getFavInhaler().getNextDose().getReminderTime().toLocaleTimeString();
-    }
-    else{
-        nextReminderTime.textContent = "N/A"
-    }
+
+    var nextReminderTime = document.getElementById('nextReminderVar');
+    get(inhalerDB).then((snapshot) => {
+        if (snapshot.exists()) {
+            snapshot.forEach(function (childSnapshot) {
+                if (childSnapshot.val().fav) {
+                    var UserFavInhaler = childSnapshot.val().inhaler
+                    let newInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
+                    let dosageDB = child(newInhalerDB, '/dosage')
+                    get(dosageDB).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            let allDiffTime = [];
+                            snapshot.forEach(function (childSnapshot) {
+                                if ((childSnapshot.val().time - Date.now()) > 0) {
+                                    var diffTime = childSnapshot.val().time - Date.now()
+                                    allDiffTime.push(diffTime)
+                                    if (Math.min.apply(Math, allDiffTime) === diffTime) {
+                                        var nextTime = new Date(childSnapshot.val().time)
+                                        nextReminderTime.textContent = nextTime.toLocaleTimeString()
+                                    }
+                                }
+                                else{
+                                    nextReminderTime.textContent = "N/A"
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+
 
     const intakeExpiresIn = document.getElementById("expiryDateFavVar");
     if(Inhaler.getFavInhaler()){
