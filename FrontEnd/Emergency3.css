@@ -227,7 +227,6 @@
 .allergenssymptoms {
   border-radius: 12px;
   background-color: #fff;
-  height: 16.38rem;
   justify-content: space-between;
   padding: 0.75rem;
   box-sizing: border-box;
@@ -626,4 +625,8 @@
   color: #000; /* Changed text color to black, you can adjust it as needed */
   font-family: "Plus Jakarta Sans", sans-serif; /* Added a generic font-family */
   z-index: 999;
+}
+.chart {
+  justify-content: flex-start;
+  width: 50%
 }
