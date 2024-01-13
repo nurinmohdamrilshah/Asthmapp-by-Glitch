@@ -1,74 +1,4 @@
-function loadAddCrisisContent() {
-    fetch('./AddCrisis.html')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to load AddCrisis.html');
-            }
-            return response.text();
-        })
-        .then(htmlData => {
-            document.getElementById('addCrisisPopup').innerHTML = htmlData;
-            return fetch('./AddCrisis.js');
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to load AddCrisis.js');
-            }
-            return response.text();
-        })
-        .then(jsData => {
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.text = jsData;
 
-            document.getElementById('addCrisisPopup').appendChild(script);
-
-            var overlay = document.getElementById('overlay');
-            if (overlay) {
-                overlay.style.backgroundColor = 'rgba(30, 56, 95, 0.8)';
-                overlay.style.display = 'block';
-            }
-
-            document.getElementById('addCrisisPopup').style.display = 'block';
-        })
-        .catch(error => console.error('Error loading AddCrisis content:', error));
-}
-
-
-
-// Close popup event
-var popupclose = document.getElementById("close");
-if (popupclose) {
-    popupclose.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
-
-// Add crisis button container event
-var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
-if (popupaddCrisisBtnContainer) {
-    popupaddCrisisBtnContainer.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
 
 // Top navigation event
 var topNav = document.getElementById("back");
@@ -141,3 +71,4 @@ document.getElementById('newCrisisLogBtn').addEventListener('click', function() 
     loadAddCrisisContent();
 });
 
+document.getElementById("newCrisisLogBtn")?.addEventListener("click", () => window.location.href = "./AddCrisis.html");
