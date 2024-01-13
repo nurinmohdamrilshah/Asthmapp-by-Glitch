@@ -1,83 +1,47 @@
-/* === Imports === */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-// import {getAnalytics} from "firebase/analytics";
-// import {getDatabase, ref, set} from "firebase/database";
+// Assuming Firebase has been imported and initialized outside this function
 
-/* === Firebase Setup === */
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
-    authDomain: "asthmapp-121a8.firebaseapp.com",
-    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "asthmapp-121a8",
-    storageBucket: "asthmapp-121a8.appspot.com",
-    messagingSenderId: "583573518616",
-    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
-    measurementId: "G-PLRLWFR1X7"
-};
-//
-// /* == Firebase Variables & Constants == */
-const app = initializeApp(firebaseConfig)
-const analytics = getAnalytics(app)
-const db = getDatabase(app)
+export function registerNewUser() {
+    // == Variables from HTML Inputs ==
+    const emailAddress = document.getElementById("emailAddress").value;
+    const userName = document.getElementById("userName").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("passwordConfirm").value;
 
-/* == Variables from HTML == */
-const emailAddress = document.getElementById("emailAdress")
-const userName = document.getElementById("userName")
-const newPassword = document.getElementById("newPassword")
-const confirmPassword = document.getElementById("passwordConfirm")
-
-/* == Event Listeners == */
-var topNav = document.getElementById("backBtn");
-if (topNav) {
-    topNav.addEventListener("click", function (e) {
-        window.location.href = "./index.html";
-    });
-}
-
-var buttonPrimaryContainer = document.getElementById("buttonPrimaryContainer");
-if (buttonPrimaryContainer) {
-    buttonPrimaryContainer.addEventListener("click", function (e) {
-        window.location.href = "./Settings.html";
-    });
-}
-
-var buttonPrimary = document.getElementById("signUpBtn");
-if (buttonPrimary) {
-    buttonPrimary.addEventListener("click", registerNewUser);
-}
-
-
-/* == Event Listeners == */
-
-/* == Function - Navigate to new page == */
-function navigateTo(url){
-    window.location.href = url;
-}
-
-/* === Async Functions == */
-async function registerNewUser() {
-    console.log("A")
-
-    try {
-        const email = emailAddress.value;
-        const user = userName.value;
-        const newPasswordValue = newPassword.value;
-        const confirmPasswordValue = confirmPassword.value;
-
-
-        set(ref(db, 'users'), {
-            "emailAddress": email,
-            "userName": user,
-            "password": confirmPasswordValue
-        })
-        console.log("New User Registered")
-        navigateTo("./Home.html")
-
-    } catch (error) {
-        console.error("Failed to read value", error.message);
+    // == Data Validation ==
+    if (!userName || userName.length < 3) {
+        console.error("Username must be at least 3 characters long.");
+        return;
     }
-}
+    if (!emailAddress || !emailAddress.includes('@')) {
+        console.error("Invalid email format.");
+        return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+        console.error("Password must be at least 6 characters long.");
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        console.error("Passwords do not match.");
+        return;
+    }
 
+    // == Firebase User Registration (Recommended Approach) ==
+    // Use Firebase Authentication for user registration.
+    // This example is for Firebase Realtime Database only.
+
+    // Generate a random user ID
+    const userId = firebase.database().ref().child('users').push().key;
+
+    // Create user object
+    const userData = {
+        id: userId,
+        username: userName,
+        email: emailAddress,
+        // Password should be handled securely, not stored directly in the database.
+    };
+
+    // Save user data in Firebase Realtime Database
+    firebase.database().ref('users/' + userId).set(userData)
+        .then(() => console.log("User created successfully with ID:", userId))
+        .catch((error) => console.error("Error creating user:", error));
+}

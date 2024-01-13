@@ -203,6 +203,13 @@
   align-items: center;
   justify-content: center;
 }
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.quickintakebtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
+
+
 .statistics {
   margin: 0;
   position: relative;
@@ -306,7 +313,7 @@
   height: 2.95rem;
   object-fit: cover;
 }
-.home2 {
+.callHomeBtn {
   cursor: pointer;
   border: 0;
   padding: 1.88rem 1.94rem;
@@ -319,6 +326,11 @@
   align-items: center;
   justify-content: center;
 }
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.callHomeBtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
 .crisis-steps {
   margin: 0;
   position: relative;
@@ -343,8 +355,6 @@
   align-items: center;
   justify-content: center;
   padding: 0.63rem;
-}
-.crisisstepsbtn {
   cursor: pointer;
   border: 0;
   background-color: rgba(255, 255, 255, 0.6);
@@ -352,6 +362,11 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.crisisstepsbtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
 .actions {
   flex-direction: row;
   gap: 1.25rem;
@@ -436,7 +451,7 @@
   padding: 1.88rem 0 5.31rem;
   box-sizing: border-box;
   gap: 0.75rem;
-  background-image: url(./public/home2@3x.png);
+  background-image: url(./public/DarkShapesBackgroundMain.png);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;

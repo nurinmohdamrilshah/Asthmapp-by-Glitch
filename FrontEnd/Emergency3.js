@@ -1,38 +1,4 @@
-// This is eventHandlers.js
 
-// Close popup event
-var popupclose = document.getElementById("close");
-if (popupclose) {
-    popupclose.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
-
-// Add crisis button container event
-var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
-if (popupaddCrisisBtnContainer) {
-    popupaddCrisisBtnContainer.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
 
 // Top navigation event
 var topNav = document.getElementById("back");
@@ -51,6 +17,7 @@ if (close) {
 }
 
 // New crisis log event
+// New crisis log event
 var newCrisisLog = document.getElementById("newCrisisLogBtn");
 if (newCrisisLog) {
     newCrisisLog.addEventListener("click", function () {
@@ -66,7 +33,7 @@ if (newCrisisLog) {
         }
         popup.setAttribute("closable", "");
 
-        var onClick = popup.onClick || function (e) {
+        var onClick = function (e) {
             if (e.target === popup && popup.hasAttribute("closable")) {
                 popupStyle.display = "none";
             }
@@ -74,6 +41,7 @@ if (newCrisisLog) {
         popup.addEventListener("click", onClick);
     });
 }
+
 
 // Home button event
 var home = document.getElementById("homeBtn");
@@ -98,3 +66,9 @@ if (inhaler) {
         window.location.href = "./MyInhaler.html";
     });
 }
+
+document.getElementById('newCrisisLogBtn').addEventListener('click', function() {
+    loadAddCrisisContent();
+});
+
+document.getElementById("newCrisisLogBtn")?.addEventListener("click", () => window.location.href = "./AddCrisis.html");

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, width=device-width" />
@@ -28,7 +28,7 @@
           <img class="close-icon6" alt="" src="./public/close1@2x.png" />
         </button>
       </header>
-      <img class="addintakepopup-child" alt="" src="./public/vector-4@2x.png" />
+      <img class="addintakepopup-child" alt="" src="./public/dark-line.svg" />
 
       <section class="inputtimeintakesecion" id="inputTimeIntakeSecion">
         <h1 class="header17">Input time of intake</h1>
@@ -59,30 +59,7 @@
       <section class="inputtimeintakesecion" id="selectInhalerSection">
         <b class="add-intake">Select Inhaler</b>
         <section class="btnssection" id="pickInhaler">
-          <script>
-            const inhalerSection = document.getElementById("pickInhaler");
-            let newIntakeInhaler = 0;
 
-            function createSelectInhalerBtn(inhaler){
-              let selectInhalerBtn;
-              selectInhalerBtn = document.createElement('button');
-              selectInhalerBtn.className = 'selectInhaler';
-              selectInhalerBtn.addEventListener('click', function () {
-                newIntakeInhaler = inhaler;
-              })
-              selectInhalerBtn.id = 'select'+inhaler.getName()
-              let divBtn = document.createElement('div')
-              let name = document.createElement('name');
-              name.textContent = inhaler.getName(); //reference:https://www.tutorialspoint.com/how-to-append-data-to-div-element-using-javascript
-              divBtn.appendChild(name)
-              divBtn.appendChild(inhaler.getName())
-              selectInhalerBtn.appendChild(divBtn)
-              inhalerSection.appendChild(selectInhalerBtn);
-            }
-            for (let i=0;i<Inhaler.getAllInhalers().length;i++){
-              createSelectInhalerBtn(Inhaler.getInhaler(i))
-            }
-          </script>
         </section>
       </section>
       <button class="addintakebtn" id="addIntakeBtn">

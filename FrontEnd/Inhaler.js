@@ -28,7 +28,7 @@ export class Intake{
         return this.puffTaken
     }
     forWhichInhaler(){
-        return this.inhaler.getName()
+        return this.inhaler
     }
     static getAllIntakes(){
         return Intake.allIntakes;
@@ -40,7 +40,7 @@ export class Intake{
 
 export class Inhaler{
     static inhalers = [];
-    static favInhaler = null;
+    //static favInhaler = null;
 
     constructor(inhalerName,vol,expDate,type){
         this.volume = vol;
@@ -84,13 +84,20 @@ export class Inhaler{
             }
         }
     }
+    getVol(){
+        return this.volume
+    }
+
+    getNextDose(){
+        return this.nextDose
+    }
 
     getNewDose(){
         return this.newDose
     }
 
     getDose(index){
-        return this.dose(index);
+        return this.dose[index];
     }
 
     getAllDoses(){
@@ -141,13 +148,14 @@ export class Inhaler{
         return Inhaler.inhalers[index];
     }
     static getFavInhaler(){
+
         return Inhaler.favInhaler
     }
 
     static getAllInhalers(){
         return Inhaler.inhalers;
     }
-    setFav(){
-        Inhaler.favInhaler=this;
-    }
+    // setFav(){
+    //     this.name = this.name + '(fav)';
+    // }
 }

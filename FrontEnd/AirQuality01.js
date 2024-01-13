@@ -1,3 +1,108 @@
+function saveData(borough){
+    let i = 0;
+    let len = borough.length;
+    let boroughlist = ['barking', 'barnet', 'bexley', 'brent', 'bromley', 'camden', 'city', 'croydon', 'ealing', 'enfield', 'greenwich', 'hackney', 'hammersmith', 'haringey', 'harrow', 'havering', 'hillingdon', 'hounslow', 'islington', 'kc', 'kingston', 'lambeth', 'lewisham', 'merton', 'newham', 'redbridge', 'richmond', 'southwark', 'sutton', 'towerhamlet', 'waltham', 'wandsworth', 'westminster'];
+    for(; i<len; i++){
+        localStorage.setItem(boroughlist[i],borough[i]);
+    }
+}
+function avrgNO2(borough){
+    let i = 0;
+    let len = borough.length;
+    let NO2 = 0;
+    let NO2number = 0;
+    for(; i<len; i++){
+        if (borough[i].NO2 != '0'){
+            const NO2value = parseInt(borough[i].NO2);
+            NO2 = NO2 + NO2value;
+            NO2number = NO2number + 1;
+        }
+    }
+    let NO2average = NO2/NO2number;
+    let NO2index = NO2average.toFixed(1);
+    return NO2index
+}
+function avrgSO2(borough){
+    let i = 0;
+    let len = borough.length;
+    let SO2 = 0;
+    let SO2number = 0;
+    for(; i<len; i++){
+        if (borough[i].SO2 != '0'){
+            const SO2value = parseInt(borough[i].SO2);
+            SO2 = SO2 + SO2value;
+            SO2number = SO2number + 1;
+        }
+    }
+    let SO2average = SO2/SO2number;
+    let SO2index = SO2average.toFixed(1);
+    return SO2index
+}
+function avrgO3(borough){
+    let i = 0;
+    let len = borough.length;
+    let O3 = 0;
+    let O3number = 0;
+    for(; i<len; i++){
+        if (borough[i].O3 != '0'){
+            const O3value = parseInt(borough[i].O3);
+            O3 = O3 + O3value;
+            O3number = O3number + 1;
+        }
+    }
+    let O3average = O3/O3number;
+    let O3index = O3average.toFixed(1);
+    return O3index
+}
+function avrgPM10(borough){
+    let i = 0;
+    let len = borough.length;
+    let PM10 = 0;
+    let PM10number = 0;
+    for(; i<len; i++){
+        if (borough[i].PM10 != '0'){
+            const PM10value = parseInt(borough[i].PM10);
+            PM10 = PM10 + PM10value;
+            PM10number = PM10number + 1;
+        }
+    }
+    let PM10average = PM10/PM10number;
+    let PM10index = PM10average.toFixed(1);
+    return PM10index
+}
+function avrgPM25(borough){
+    let i = 0;
+    let len = borough.length;
+    let PM25 = 0;
+    let PM25number = 0;
+    for(; i<len; i++){
+        if (borough[i].PM25 != '0'){
+            const PM25value = parseInt(borough[i].PM25);
+            PM25 = PM25 + PM25value;
+            PM25number = PM25number + 1;
+        }
+    }
+    let PM25average = PM25/PM25number;
+    let PM25index = PM25average.toFixed(1);
+    return PM25index
+}
+function highestAQI(borough){
+    let i = 0;
+    let len = borough.length;
+    let AQI = 0;
+    let AQIlist = [];
+    for(; i<len; i++){
+        if (borough[i].AQI != '0' && borough[i].AQI != 'NaN'){
+            const AQIvalue = parseFloat(borough[i].AQI);
+            AQIlist.push(AQIvalue);
+            if(AQIvalue > AQI){
+                AQI = AQIvalue;
+            }
+        }
+    }
+    return AQI
+}
+//setAPI gets the values of the pollutants in the area into an average API
 function setAPI(input1){
     let API = 0;
     let APInumber = 0;
@@ -54,6 +159,8 @@ async function setlocation(input){
         PM25value.innerText = barking.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barking.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //barnet
     const barnet = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -73,6 +180,8 @@ async function setlocation(input){
         PM25value.innerText = barnet.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barnet.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //bexley
     const bexley = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -97,6 +206,8 @@ async function setlocation(input){
         PM25value.innerText = bexley.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bexley.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //brent
     const brent = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -120,6 +231,8 @@ async function setlocation(input){
         PM25value.innerText = brent.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = brent.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //bromley
     const bromley = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -142,6 +255,8 @@ async function setlocation(input){
         PM25value.innerText = bromley.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bromley.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //camden
     const camden = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -166,6 +281,8 @@ async function setlocation(input){
         PM25value.innerText = camden.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = camden.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //city
     const city = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -185,6 +302,8 @@ async function setlocation(input){
         PM25value.innerText = city.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = city.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //croydon
     const croydon = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -207,6 +326,8 @@ async function setlocation(input){
         PM25value.innerText = croydon.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = croydon.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //ealing
     const ealing = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -228,6 +349,8 @@ async function setlocation(input){
         PM25value.innerText = ealing.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = ealing.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //enfield
     const enfield = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -249,6 +372,8 @@ async function setlocation(input){
         PM25value.innerText = enfield.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = enfield.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //greenwich
     const greenwich = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -273,6 +398,8 @@ async function setlocation(input){
         PM25value.innerText = greenwich.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = greenwich.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //hackney
     const hackney = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -296,6 +423,8 @@ async function setlocation(input){
         PM25value.innerText = hackney.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hackney.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //hammersmith
     const hammersmith = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -315,6 +444,8 @@ async function setlocation(input){
         PM25value.innerText = hammersmith.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hammersmith.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //haringey
@@ -337,6 +468,8 @@ async function setlocation(input){
         PM25value.innerText = haringey.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = haringey.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //harrow
     const harrow = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -356,6 +489,8 @@ async function setlocation(input){
         PM25value.innerText = harrow.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = harrow.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //havering
@@ -379,6 +514,8 @@ async function setlocation(input){
         PM25value.innerText = havering.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = havering.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //hillingdon
@@ -403,6 +540,8 @@ async function setlocation(input){
         PM25value.innerText = hillingdon.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hillingdon.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //hounslow
@@ -423,6 +562,8 @@ async function setlocation(input){
         PM25value.innerText = hounslow.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hounslow.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //islington
@@ -445,6 +586,8 @@ async function setlocation(input){
         PM25value.innerText = islington.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = islington.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //kc
@@ -470,6 +613,8 @@ async function setlocation(input){
         PM25value.innerText = kc.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kc.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //kingston
@@ -493,6 +638,8 @@ async function setlocation(input){
         PM25value.innerText = kingston.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kingston.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //lambeth
@@ -517,6 +664,8 @@ async function setlocation(input){
         PM25value.innerText = lambeth.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lambeth.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //lewisham
@@ -541,6 +690,8 @@ async function setlocation(input){
         PM25value.innerText = lewisham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lewisham.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //merton
@@ -563,6 +714,8 @@ async function setlocation(input){
         PM25value.innerText = merton.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = merton.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //newham
@@ -586,6 +739,8 @@ async function setlocation(input){
         PM25value.innerText = newham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = newham.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //redbridge
     const redbridge = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -609,6 +764,8 @@ async function setlocation(input){
         PM25value.innerText = redbridge.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = redbridge.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //richmond
@@ -633,6 +790,8 @@ async function setlocation(input){
         PM25value.innerText = richmond.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = richmond.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //southwark
@@ -657,6 +816,8 @@ async function setlocation(input){
         PM25value.innerText = southwark.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = southwark.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //sutton
@@ -680,6 +841,8 @@ async function setlocation(input){
         PM25value.innerText = sutton.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = sutton.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //towerhamlet
@@ -703,6 +866,8 @@ async function setlocation(input){
         PM25value.innerText = towerhamlet.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = towerhamlet.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //waltham
@@ -723,6 +888,8 @@ async function setlocation(input){
         PM25value.innerText = waltham.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = waltham.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //wandsworth
@@ -746,6 +913,8 @@ async function setlocation(input){
         PM25value.innerText = wandsworth.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = wandsworth.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //westminster
@@ -770,10 +939,40 @@ async function setlocation(input){
         PM25value.innerText = westminster.PM25;
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = westminster.AQI;
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
+    }
+    let borough = [barking, barnet, bexley, brent, bromley, camden, city, croydon, ealing, enfield, greenwich, hackney, hammersmith, haringey, harrow, havering, hillingdon, hounslow, islington, kc, kingston, lambeth, lewisham, merton, newham, redbridge, richmond, southwark, sutton, towerhamlet, waltham, wandsworth, westminster];
+    saveData(borough);
+    const London = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
+    London.SO2 = avrgSO2(borough);
+    London.NO2 = avrgNO2(borough);
+    London.O3 = avrgO3(borough);
+    London.PM10 = avrgPM10(borough);
+    London.PM25 = avrgPM25(borough);
+    London.AQI = highestAQI(borough);
+    if (input =="London") {
+        const titletext = document.getElementById("areaVar");
+        titletext.innerText = "London";
+        const NO2value = document.getElementById("NO2");
+        NO2value.innerText = London.NO2;
+        const SO2value = document.getElementById("SO2");
+        SO2value.innerText = London.SO2;
+        const O3value = document.getElementById("O3");
+        O3value.innerText = London.O3;
+        const PM10value = document.getElementById("PM10");
+        PM10value.innerText = London.PM10;
+        const PM25value = document.getElementById("PM25");
+        PM25value.innerText = London.PM25;
+        const APIvalue = document.getElementById("aqiindex");
+        APIvalue.innerText = London.AQI +'/10';
+        const insight = document.getElementById("notif");
+        insight.innerText = "AQI shows the highest index of all boroughs in "+ input +". Pollutant data shows the species average in all borough. 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
 
 }
+setlocation('London')
 const areaname = localStorage.getItem('areaname');
-localStorage.clear();
+localStorage.removeItem('areaname');
 setlocation(areaname);

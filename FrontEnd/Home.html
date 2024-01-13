@@ -15,6 +15,7 @@
     />
   </head>
   <body>
+    <div id="overlay" class="overlay" style="display: none;"></div>
     <div class="home1">
       <header class="pageheader" id="headerHome">
         <section class="pageheader-contents">
@@ -31,14 +32,14 @@
           <img
             class="asthmapp-logo-light-11"
             alt=""
-            src="./public/Asthmapp Logo light@2x.png"
+            src="./public/asthmappLogoLight@2x.png"
           />
         </section>
       </header>
       <main class="mainhome" id="mainHome">
         <section class="airqltywidget" id="AirQltyWidget">
           <a class="header4" id="airQltyLink" href="./AirQuality01.html">
-            <img class="cloud-icon1" alt="" src="./public/cloud1@2x.png" />
+            <img class="cloud-icon1" alt="" src="./public/airQualityLogoDark@2x.png" />
 
             <h1 class="air-quality">Air Quality</h1>
           </a>
@@ -50,19 +51,19 @@
                 src="./public/place-marker@2x.png"
               />
 
-              <h2 class="air-quality">Your area</h2>
+              <h2 class="air-quality" id="areatag">Your area</h2>
             </header>
             <section class="aqi-widget1" id="AQIWidget">
               <h2 class="air-quality">AQI</h2>
-              <b class="b1">9/10</b>
+              <b class="b1" id="AQIscore">9/10</b>
             </section>
             <h2 class="air-quality">Breaking news</h2>
-            <i class="sudden-drop-in">-Sudden drop in Hammersmith</i>
+            <i class="sudden-drop-in">no breaking news</i>
           </section>
         </section>
         <section class="myinhalerwidget" id="myInhalerWidget">
           <a class="header5" id="myInhalerLink" href="./MyInhaler.html">
-            <img class="cloud-icon1" alt="" src="./public/inhaler1@2x.png" />
+            <img class="cloud-icon1" alt="" src="./public/inhalerLogoDark@2x.png" />
 
             <h1 class="air-quality">My Favourite Inhaler</h1>
           </a>
@@ -96,11 +97,11 @@
             <h1 class="emergency">Emergency</h1>
           </a>
           <div class="actions">
-            <button class="home2" id="999Home">
+            <button class="callHomeBtn" id="999Home">
               <img
                 class="add-phone-icon"
                 alt=""
-                src="./public/add-phone@2x.png"
+                src="./public/add-phone-icon.png"
               />
             </button>
             <button class="crisisstepsbtn" id="crisisStepsBtn">
@@ -111,14 +112,14 @@
         </section>
       </main>
       <div class="navbar">
-        <nav class="frame" id="navBarHome">	
+        <nav class="frame" id="navBarHome">
           <img class="sneeze-icon" alt="" src="./public/home1@2x.png" />
 
           <button class="cloud" id="airQltyBar">
-            <img class="male-user-icon" alt="" src="./public/cloud2@2x.png" />
+            <img class="male-user-icon" alt="" src="./public/airQualityLogoGrey@2x.png" />
           </button>
           <button class="cloud" id="inhalerBar">
-            <img class="male-user-icon" alt="" src="./public/inhaler@2x.png" />
+            <img class="male-user-icon" alt="" src="./public/inhalerLogo@2x.png" />
           </button>
           <button class="cloud" id="emergencyBar">
             <img class="male-user-icon" alt="" src="./public/hospital@2x.png" />
@@ -128,40 +129,7 @@
     </div>
 
     <div id="quickIntakePopup" class="popup-overlay" style="display: none">
-      <div class="quickintakepopup">
-        <header class="headerquickintake" id="headerQuickIntake">
-          <img
-            class="inhaler-icon6"
-            alt=""
-            src="./public/inhalerLogoDark@2x.png"
-          />
-
-          <h1 class="quick-intake">Quick Intake</h1>
-          <button class="close5" id="closeBtn">
-            <img class="close-icon5" alt="" src="./public/close1@2x.png" />
-          </button>
-        </header>
-        <img
-          class="quickintakepopup-child"
-          alt=""
-          src="./public/vector-4@2x.png"
-        />
-
-        <section class="maininhalerintake">
-          <h1 class="quick-intake">You added an intake</h1>
-          <i class="favinhalervar" id="favInhalerVar">Favorite Inhaler</i>
-        </section>
-        <div class="cancelbtn" id="popupcancelBtnContainer">
-          <div class="content14">
-            <b class="text34">Cancel</b>
-          </div>
-        </div>
-        <img
-          class="quickintakepopup-item"
-          alt=""
-          src="./public/loadingBar@2x.png"
-        />
-      </div>
+      <!-- Content from AddCrisis.html will be loaded here -->
     </div>
     <script src="./Home.js" type="module"></script>
   </body>

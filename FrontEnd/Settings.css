@@ -1,3 +1,18 @@
+.update-button{
+  cursor: pointer;
+  border: 0;
+  padding: 0.63rem;
+  background-color: #b2e1e7;
+  align-self: stretch;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 10rem;
+}
+
 .text-icon6 {
   top: calc(50% - 5px);
   left: 2.13rem;
@@ -274,10 +289,11 @@
 .button {
   position: relative;
   border-radius: 50%;
-  background-color: #fff;
+  background-color: #ffffff ;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 2px 5px rgba(103, 110, 118, 0.08);
   width: 1.25rem;
   height: 1.25rem;
+  
 }
 .toggle,
 .toggles {
@@ -469,7 +485,7 @@
   align-items: center;
   justify-content: space-between;
   background-color: #F0ECEC;
-  background-image: url(./public/home2@3x.png);
+  background-image: url(./public/DarkShapesBackgroundMain.png);
   background-size: cover;
   background-repeat: no-repeat;
   background-position: top;

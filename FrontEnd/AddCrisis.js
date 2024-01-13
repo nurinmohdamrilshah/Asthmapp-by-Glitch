@@ -1,14 +1,49 @@
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+// Import the functions you need from the SDKs you need
+import {initializeApp} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+import {child, get, getDatabase, push, ref} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import {getAuth, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Initialize Firebase
-const appSettings = {
-    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app/"
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
+    authDomain: "asthmapp-121a8.firebaseapp.com",
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "asthmapp-121a8",
+    storageBucket: "asthmapp-121a8.appspot.com",
+    messagingSenderId: "583573518616",
+    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
+    measurementId: "G-PLRLWFR1X7"
 };
-
-const app = initializeApp(appSettings);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+const analytics = getAnalytics(app);
+
+const auth = getAuth();
+var currentUser = auth.currentUser;
+if (currentUser){
+    var currentUID = currentUser.uid;
+    var currentUserDB = ref(database, '/users/'+currentUID)
+    var crisisDB = child(currentUserDB, '/addCrisis')
+}
+else{
+    currentUID = 'testDosage2';
+    currentUserDB = ref(database,'/users/'+currentUID);
+    crisisDB = child(currentUserDB,'/addCrisis');
+}
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = auth.currentUser;
+        currentUID = user.uid;
+        currentUserDB = ref(database,'/users/'+currentUID);
+        crisisDB = child(currentUserDB,'/addCrisis');
+    }
+})
+
 
 // Declare constants for form and color buttons
 const crisisForm = document.getElementById('crisisForm');
@@ -78,10 +113,10 @@ function submitForm() {
     const selectedAllergenButtons = document.querySelectorAll('.allergenButton.true');
     const selectedLocationButtons = document.querySelectorAll('.locationButton.true');
     const selectedResolutionButtons = document.querySelectorAll('.resolutionButton.true'); // Added selected resolution buttons
-    const resDateTimeInput = document.getElementById('resDateTimeInput').value; 
+    const resDateTimeInput = document.getElementById('resDateTimeInput').value;
+    let addCrisisDB = child(currentUserDB, '/addCrisis/');
 
-    // Reference to the database node where you want to store the data
-    const dataRef = ref(database, 'addCrisisData');
+
 
     // Sample data to be added
     const newData = {
@@ -164,7 +199,7 @@ function submitForm() {
     }
 
     // Adding data using push (generates a unique key)
-    push(dataRef, newData);
+    push(addCrisisDB, newData);
 }
 function resetForm() {
     // Clear the input values
@@ -199,30 +234,83 @@ function resetForm() {
     displayResult.textContent = '';
 }
 
-
-
-function closePopup(event) {
-    let popup = event.currentTarget.parentNode;
-
-    function isOverlay(node) {
-        return !!(node && node.classList && node.classList.contains("popup-overlay"));
-    }
-
-    while (popup && !isOverlay(popup)) {
-        popup = popup.parentNode;
-    }
-
-    if (isOverlay(popup)) {
-        popup.style.display = "none";
-    }
-}
-
 var popupclose = document.getElementById("close");
 if (popupclose) {
-    popupclose.addEventListener("click", closePopup);
+    popupclose.addEventListener("click", function (e) {
+        var popup = e.currentTarget.parentNode;
+        function isOverlay(node) {
+            return !!(
+                node &&
+                node.classList &&
+                node.classList.contains("popup-overlay")
+            );
+        }
+        while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+        }
+        if (isOverlay(popup)) {
+            popup.style.display = "none";
+        }
+    });
 }
 
-var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
+var popupaddCrisisBtnContainer = document.getElementById(
+    "popupaddCrisisBtnContainer"
+);
 if (popupaddCrisisBtnContainer) {
-    popupaddCrisisBtnContainer.addEventListener("click", closePopup);
+    popupaddCrisisBtnContainer.addEventListener("click", function (e) {
+        var popup = e.currentTarget.parentNode;
+        function isOverlay(node) {
+            return !!(
+                node &&
+                node.classList &&
+                node.classList.contains("popup-overlay")
+            );
+        }
+        while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+        }
+        if (isOverlay(popup)) {
+            popup.style.display = "none";
+        }
+    });
 }
+
+//Navigation
+var topNav = document.getElementById("back");
+if (topNav) {
+    topNav.addEventListener("click", function (e) {
+        window.location.href = "./Emergency1.html";
+    });
+}
+
+var close = document.getElementById("close");
+if (close) {
+    close.addEventListener("click", function (e) {
+        window.location.href = "./Home.html";
+    });
+}
+
+var home = document.getElementById("homeBtn");
+if (home) {
+    home.addEventListener("click", function (e) {
+        window.location.href = "./Home.html";
+    });
+}
+
+var cloud = document.getElementById("airQltyBtn");
+if (cloud) {
+    cloud.addEventListener("click", function (e) {
+        window.location.href = "./AirQuality01.html";
+    });
+}
+
+var inhaler = document.getElementById("inhalerBtn");
+if (inhaler) {
+    inhaler.addEventListener("click", function (e) {
+        window.location.href = "./MyInhaler.html";
+    });
+}
+
+document.getElementById("closePopup")?.addEventListener("click", () => window.location.href = "./Emergency3.html");
+document.getElementById("addcrisisbtn")?.addEventListener("click", () => window.location.href = "./Emergency3.html");
