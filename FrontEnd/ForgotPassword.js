@@ -1,5 +1,5 @@
 import {initializeApp} from "firebase/app";
-import { getAuth, sendPasswordResetEmail } from './../node_modules/firebase/auth';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 
 function forgotPassword(firebaseConfig) {
