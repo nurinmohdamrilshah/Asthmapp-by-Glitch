@@ -56,12 +56,16 @@
         <button class="newcrisislog" id="newCrisisLogBtn">
           <h1 class="newcrisislogtext">New Crisis Log</h1>
         </button>
-        <h1 class="my-last-crisis">My last crisis</h1>
-        <img
+        <h1 class="my-last-crisis">Symptoms Chart</h1>
+        <section class="allergenssymptoms">
+          <div class="chart"><canvas id="symptomsChart"></canvas></div>
+        </section>
+        
+        <!-- <img
           class="stats-graph-icon"
           alt=""
           src="./public/stats-graph@2x.png"
-        />
+        /> -->
 
         <h1 class="my-last-crisis">What to look out for</h1>
         <section class="allergenssymptoms" id="symptomsAndAllergens">
@@ -134,5 +138,7 @@
 
     <script src="./Emergency3.js" type="module"></script>
     <script src="./AddCrisis.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="SymptomsChart/SymptomsChart.js" type="module"></script>
   </body>
 </html>
