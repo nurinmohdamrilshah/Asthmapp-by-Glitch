@@ -1,5 +1,3 @@
-// This is eventHandlers.js
-// Function to load the AddCrisis content into the popup
 function loadAddCrisisContent() {
     fetch('./AddCrisis.html')
         .then(response => {

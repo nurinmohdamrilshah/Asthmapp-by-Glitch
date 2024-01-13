@@ -4,7 +4,7 @@ import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.15.
 
 // Initialize Firebase
 const appSettings = {
-    databaseURL: "https://scrimba-162f5-default-rtdb.europe-west1.firebasedatabase.app/"
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app/"
 };
 
 const app = initializeApp(appSettings);
@@ -81,7 +81,7 @@ function submitForm() {
     const resDateTimeInput = document.getElementById('resDateTimeInput').value;
 
     // Reference to the database node where you want to store the data
-    const dataRef = ref(database, 'ADDCRISISTEST');
+    const dataRef = ref(database, 'addCrisis');
 
     // Sample data to be added
     const newData = {
@@ -198,3 +198,45 @@ function resetForm() {
     // Clear the display result
     displayResult.textContent = '';
 }
+
+  var popupclose = document.getElementById("close");
+  if (popupclose) {
+    popupclose.addEventListener("click", function (e) {
+      var popup = e.currentTarget.parentNode;
+      function isOverlay(node) {
+        return !!(
+                node &&
+                node.classList &&
+                node.classList.contains("popup-overlay")
+        );
+      }
+      while (popup && !isOverlay(popup)) {
+        popup = popup.parentNode;
+      }
+      if (isOverlay(popup)) {
+        popup.style.display = "none";
+      }
+    });
+  }
+
+  var popupaddCrisisBtnContainer = document.getElementById(
+          "popupaddCrisisBtnContainer"
+  );
+  if (popupaddCrisisBtnContainer) {
+    popupaddCrisisBtnContainer.addEventListener("click", function (e) {
+      var popup = e.currentTarget.parentNode;
+      function isOverlay(node) {
+        return !!(
+                node &&
+                node.classList &&
+                node.classList.contains("popup-overlay")
+        );
+      }
+      while (popup && !isOverlay(popup)) {
+        popup = popup.parentNode;
+      }
+      if (isOverlay(popup)) {
+        popup.style.display = "none";
+      }
+    });
+  }
