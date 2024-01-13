@@ -76,7 +76,6 @@ get(inhalerDB).then((snapshot) => {
             favImg.addEventListener('click', () => {
                 var favInhalerRef = childSnapshot.ref
                 var favField = child(favInhalerRef, '/inhaler/fav')
-                set(favField, true)
                 get(inhalerDB).then((snapshot) => {
                     if (snapshot.exists()) {
                         snapshot.forEach(function (childSnapshot) {
@@ -86,6 +85,7 @@ get(inhalerDB).then((snapshot) => {
                         })
                     }
                 })
+                set(favField, true)
             })
             favBtn.appendChild(favImg)
             inhalerField.appendChild(favBtn)

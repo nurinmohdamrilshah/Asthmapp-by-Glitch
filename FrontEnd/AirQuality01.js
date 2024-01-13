@@ -1,11 +1,4 @@
-function saveData(borough){
-    let i = 0;
-    let len = borough.length;
-    let boroughlist = ['barking', 'barnet', 'bexley', 'brent', 'bromley', 'camden', 'city', 'croydon', 'ealing', 'enfield', 'greenwich', 'hackney', 'hammersmith', 'haringey', 'harrow', 'havering', 'hillingdon', 'hounslow', 'islington', 'kc', 'kingston', 'lambeth', 'lewisham', 'merton', 'newham', 'redbridge', 'richmond', 'southwark', 'sutton', 'towerhamlet', 'waltham', 'wandsworth', 'westminster'];
-    for(; i<len; i++){
-        localStorage.setItem(boroughlist[i],borough[i]);
-    }
-}
+
 function avrgNO2(borough){
     let i = 0;
     let len = borough.length;
@@ -145,6 +138,7 @@ async function setlocation(input){
     barking.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[1].Species[1]["@AirQualityIndex"];
     barking.AQI = setAPI(barking);
     if (input =="Barking"){
+        localStorage.setItem('userareaAQI', barking.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Barking";
         const NO2value = document.getElementById("NO2");
@@ -166,6 +160,7 @@ async function setlocation(input){
     const barnet = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     barnet.AQI = setAPI(barnet);
     if (input =="Barnet"){
+        localStorage.setItem('userareaAQI', barnet.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Barnet";
         const NO2value = document.getElementById("NO2");
@@ -192,6 +187,7 @@ async function setlocation(input){
     bexley.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[2].Species[2]["@AirQualityIndex"];
     bexley.AQI =  setAPI(bexley);
     if (input =="Bexley") {
+        localStorage.setItem('userareaAQI', bexley.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Bexley";
         const NO2value = document.getElementById("NO2");
@@ -217,6 +213,7 @@ async function setlocation(input){
     brent.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[1].Species[0]["@AirQualityIndex"];
     brent.AQI = setAPI(brent);
     if (input =="Brent") {
+        localStorage.setItem('userareaAQI', brent.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Brent";
         const NO2value = document.getElementById("NO2");
@@ -241,6 +238,7 @@ async function setlocation(input){
     bromley.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[2]["@AirQualityIndex"];
     bromley.AQI = setAPI(bromley);
     if (input =="Bromley") {
+        localStorage.setItem('userareaAQI', bromley.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Bromley";
         const NO2value = document.getElementById("NO2");
@@ -267,6 +265,7 @@ async function setlocation(input){
     camden.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[4]["@AirQualityIndex"];
     camden.AQI = setAPI(camden);
     if (input =="Camden") {
+        localStorage.setItem('userareaAQI', camden.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Camden";
         const NO2value = document.getElementById("NO2");
@@ -288,6 +287,7 @@ async function setlocation(input){
     const city = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     city.AQI = setAPI(city);
     if (input =="City of London") {
+        localStorage.setItem('userareaAQI', city.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "City of London";
         const NO2value = document.getElementById("NO2");
@@ -312,6 +312,7 @@ async function setlocation(input){
     croydon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[3].Species[1]["@AirQualityIndex"];
     croydon.AQI = setAPI(croydon);
     if (input =="Croydon") {
+        localStorage.setItem('userareaAQI', croydon.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Croydon";
         const NO2value = document.getElementById("NO2");
@@ -335,6 +336,7 @@ async function setlocation(input){
     ealing.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[8].Site[2].Species[1]["@AirQualityIndex"];
     ealing.AQI = setAPI(ealing);
     if (input =="Ealing") {
+        localStorage.setItem('userareaAQI', ealing.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Ealing";
         const NO2value = document.getElementById("NO2");
@@ -358,6 +360,7 @@ async function setlocation(input){
     enfield.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[9].Site[2].Species[1]["@AirQualityIndex"];
     enfield.AQI = setAPI(enfield);
     if (input =="Enfield") {
+        localStorage.setItem('userareaAQI', enfield.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Enfield";
         const NO2value = document.getElementById("NO2");
@@ -384,6 +387,7 @@ async function setlocation(input){
     greenwich.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[3].Species[1]["@AirQualityIndex"];
     greenwich.AQI = setAPI(greenwich);
     if (input =="Greenwich") {
+        localStorage.setItem('userareaAQI', greenwich.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Greenwich";
         const NO2value = document.getElementById("NO2");
@@ -409,6 +413,7 @@ async function setlocation(input){
     hackney.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[3]["@AirQualityIndex"];
     hackney.AQI = setAPI(hackney);
     if (input =="Hackney") {
+        localStorage.setItem('userareaAQI', hackney.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Hackney";
         const NO2value = document.getElementById("NO2");
@@ -430,6 +435,7 @@ async function setlocation(input){
     const hammersmith = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     hammersmith.AQI = setAPI(hammersmith);
     if (input =="Hammersmith") {
+        localStorage.setItem('userareaAQI', hammersmith.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Hammersmith";
         const NO2value = document.getElementById("NO2");
@@ -454,6 +460,7 @@ async function setlocation(input){
     haringey.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[13].Site[1].Species[1]["@AirQualityIndex"];
     haringey.AQI = setAPI(haringey);
     if (input =="Haringey") {
+        localStorage.setItem('userareaAQI', haringey.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Haringey";
         const NO2value = document.getElementById("NO2");
@@ -475,6 +482,7 @@ async function setlocation(input){
     const harrow = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     harrow.AQI = setAPI(harrow);
     if (input =="Harrow") {
+        localStorage.setItem('userareaAQI', harrow.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Harrow";
         const NO2value = document.getElementById("NO2");
@@ -500,6 +508,7 @@ async function setlocation(input){
     havering.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[0].Species[2]["@AirQualityIndex"];
     havering.AQI = setAPI(havering);
     if (input =="Havering") {
+        localStorage.setItem('userareaAQI', havering.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Havering";
         const NO2value = document.getElementById("NO2");
@@ -526,6 +535,7 @@ async function setlocation(input){
     hillingdon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[3]["@AirQualityIndex"];
     hillingdon.AQI = setAPI(hillingdon);
     if (input =="Hillingdon") {
+        localStorage.setItem('userareaAQI', hillingdon.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Hillingdon";
         const NO2value = document.getElementById("NO2");
@@ -548,6 +558,7 @@ async function setlocation(input){
     const hounslow = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     hounslow.AQI = setAPI(hounslow);
     if (input =="Hounslow") {
+        localStorage.setItem('userareaAQI', hounslow.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Hounslow";
         const NO2value = document.getElementById("NO2");
@@ -572,6 +583,7 @@ async function setlocation(input){
     islington.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[18].Site[0].Species[1]["@AirQualityIndex"];
     islington.AQI = setAPI(islington);
     if (input =="Islington") {
+        localStorage.setItem('userareaAQI', islington.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Islington";
         const NO2value = document.getElementById("NO2");
@@ -599,6 +611,7 @@ async function setlocation(input){
     kc.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[1].Species[1]["@AirQualityIndex"];
     kc.AQI = setAPI(kc);
     if (input =="Kensington and Chelsea") {
+        localStorage.setItem('userareaAQI', kc.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Kensington & Chelsea";
         const NO2value = document.getElementById("NO2");
@@ -624,6 +637,7 @@ async function setlocation(input){
     kingston.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[0].Species[1]["@AirQualityIndex"];
     kingston.AQI = setAPI(kingston);
     if (input =="Kingston") {
+        localStorage.setItem('userareaAQI', kingston.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Kingston";
         const NO2value = document.getElementById("NO2");
@@ -650,6 +664,7 @@ async function setlocation(input){
     lambeth.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[1].Species[1]["@AirQualityIndex"];
     lambeth.AQI = setAPI(lambeth);
     if (input =="Lambeth") {
+        localStorage.setItem('userareaAQI', lambeth.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Lambeth";
         const NO2value = document.getElementById("NO2");
@@ -676,6 +691,7 @@ async function setlocation(input){
     lewisham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[3]["@AirQualityIndex"];
     lewisham.AQI = setAPI(lewisham);
     if (input =="Lewisham") {
+        localStorage.setItem('userareaAQI', lewisham.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Lewisham";
         const NO2value = document.getElementById("NO2");
@@ -700,6 +716,7 @@ async function setlocation(input){
     merton.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[23].Site[0].Species["@AirQualityIndex"];
     merton.AQI = setAPI(merton);
     if (input =="Merton") {
+        localStorage.setItem('userareaAQI', merton.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Merton";
         const NO2value = document.getElementById("NO2");
@@ -725,6 +742,7 @@ async function setlocation(input){
     newham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[2]["@AirQualityIndex"];
     newham.AQI = setAPI(newham);
     if (input =="Newham") {
+        localStorage.setItem('userareaAQI', newham.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Newham";
         const NO2value = document.getElementById("NO2");
@@ -750,6 +768,7 @@ async function setlocation(input){
     redbridge.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[3]["@AirQualityIndex"];
     redbridge.AQI = setAPI(redbridge);
     if (input =="Redbridge") {
+        localStorage.setItem('userareaAQI', redbridge.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Redbridge";
         const NO2value = document.getElementById("NO2");
@@ -776,6 +795,7 @@ async function setlocation(input){
     richmond.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[2].Species[1]["@AirQualityIndex"];
     richmond.AQI = setAPI(richmond);
     if (input =="Richmond") {
+        localStorage.setItem('userareaAQI', richmond.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Richmond";
         const NO2value = document.getElementById("NO2");
@@ -802,6 +822,7 @@ async function setlocation(input){
     southwark.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[3]["@AirQualityIndex"];
     southwark.AQI = setAPI(southwark);
     if (input =="Southwark") {
+        localStorage.setItem('userareaAQI', southwark.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Southwark";
         const NO2value = document.getElementById("NO2");
@@ -827,6 +848,7 @@ async function setlocation(input){
     sutton.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[1].Species[1]["@AirQualityIndex"];
     sutton.AQI = setAPI(sutton);
     if (input =="Sutton") {
+        localStorage.setItem('userareaAQI', sutton.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Sutton";
         const NO2value = document.getElementById("NO2");
@@ -852,6 +874,7 @@ async function setlocation(input){
     towerhamlet.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[2]["@AirQualityIndex"];
     towerhamlet.AQI = setAPI(towerhamlet);
     if (input =="Tower Hamlets") {
+        localStorage.setItem('userareaAQI', towerhamlet.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Tower Hamlets";
         const NO2value = document.getElementById("NO2");
@@ -874,6 +897,7 @@ async function setlocation(input){
     const waltham = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     waltham.AQI = setAPI(waltham);
     if (input =="Waltham Forest") {
+        localStorage.setItem('userareaAQI', waltham.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Waltham Forest";
         const NO2value = document.getElementById("NO2");
@@ -899,6 +923,7 @@ async function setlocation(input){
     wandsworth.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[1].Species[1]["@AirQualityIndex"];
     wandsworth.AQI = setAPI(wandsworth);
     if (input =="Wandsworth") {
+        localStorage.setItem('userareaAQI', wandsworth.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Wandsworth";
         const NO2value = document.getElementById("NO2");
@@ -925,6 +950,7 @@ async function setlocation(input){
     westminster.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[3]["@AirQualityIndex"];
     westminster.AQI = setAPI(westminster);
     if (input =="Westminster") {
+        localStorage.setItem('userareaAQI', westminster.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "Westminster";
         const NO2value = document.getElementById("NO2");
@@ -943,7 +969,6 @@ async function setlocation(input){
         insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     let borough = [barking, barnet, bexley, brent, bromley, camden, city, croydon, ealing, enfield, greenwich, hackney, hammersmith, haringey, harrow, havering, hillingdon, hounslow, islington, kc, kingston, lambeth, lewisham, merton, newham, redbridge, richmond, southwark, sutton, towerhamlet, waltham, wandsworth, westminster];
-    saveData(borough);
     const London = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     London.SO2 = avrgSO2(borough);
     London.NO2 = avrgNO2(borough);
@@ -952,6 +977,7 @@ async function setlocation(input){
     London.PM25 = avrgPM25(borough);
     London.AQI = highestAQI(borough);
     if (input =="London") {
+        localStorage.setItem('userareaAQI', London.AQI)
         const titletext = document.getElementById("areaVar");
         titletext.innerText = "London";
         const NO2value = document.getElementById("NO2");
@@ -972,7 +998,8 @@ async function setlocation(input){
 
 
 }
-setlocation('London')
+const userarea = localStorage.getItem('userarea');
+setlocation(userarea);
 const areaname = localStorage.getItem('areaname');
 localStorage.removeItem('areaname');
 setlocation(areaname);

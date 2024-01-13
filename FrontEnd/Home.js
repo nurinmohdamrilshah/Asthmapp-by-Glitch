@@ -202,3 +202,9 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
+var areaname = document.getElementById('areaname');
+const area = localStorage.getItem('userarea');
+areaname.innerText = area;
+var areaAQI = document.getElementById('AQInumber')
+let AQInumber = localStorage.getItem('userareaAQI');
+areaAQI.innerText = AQInumber;
