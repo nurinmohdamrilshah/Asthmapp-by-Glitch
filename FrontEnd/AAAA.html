@@ -1,125 +1,221 @@
 <!DOCTYPE html>
-<html lang="en">
-  <title>Add Inhaler Popup</title>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1, width=device-width" />
+<html>
 
-    <link rel="stylesheet" href="./AddInhalerPopup.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap"
-    />
-  </head>
-  <body>
-    <div class="addinhalerpopup">
-      <header class="headereditinhaler" id="headerEditInhaler">
-        <img
-          class="schedule-icon"
-          alt=""
-          src="./public/inhalerLogoDark@2x.png"
-        />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
 
-        <h1 class="add-inhalermodify-inhaler">Add Inhaler/Modify inhaler</h1>
-        <button class="close7" id="closeBtn">
-          <img class="close-icon7" alt="" src="./public/close1@2x.png" />
-        </button>
-      </header>
-      <img
-        class="addinhalerpopup-child"
-        alt=""
-        src="./public/dark-line.svg"
-      />
+  <link rel="stylesheet" href="AddCrisis.css" />
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" />
+</head>
 
-      <section class="inputinhalernamesection" id="inputInhalerNameSection">
-        <h1 class="header20">Input Inhaler Name</h1>
-        <div class="inhalername">
-          <label class="inhaler-name">Inhaler Name:</label>
-          <input
-            class="text-input3"
-            name="inhalerNameVar"
-            id = "newInhalerName"
-            placeholder="Name"
-            type="text"
-          >
-        </div>
-        <div class="inhalername">
-          <h3 class="inhaler-volume">Volume:</h3>
-          <input
-            class="text-input3"
-            name="inhalerVolumeVar"
-            id = "newInhalerVolume"
-            placeholder="see packaging"
-            type="number"
-          />
-        </div>
-      </section>
-      <section class="inputexpirydatesection" id="inputExpiryDateSection">
-        <h1 class="add-inhalermodify-inhaler">Input Expiry Date</h1>
-        <div class="expirydate">
-          <h3 class="inhaler-name">Expiry Date:</h3>
-          <input
-            class="expirydate-child"
-            name="expiryDateVar"
-            id = "newInhalerExpDate"
-            placeholder="Expiry Date - see packaging"
-            type="date"
-          />
-        </div>
-      </section>
-      <section class="inputexpirydatesection" id="chooseInhalerTypeSection">
-        <h1 class="add-inhalermodify-inhaler">Choose inhaler type</h1>
-        <section class="inhalertypebtns" id="InhalerTypeBtns">
-          <button class="schedule-parent" id="preventionBtn">
-            <img class="schedule-icon" alt="" src="./public/schedule@2x.png" />
-            <div class="prevention" id="preventionText">Prevention</div>
-          </button>
-          <button class="coughing-parent" id="crisisInhalerBtn">
-            <img class="schedule-icon" alt="" src="./public/coughing@2x.png" />
+<body>
+<form id="crisisForm">
 
-            <div class="prevention" id="crisisText">Crisis</div>
-          </button>
-        </section>
-      </section>
-      <img
-        class="addinhalerpopup-child"
-        alt=""
-        src="./public/dark-line.svg"
-      />
+  <div class="add-crisis">
+    <header class="header7">
+      <img class="torso-icon" alt="" src="./public/crisisLogo@2x.png" />
 
-      <section class="dosageprescriptionsection" id="dosagePrescriptionSection">
-        <header class="header23">
-          <h1 class="add-inhalermodify-inhaler">Add Dosage Reminder</h1>
-          <button class="addreminderbtn" id="addReminderBtn">
-            <img class="schedule-icon" alt="" src="./public/plus-math@2x.png" />
-          </button>
-        </header>
-        <ul class="reminderul" id="reminderUL">
-          <div class="label" id="Label">
-            <img class="schedule-icon" alt="" src="./public/alarm@2x.png" />
-          </div>
-          <input
-            class="text-input5"
-            name="reminderTimeVar"
-            placeholder="Time"
-            id ="newDose"
-            type="datetime-local"
-          />
-
-        </ul>
-      </section>
-      <button class="button-primary8" id="applyBtn">
-        <div class="content16">
-          <b class="text36">Submit Inhaler</b>
-        </div>
+      <b class="add-crisis1">Add Crisis</b>
+      <button class="close1" id="close">
+        <img class="close-icon1" alt="" src="./public/close1@2x.png" />
       </button>
-    </div>
+    </header>
+    <img class="add-crisis-child" alt="" src="./public/vector-4@2x.png" />
+    <!-- add date and time-->
+    <section class="crisistime">
+      <h1 class="header8">Input crisis time</h1>
+      <div class="crisistimediv">
+        <h2 class="date-and-time">Date and time:</h2>
+        <input class="text-input2" name="resolutionTimeInput" placeholder="Date & Time" type="datetime-local" id= "dateTimeInput" />
+      </div>
+    </section>
 
-    <script src=".AAAA.js" type="module">
-    </script>
-  </body>
+
+    <!-- add symptoms -->
+    <section class="crisistime">
+      <h1 class="header9">Input symptoms</h1>
+      <section class="framebtns" id="symptomsSection">
+
+        <!-- add the buttons -->
+        <button class="sneeze-parent symptomButton" id="wheezingBtn" type="button" value="wheezing">
+          <img class="torso-icon" alt="" src="./public/sneeze1@2x.png" />
+          <div class="wheezing">Wheezing</div>
+        </button>
+
+        <button class="sneeze-parent symptomButton" id="coughBtn" type="button" value="cough">
+          <img class="torso-icon" alt="" src="./public/sneeze2@2x.png" />
+          <div class="wheezing">Cough</div>
+        </button>
+
+        <button class="torso-parent symptomButton" id="chestCompressinsBtn" type="button" value="chestCompressions">
+          <img class="torso-icon" alt="" src="./public/torso@2x.png" />
+          <div class="chest-compressions">
+            <p class="chest">Chest</p>
+            <p class="chest">compressions</p>
+          </div>
+        </button>
+
+        <button class="lungs-parent symptomButton" id="DysponeaBtn" type="button" value="dysponea">
+          <img class="torso-icon" alt="" src="./public/lungs@2x.png" />
+          <div class="dysponea">Dysponea</div>
+        </button>
+
+      </section>
+      <section class="framebtns" id="symptomsSection">
+        <button class="sneeze-parent symptomButton" id="stressBtn" type="button" value="stress">
+          <img class="torso-icon" alt="" src="./public/sad-face@2x.png" />
+          <div class="wheezing">Stress</div>
+        </button>
+
+        <button class="sneeze-parent symptomButton" id="feverBtn" type="button" value="fever">
+          <img class="torso-icon" alt="" src="./public/thermometer@2x.png" />
+          <div class="wheezing">Fever</div>
+        </button>
+
+        <button class="torso-parent symptomButton" id="tingleBtn" type="button" value="tingle">
+          <img class="torso-icon" alt="" src="./public/stomach-pain@2x.png" />
+          <div class="chest-compressions">Tingle</div>
+        </button>
+
+        <button class="lungs-parent symptomButton" id="dizzinessBtn" type="button" value="dizziness">
+          <img class="torso-icon" alt="" src="./public/dizzy-person@2x.png" />
+          <div class="dysponea">Dizziness</div>
+        </button>
+      </section>
+    </section>
+
+    <!-- allergens -->
+    <section class="crisistime">
+      <h1 class="header9">Input allergen cause</h1>
+      <section class="framebtns" id="allergenSection">
+        <!-- add the buttons -->
+        <button class="smoking-parent allergenButton" id="smokeBtn" type="button" value="smoke">
+          <img class="torso-icon" alt="" src="./public/smoking@2x.png" />
+          <div class="wheezing">Smoke</div>
+        </button>
+
+        <button class="smoking-parent allergenButton" id="animalsBtn" type="button" value="animals">
+          <img class="torso-icon" alt="" src="./public/pets@2x.png" />
+          <div class="wheezing">Animals</div>
+        </button>
+        <button class="broom-parent allergenButton" id="dustBtn" type="button" value="dust">
+          <img class="torso-icon" alt="" src="./public/broom@2x.png" />
+          <div class="chest-compressions">Dust</div>
+        </button>
+        <button class="factory-parent allergenButton" id="airQualityBtn" type="button" value="airQuality">
+          <img class="torso-icon" alt="" src="./public/factory@2x.png" />
+          <div class="dysponea">Air Quality</div>
+        </button>
+        <button class="factory-parent allergenButton" id="GreeneryBtn" type="button" value="greenery">
+          <img class="torso-icon" alt="" src="./public/forest@2x.png" />
+          <div class="dysponea">Greenery</div>
+        </button>
+      </section>
+      <section class="framebtns" id="symptomsSection">
+        <button class="smoking-parent allergenButton" id="stressBtn" type="button" value="stress">
+          <img class="torso-icon" alt="" src="./public/sad-face@2x.png" />
+          <div class="wheezing">Stress</div>
+        </button>
+        <button class="factory-parent allergenButton" id="temp&HumidityBtn" type="button" value="tempHumidity">
+          <img class="torso-icon" alt="" src="./public/thermometer1@2x.png" />
+          <div class="wheezing">Temp & Humidity</div>
+        </button>
+        <button class="broom-parent allergenButton" id="actiitiesBtn" type="button" value="activities">
+          <img class="torso-icon" alt="" src="./public/running@2x.png" />
+          <div class="chest-compressions">Activities</div>
+        </button>
+        <button class="factory-parent allergenButton" id="perfumesBtn" type="button" value="perfumes">
+          <img class="torso-icon" alt="" src="./public/perfume@2x.png" />
+          <div class="dysponea">Perfumes</div>
+        </button>
+        <button class="factory-parent allergenButton" id="foodAllergyBtn" type="button" value="foodAllergy">
+          <img class="torso-icon" alt="" src="./public/grocery-bag@2x.png" />
+          <div class="dysponea">Food Allergy</div>
+        </button>
+      </section>
+    </section>
+
+
+
+    <!-- add location -->
+    <section class="crisistime">
+      <h1 class="header9">Location</h1>
+      <section class="framebtns" id="locationSection">
+        <!-- add the buttons -->
+        <button class="smoking-parent locationButton" id="HomeLoctionBtn" type="button" value="home">
+          <img class="torso-icon" alt="" src="./public/exterior@2x.png" />
+          <div class="wheezing">Home</div>
+        </button>
+        <button class="factory-parent locationButton" id="workSchoolBtn" type="button" value="workSchool">
+          <img class="torso-icon" alt="" src="./public/business@2x.png" />
+          <div class="wheezing">Work/School</div>
+        </button>
+        <button class="broom-parent locationButton" id="outsideBtn" type="button" value="outside">
+          <img class="torso-icon" alt="" src="./public/national-park@2x.png" />
+          <div class="chest-compressions">Outside</div>
+        </button>
+        <button class="factory-parent locationButton" id="friendHouseBtn" type="button" value="friendHouse">
+          <img class="torso-icon" alt="" src="./public/house@2x.png" />
+          <div class="dysponea">Friend House</div>
+        </button>
+        <button class="factory-parent locationButton" id="otherBtn" type="button" value="other">
+          <img class="torso-icon" alt="" src="./public/ellipsis@2x.png" />
+          <div class="dysponea">Other</div>
+        </button>
+      </section>
+      <section class="more">
+        <div class="more-detailoptional">More detail:(optional)</div>
+        <div class="text-input1">
+          <div class="text27">
+            <div class="more-detailoptional">Example</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+
+
+
+
+
+    <!-- add resolution -->
+    <section class="crisistime">
+      <h1 class="header9">Resolution</h1>
+      <section class="framebtns" id="resolutionSection">
+        <!-- add the buttons -->
+        <button class="sneeze-parent resolutionButton" id="inhalerResolBtn" type="button" value="inhaler">
+          <img class="torso-icon" alt="" src="./public/asthma@2x.png" />
+          <div class="wheezing">Inhaler</div>
+        </button>
+        <button class="sneeze-parent resolutionButton" id="hospitalizationBtn" type="button" value="hospitalization">
+          <img class="torso-icon" alt="" src="./public/hospital-bed@2x.png" />
+          <div class="chest-compressions">Hospitalization</div>
+        </button>
+        <button class="sneeze-parent resolutionButton" id="oxygenMaskBtn" type="button" value="oxygenMask">
+          <img class="torso-icon" alt="" src="./public/patient-oxygen-mask@2x.png" />
+          <div class="chest-compressions">Oxygen Mask</div>
+        </button>
+        <button class="torso-parent resolutionButton" id="BreathingExercisesBtn" type="button" value="breathingExercises">
+          <img class="torso-icon" alt="" src="./public/lungs@2x.png" />
+          <div class="breathing-exercises">Breathing exercises</div>
+        </button>
+      </section>
+      <!-- resolution time -->
+      <section class="more">
+        <h2 class="date-and-time">Time of resolution</h2>
+        <input class="text-input2" name="resolutionTimeInput" placeholder="Date & Time" type="datetime-local" id= "resDateTimeInput" />
+      </section>
+    </section>
+    <section>
+      <button type="submit">Submit</button>
+    </section>
+</form>
+
+<script defer type="module" src="AddCrisis.js"></script>
+
+</body>
+
 </html>
