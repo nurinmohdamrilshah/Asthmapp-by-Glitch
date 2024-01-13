@@ -1,4 +1,3 @@
-// Import the functions you need from the SDKs you need
 import {initializeApp} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
 import {child, get, getDatabase, push, ref} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
@@ -22,7 +21,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const analytics = getAnalytics(app);
-
 const auth = getAuth();
 var currentUser = auth.currentUser;
 if (currentUser){
@@ -43,70 +41,58 @@ onAuthStateChanged(auth, (user) => {
         crisisDB = child(currentUserDB,'/addCrisis');
     }
 })
-
-
 // Declare constants for form and color buttons
 const crisisForm = document.getElementById('crisisForm');
 const symptomButtons = document.querySelectorAll('.symptomButton');
 const allergenButtons = document.querySelectorAll('.allergenButton');
 const locationButtons = document.querySelectorAll('.locationButton');
 const resolutionButtons = document.querySelectorAll('.resolutionButton'); // Added resolution buttons
-
 // Attach submit event listener to the form
 crisisForm.addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
     submitForm();
     resetForm();
 });
-
 // Toggle state when symptom buttons are clicked
 symptomButtons.forEach(button => {
     button.addEventListener('click', function() {
         const symptom = this.value;
         const currentState = this.classList.contains('true');
-
         // Toggle the selected class and update button text
         this.classList.toggle('true', !currentState);
         this.classList.toggle('false', currentState);
     });
 });
-
 // Toggle state when allergen buttons are clicked
 allergenButtons.forEach(button => {
     button.addEventListener('click', function() {
         const allergen = this.value;
         const currentState = this.classList.contains('true');
-
         // Toggle the selected class and update button text
         this.classList.toggle('true', !currentState);
         this.classList.toggle('false', currentState);
     });
 });
-
 // Toggle state when location buttons are clicked
 locationButtons.forEach(button => {
     button.addEventListener('click', function() {
         const location = this.value;
         const currentState = this.classList.contains('true');
-
         // Toggle the selected class and update button text
         this.classList.toggle('true', !currentState);
         this.classList.toggle('false', currentState);
     });
 });
-
 // Toggle state when resolution buttons are clicked
 resolutionButtons.forEach(button => {
     button.addEventListener('click', function() {
         const resolution = this.value;
         const currentState = this.classList.contains('true');
-
         // Toggle the selected class and update button text
         this.classList.toggle('true', !currentState);
         this.classList.toggle('false', currentState);
     });
 });
-
 function submitForm() {
     const dateTimeInput = document.getElementById('dateTimeInput').value;
     const selectedSymptomButtons = document.querySelectorAll('.symptomButton.true');
@@ -115,9 +101,6 @@ function submitForm() {
     const selectedResolutionButtons = document.querySelectorAll('.resolutionButton.true'); // Added selected resolution buttons
     const resDateTimeInput = document.getElementById('resDateTimeInput').value;
     let addCrisisDB = child(currentUserDB, '/addCrisis/');
-
-
-
     // Sample data to be added
     const newData = {
         dateTimeInput: dateTimeInput,
@@ -127,7 +110,6 @@ function submitForm() {
         selected_locations: {},
         selected_resolutions: {}
     };
-
     // Add symptoms:
     newData.selected_symptoms.wheezing = false;
     newData.selected_symptoms.cough = false;
@@ -136,16 +118,13 @@ function submitForm() {
     newData.selected_symptoms.fever = false;
     newData.selected_symptoms.tingle = false;
     newData.selected_symptoms.dizziness = false;
-
     if (selectedSymptomButtons.length > 0) {
         const selectedSymptoms = Array.from(selectedSymptomButtons).map(button => button.value);
-
         // Add each selected symptom with a value of true to selected_symptoms
         selectedSymptoms.forEach(symptom => {
             newData.selected_symptoms[symptom] = true;
         });
     }
-
     // Add allergens:
     newData.selected_allergens.smoke = false;
     newData.selected_allergens.animals = false;
@@ -157,47 +136,38 @@ function submitForm() {
     newData.selected_allergens.activities = false;
     newData.selected_allergens.perfumes = false;
     newData.selected_allergens.foodAllergy = false;
-
     if (selectedAllergenButtons.length > 0) {
         const selectedAllergens = Array.from(selectedAllergenButtons).map(button => button.value);
-
         // Add each selected allergen with a value of true to selected_allergens
         selectedAllergens.forEach(allergen => {
             newData.selected_allergens[allergen] = true;
         });
     }
-
     // Add locations:
     newData.selected_locations.home = false;
     newData.selected_locations.workSchool = false;
     newData.selected_locations.outside = false;
     newData.selected_locations.friendHouse = false;
     newData.selected_locations.other = false;
-
     if (selectedLocationButtons.length > 0) {
         const selectedLocations = Array.from(selectedLocationButtons).map(button => button.value);
-
         // Add each selected location with a value of true to selected_locations
         selectedLocations.forEach(location => {
             newData.selected_locations[location] = true;
         });
     }
-
     // Add resolutions:
     newData.selected_resolutions.inhaler = false;
     newData.selected_resolutions.hospitalization = false;
     newData.selected_resolutions.oxygenMask = false;
     newData.selected_resolutions.breathingExercises = false;
-
     if (selectedResolutionButtons.length > 0) {
         const selectedResolutions = Array.from(selectedResolutionButtons).map(button => button.value);
-
         // Add each selected resolution with a value of true to selected_resolutions
         selectedResolutions.forEach(resolution => {
             newData.selected_resolutions[resolution] = true;
         });
     }
-
     // Adding data using push (generates a unique key)
     push(addCrisisDB, newData);
 }
@@ -205,35 +175,29 @@ function resetForm() {
     // Clear the input values
     document.getElementById('dateTimeInput').value = '';
     document.getElementById('resDateTimeInput').value = '';
-
     // Reset symptom buttons
     symptomButtons.forEach(button => {
         button.classList.remove('true');
         button.classList.add('false');
     });
-
     // Reset allergen buttons
     allergenButtons.forEach(button => {
         button.classList.remove('true');
         button.classList.add('false');
     });
-
     // Reset location buttons
     locationButtons.forEach(button => {
         button.classList.remove('true');
         button.classList.add('false');
     });
-
     // Reset resolution buttons
     resolutionButtons.forEach(button => {
         button.classList.remove('true');
         button.classList.add('false');
     });
-
     // Clear the display result
     displayResult.textContent = '';
 }
-
 var popupclose = document.getElementById("close");
 if (popupclose) {
     popupclose.addEventListener("click", function (e) {
@@ -253,7 +217,6 @@ if (popupclose) {
         }
     });
 }
-
 var popupaddCrisisBtnContainer = document.getElementById(
     "popupaddCrisisBtnContainer"
 );
@@ -275,42 +238,3 @@ if (popupaddCrisisBtnContainer) {
         }
     });
 }
-
-//Navigation
-var topNav = document.getElementById("back");
-if (topNav) {
-    topNav.addEventListener("click", function (e) {
-        window.location.href = "./Emergency1.html";
-    });
-}
-
-var close = document.getElementById("close");
-if (close) {
-    close.addEventListener("click", function (e) {
-        window.location.href = "./Home.html";
-    });
-}
-
-var home = document.getElementById("homeBtn");
-if (home) {
-    home.addEventListener("click", function (e) {
-        window.location.href = "./Home.html";
-    });
-}
-
-var cloud = document.getElementById("airQltyBtn");
-if (cloud) {
-    cloud.addEventListener("click", function (e) {
-        window.location.href = "./AirQuality01.html";
-    });
-}
-
-var inhaler = document.getElementById("inhalerBtn");
-if (inhaler) {
-    inhaler.addEventListener("click", function (e) {
-        window.location.href = "./MyInhaler.html";
-    });
-}
-
-document.getElementById("closePopup")?.addEventListener("click", () => window.location.href = "./Emergency3.html");
-document.getElementById("addcrisisbtn")?.addEventListener("click", () => window.location.href = "./Emergency3.html");
