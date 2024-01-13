@@ -1,3 +1,11 @@
+function saveData(borough){
+    let i = 0;
+    let len = borough.length;
+    let boroughlist = ['barking', 'barnet', 'bexley', 'brent', 'bromley', 'camden', 'city', 'croydon', 'ealing', 'enfield', 'greenwich', 'hackney', 'hammersmith', 'haringey', 'harrow', 'havering', 'hillingdon', 'hounslow', 'islington', 'kc', 'kingston', 'lambeth', 'lewisham', 'merton', 'newham', 'redbridge', 'richmond', 'southwark', 'sutton', 'towerhamlet', 'waltham', 'wandsworth', 'westminster'];
+    for(; i<len; i++){
+        localStorage.setItem(boroughlist[i],borough[i]);
+    }
+}
 function avrgNO2(borough){
     let i = 0;
     let len = borough.length;
@@ -935,6 +943,7 @@ async function setlocation(input){
         insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     let borough = [barking, barnet, bexley, brent, bromley, camden, city, croydon, ealing, enfield, greenwich, hackney, hammersmith, haringey, harrow, havering, hillingdon, hounslow, islington, kc, kingston, lambeth, lewisham, merton, newham, redbridge, richmond, southwark, sutton, towerhamlet, waltham, wandsworth, westminster];
+    saveData(borough);
     const London = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     London.SO2 = avrgSO2(borough);
     London.NO2 = avrgNO2(borough);
@@ -963,7 +972,6 @@ async function setlocation(input){
 
 
 }
-setlocation('London');
 const areaname = localStorage.getItem('areaname');
-localStorage.clear();
+localStorage.removeItem('areaname');
 setlocation(areaname);
