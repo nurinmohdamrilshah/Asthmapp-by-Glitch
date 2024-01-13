@@ -152,7 +152,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barking.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //barnet
     const barnet = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -173,7 +173,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = barnet.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //bexley
     const bexley = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -199,7 +199,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bexley.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //brent
     const brent = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -224,7 +224,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = brent.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //bromley
     const bromley = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -248,7 +248,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = bromley.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //camden
     const camden = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -274,7 +274,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = camden.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //city
     const city = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -295,7 +295,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = city.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //croydon
     const croydon = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -319,7 +319,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = croydon.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //ealing
     const ealing = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -342,7 +342,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = ealing.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //enfield
     const enfield = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -365,7 +365,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = enfield.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //greenwich
     const greenwich = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -391,7 +391,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = greenwich.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //hackney
     const hackney = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -416,7 +416,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hackney.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //hammersmith
     const hammersmith = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -437,7 +437,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hammersmith.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //haringey
@@ -461,7 +461,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = haringey.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //harrow
     const harrow = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -482,7 +482,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = harrow.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //havering
@@ -507,7 +507,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = havering.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //hillingdon
@@ -533,7 +533,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hillingdon.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //hounslow
@@ -555,7 +555,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = hounslow.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //islington
@@ -579,7 +579,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = islington.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //kc
@@ -606,7 +606,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kc.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //kingston
@@ -631,7 +631,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = kingston.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //lambeth
@@ -657,7 +657,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lambeth.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //lewisham
@@ -683,7 +683,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = lewisham.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //merton
@@ -707,7 +707,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = merton.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //newham
@@ -732,7 +732,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = newham.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     //redbridge
     const redbridge = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -757,7 +757,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = redbridge.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //richmond
@@ -783,7 +783,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = richmond.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //southwark
@@ -809,7 +809,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = southwark.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //sutton
@@ -834,7 +834,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = sutton.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //towerhamlet
@@ -859,7 +859,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = towerhamlet.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //waltham
@@ -881,7 +881,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = waltham.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //wandsworth
@@ -906,7 +906,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = wandsworth.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
     //westminster
@@ -932,7 +932,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = westminster.AQI;
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the average of all measured pollutants in "+ input +". 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
     let borough = [barking, barnet, bexley, brent, bromley, camden, city, croydon, ealing, enfield, greenwich, hackney, hammersmith, haringey, harrow, havering, hillingdon, hounslow, islington, kc, kingston, lambeth, lewisham, merton, newham, redbridge, richmond, southwark, sutton, towerhamlet, waltham, wandsworth, westminster];
     const London = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
@@ -958,7 +958,7 @@ async function setlocation(input){
         const APIvalue = document.getElementById("aqiindex");
         APIvalue.innerText = London.AQI +'/10';
         const insight = document.getElementById("notif");
-        insight.innerText = "AQI shows the highest index of all boroughs in "+ input +". Pollutant data shows the species average in all borough. 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest and 10 being the highest."
+        insight.innerText = "AQI shows the highest index of all boroughs in "+ input +". Pollutant data shows the species average in all borough. 0 & Nan means no measured data. All indexes are out of 10 with 1 being the lowest risk and 10 being the highest risk."
     }
 
 
