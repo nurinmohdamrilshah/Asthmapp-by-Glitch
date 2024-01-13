@@ -972,6 +972,7 @@ async function setlocation(input){
 
 
 }
+setlocation('London')
 const areaname = localStorage.getItem('areaname');
 localStorage.removeItem('areaname');
 setlocation(areaname);
