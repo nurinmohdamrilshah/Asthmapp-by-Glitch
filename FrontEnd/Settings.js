@@ -66,6 +66,7 @@ onValue(boroughDB, (snapshot) => {
     const data = snapshot.val();
     if (data) {
         inputMyBorough.value = data.myBorough || "";
+        localStorage.setItem('userarea', data.myBorough);
     }
 });
 
