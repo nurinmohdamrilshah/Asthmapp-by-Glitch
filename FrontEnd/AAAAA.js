@@ -1,14 +1,10 @@
 // Import the functions you need from the SDKs you need
-import {initializeApp} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
-import {child, get, getDatabase, push, ref} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-import {getAuth, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-import {Inhaler, Dosage, Intake} from "./Inhaler.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import {child, get, getDatabase, push, ref} from "firebase/database";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 const firebaseConfig = {
     apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
     authDomain: "asthmapp-121a8.firebaseapp.com",
@@ -24,89 +20,102 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const analytics = getAnalytics(app);
-const auth = getAuth();
 
+const auth = getAuth();
 var currentUser = auth.currentUser;
-if (currentUser) {
+if (currentUser){
     var currentUID = currentUser.uid;
-    var currentUserDB = ref(database, '/users/' + currentUID)
-    var inhalerDB = child(currentUserDB, '/emergencyPNB')
-} else {
-    currentUID = 'testDosage2';
-    currentUserDB = ref(database, '/users/' + currentUID);
-    inhalerDB = child(currentUserDB, '/inhalers');
+    var currentUserDB = ref(database, '/users/'+currentUID)
+    var myBoroughDB = child(currentUserDB, '/myBorough')
 }
+else{
+    currentUID = 'generalDB';
+    currentUserDB = ref(database,'/users/'+currentUID);
+    myBoroughDB = child(currentUserDB, '/myBorough')
+}
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = auth.currentUser;
         currentUID = user.uid;
-        currentUserDB = ref(database, '/users/' + currentUID);
-        inhalerDB = child(currentUserDB, '/inhalers');
+        currentUserDB = ref(database,'/users/'+currentUID);
+        myBoroughDB = child(currentUserDB, '/myBorough')
     }
 })
 
-get(inhalerDB).then((snapshot) => {
-    if (snapshot.exists()) {
-        var addIntakeBtn = document.getElementById("addIntakeBtn");
-        var inhalerSection = document.getElementById("selectInhalerSection");
-        function createSelectInhalerBtn(inhaler) {
-            let selectInhalerBtn;
-            selectInhalerBtn = document.createElement('button');
-            selectInhalerBtn.className = "inhaler11";
-            inhalerSection.appendChild(selectInhalerBtn)
-            selectInhalerBtn.id = 'select' + inhaler.name
 
-            let divBtn = document.createElement('div')
-            divBtn.className = "intaketimevar"
-            divBtn.textContent = inhaler.name;
-            selectInhalerBtn.appendChild(divBtn);
+const myBoroughInDB = ref(myBoroughDB);
 
-            selectInhalerBtn.addEventListener('click', function () {
-                var newIntakeInhaler = inhaler;
-                console.log(inhaler.name + ' is selected')
-                addIntakeBtn.addEventListener('click', function () {
-                    var newIntakeTime = document.getElementById("intakeTimeVar").value;
-                    var newIntakePuffs = document.getElementById("nbPuffsVar").value;
-                    let selectedInhalerDB = child(inhalerDB, '/' + inhaler.name)
-                    let intakesDB = child(selectedInhalerDB, '/intakes/')
-                    push(intakesDB, {
-                        time: newIntakeTime,
-                        puffNum: newIntakePuffs
-                    })
-                    console.log('intake data pushed to firebase')
-                    get(intakesDB).then((snapshot) => {
-                        if (snapshot.exists()) {
-                            var intakeCount = 0;
-                            snapshot.forEach(function (childSnapshot) {
-                                intakeCount++
-                            })
-                            let dosageDB = child(selectedInhalerDB, '/dosage')
-                            get(dosageDB).then((snapshot) => {
-                                if (snapshot.exists) {
-                                    var numOfDose = 0;
-                                    snapshot.forEach(function (childSnapshot) {
-                                        numOfDose++
-                                    })
-                                }
-                                if (intakeCount > numOfDose) { //NOTIFICATION
-                                    alert("Warning:" + newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.")
-                                }
-                                window.reload()
-                            })
 
-                        }
-                    })
-                })
-            })
-        }
+const inputMyBorough = document.getElementById("myBoroughVar");
+const inputContact1 = document.getElementById("phonenb1")
+const inputContact2 = document.getElementById("phonenb2")
+const inputContact3 = document.getElementById("phonenb3")
+const inputUsername = document.getElementById("usernamevar")
+const inputEmail = document.getElementById("emailvar")
+const inputPassword = document.getElementById("passwordvar")
+const updateButtonEl = document.getElementById("update-button")
 
-        snapshot.forEach(function (childSnapshot) {
-            let inhalerChoice = childSnapshot.val().inhaler
-            createSelectInhalerBtn(inhalerChoice)
-        })
-    } else {
-        console.log("No data available");
+// Display myPostcode in the input box when the page loads
+onValue(myBoroughInDB, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        // Update input box with the latest value
+        inputMyBorough.value = data.myBorough || "";
     }
-}).catch((error) => {
-    console.error(error);
 });
+
+// Display phone numbers in input boxes when the page loads
+onValue(phoneNumbersInDB, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        // Update input boxes with the latest values
+        inputContact1.value = data.number1 || "";
+        inputContact2.value = data.number2 || "";
+        inputContact3.value = data.number3 || "";
+    }
+});
+
+updateButtonEl.addEventListener("click", function() {
+    let myBoroughVar = inputMyBorough.value;
+    let phoneNumber1 = inputContact1.value;
+    let phoneNumber2 = inputContact2.value;
+    let phoneNumber3 = inputContact3.value;
+
+    // Use set instead of push to update the values
+    set(myBoroughInDB, { myBorough: myBoroughVar })
+        .then(() => {
+            console.log("Data set successfully");
+        })
+        .catch((error) => {
+            console.error("Error setting data:", error);
+        });
+
+    set(phoneNumbersInDB, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 })
+        .then(() => {
+            console.log("Data set successfully");
+        })
+        .catch((error) => {
+            console.error("Error setting data:", error);
+        });
+
+});
+
+
+
+//link to home page
+var backPageLink = document.getElementById("backBtn");
+if (backPageLink) {
+    backPageLink.addEventListener("click", function (e) {
+        window.location.href = "./Home.html";
+    });
+}
+
+
+// link to signOut.js
+var signOutLink = document.getElementById("signOutLink");
+if (signOutLink) {
+    signOutLink.addEventListener("click", function (e) {
+        window.location.href = "./index.html";
+    });
+}
