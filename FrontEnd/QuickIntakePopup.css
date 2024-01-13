@@ -141,3 +141,25 @@
   opacity: 0.8;
   z-index: 998; /* Set a lower z-index than the popup to ensure it appears behind the popup */
 }
+#countdown-container {
+  width: 281px;
+  margin: 50px auto;
+}
+
+#countdown-bar {
+  height: 20px;
+  border-radius: 12px;
+  background-color: #E8E8E8;
+  position: relative;
+  overflow: hidden;
+}
+
+#countdown-progress {
+  height: 100%;
+  border-radius: 12px;
+  background-color: #61D0DF;
+  width: 0;
+  position: absolute;
+  transition: width 0.5s linear;
+}
+
