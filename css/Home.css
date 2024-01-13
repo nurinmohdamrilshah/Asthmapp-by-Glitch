@@ -1,0 +1,579 @@
+.male-user-icon {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+  object-fit: cover;
+}
+.profile-picture {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 3.13rem;
+  height: 2.38rem;
+}
+.hello-name {
+  position: relative;
+  letter-spacing: -0.01em;
+  display: inline-block;
+  width: 9.56rem;
+}
+.userhome {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.06rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #fff;
+  font-family: "Plus Jakarta Sans";
+}
+.asthmapp-logo-light-11 {
+  position: relative;
+  width: 6.88rem;
+  height: 3.66rem;
+  object-fit: cover;
+}
+.pageheader,
+.pageheader-contents {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 0.63rem;
+}
+.pageheader {
+  border-radius: 32px;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0 1.5rem;
+  z-index: 0;	
+}
+.cloud-icon1 {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: cover;
+}
+.air-quality {
+  margin: 0;
+  position: relative;
+  font-size: inherit;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: inherit;
+}
+.header4 {
+  text-decoration: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.56rem;
+  color: inherit;
+}
+.place-marker-icon {
+  position: relative;
+  width: 1.44rem;
+  height: 1.69rem;
+  object-fit: cover;
+}
+.headerinsights {
+  width: 6rem;
+  height: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.b1 {
+  position: relative;
+  font-size: 1.63rem;
+  letter-spacing: -0.01em;
+  color: #4d6b4c;
+  text-align: center;
+}
+.aqi-widget1 {
+  align-self: stretch;
+  border-radius: 0 36px 0 36px;
+  background-color: #b6ddb4;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.38rem 2.25rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.sudden-drop-in {
+  position: relative;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+}
+.airqltyinsights {
+  align-self: stretch;
+  border-radius: 25px 0 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(103, 103, 103, 0.55),
+    rgba(134, 134, 134, 0.59) 27.08%,
+    rgba(162, 162, 162, 0.63) 45.83%,
+    rgba(218, 218, 218, 0.7)
+  );
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  height: 8.94rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.63rem 1.25rem;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.airqltyinsights,
+.airqltywidget,
+.header5 {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.38rem;
+}
+.airqltywidget {
+  align-self: stretch;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  height: 11.25rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.44rem 0 0 1.25rem;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.header5 {
+  text-decoration: none;
+  flex-direction: row;
+  align-items: center;
+  color: inherit;
+}
+.text26 {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  font-family: "Plus Jakarta Sans";
+  color: #fff;
+  text-align: center;
+}
+.quickintakebtn {
+  cursor: pointer;
+  border: 0;
+  padding: 0.63rem;
+  background-color: #b2e1e7;
+  align-self: stretch;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.quickintakebtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
+
+
+.statistics {
+  margin: 0;
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: inherit;
+}
+.my-next-intake {
+  font-size: inherit;
+  font-weight: 400;
+  font-family: inherit;
+}
+.my-next-intake,
+.nextremindervar {
+  margin: 0;
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.reminderframe {
+  border-radius: 10px;
+  background-color: #fff;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding: 0.31rem;
+}
+.expiryframe,
+.nextintake,
+.reminderframe {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.nextintake {
+  align-self: stretch;
+  justify-content: space-between;
+}
+.expiryframe {
+  border-radius: 10px;
+  background-color: #fff;
+  width: 4.13rem;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 0.31rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+.inhalerstats,
+.myinhalerwidget {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.38rem;
+  text-align: left;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.inhalerstats {
+  height: 5.25rem;	
+  padding: 0 0.63rem;
+  box-sizing: border-box;
+  font-size: 0.88rem;
+}
+.myinhalerwidget {
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 0.63rem;
+  font-size: 1rem;
+}
+.hospital-icon1 {
+  position: relative;
+  width: 1.56rem;
+  height: 1.69rem;
+  object-fit: cover;
+}
+.emergency {
+  margin: 0;
+  position: relative;
+  font-size: inherit;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: inherit;
+  display: inline-block;
+  width: 5.5rem;
+  flex-shrink: 0;
+}
+.header6 {
+  text-decoration: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  color: inherit;
+}
+.add-phone-icon {
+  position: relative;
+  width: 3.06rem;
+  height: 2.95rem;
+  object-fit: cover;
+}
+.callHomeBtn {
+  cursor: pointer;
+  border: 0;
+  padding: 1.88rem 1.94rem;
+  background-color: #febb60;
+  align-self: stretch;
+  flex: 1;
+  border-radius: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.callHomeBtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
+.crisis-steps {
+  margin: 0;
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: "Plus Jakarta Sans";
+  color: #1e385f;
+  text-align: left;
+}
+.sneeze-icon {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: cover;
+}
+.actions,
+.crisisstepsbtn {
+  align-self: stretch;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.63rem;
+  cursor: pointer;
+  border: 0;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+/*Reference - inspired from https://codepen.io/jal238/pen/myEGQW */
+.crisisstepsbtn:hover {
+  box-shadow: 0 0 12px rgba(0,0,0,0.7) inset;
+}
+/* end of reference */
+.actions {
+  flex-direction: row;
+  gap: 1.25rem;
+}
+.emergencywidget,
+.mainhome {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.emergencywidget {
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  height: 11.25rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0.38rem 1.25rem;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.mainhome {
+  justify-content: flex-start;
+  padding: 0 1.5rem;
+  gap: 0.75rem;
+  z-index: 1;  
+}
+.cloud {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.frame {
+  margin: 0;
+  align-self: stretch;
+  border-radius: 32px 32px 0 0;
+  background-color: #fff;
+  box-shadow: 0 0 34px rgba(0, 0, 0, 0.6);
+  height: 5.13rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.63rem 1.88rem;
+  box-sizing: border-box;
+}
+.home1,
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.navbar {
+  margin: 0 !important; /*Added*/
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  justify-content: flex-end;
+  mix-blend-mode: normal;
+  z-index: 2;
+}
+.home1 {
+  position: relative;
+  border-radius: 32px;
+  width: 100%;
+  min-height: 100dvh;
+  overflow-y: auto;
+  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1.88rem 0 5.31rem;
+  box-sizing: border-box;
+  gap: 0.75rem;
+  background-image: url(../public/DarkShapesBackgroundMain.png);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top;
+}
+.inhaler-icon6 {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: cover;
+}
+.quick-intake {
+  margin: 0;
+  position: relative;
+  font-size: inherit;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: inherit;
+}
+.close-icon5 {
+  position: relative;
+  width: 0.93rem;
+  height: 0.93rem;
+  object-fit: cover;
+}
+.close5 {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 1.13rem;
+  height: 1.13rem;
+}
+.headerquickintake {
+  align-self: stretch;
+  border-radius: 12px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.31rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.quickintakepopup-child {
+  position: relative;
+  width: 17.81rem;
+  height: 0.06rem;
+  object-fit: contain;
+}
+.favinhalervar {
+  position: relative;
+  font-size: 0.88rem;
+  letter-spacing: -0.01em;
+}
+.maininhalerintake {
+  align-self: stretch;
+  height: 3.38rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0 0.63rem;
+  box-sizing: border-box;
+  gap: 0.63rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.text34 {
+  position: relative;
+  letter-spacing: -0.01em;
+}
+.cancelbtn,
+.content14 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.content14 {
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+.cancelbtn {
+  align-self: stretch;
+  border-radius: 12px;
+  background-color: #b2e1e7;
+  overflow: hidden;
+  justify-content: center;
+  padding: 1rem 2rem;
+  cursor: pointer;
+}
+.quickintakepopup-item {
+  position: relative;
+  width: 17.56rem;
+  height: 0.88rem;
+  object-fit: contain;
+}
+.quickintakepopup {
+  position: relative;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  width: 20.06rem;
+  min-height: 50.75rem;
+  overflow: auto;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.44rem 1.25rem 0.63rem;
+  box-sizing: border-box;
+  gap: 0.63rem;
+  max-width: 90%;
+  max-height: 90%;
+  text-align: left;
+  font-size: 1rem;
+  color: #fff;
+  font-family: "Plus Jakarta Sans";
+}

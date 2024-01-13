@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
+    <link rel="stylesheet" href="../css/Emergency3.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap"
+    />
+  </head>
+  <body>
+  <div id="overlay" class="overlay" style="display: none;"></div>
+  <div class="emergency-3">
+      <header class="headeremergency" id="headerEmegency">
+        <button class="top-nav5" id="back">
+          <div class="top-nav6">
+            <img
+              class="emergencylogo-icon"
+              alt=""
+              src="../public/monotone-chevron-left-lg@2x.png"
+            />
+
+            <div class="text29">OTP Setup</div>
+            <div class="monotone-question4">
+              <img class="vector-icon10" alt="" src="../public/vector@2x.png" />
+
+              <div class="vector4"></div>
+            </div>
+          </div>
+        </button>
+        <section class="headerlogos1">
+          <img
+            class="asthmapp-logo-light-12"
+            alt=""
+            src="../public/asthmappLogoLight@2x.png"
+          />
+
+          <img
+            class="emergencylogo-icon"
+            alt=""
+            src="../public/eergencyLogo@2x.png"
+          />
+        </section>
+        <button class="close2" id="close">
+          <img class="close-icon2" alt="" src="../public/close@2x.png" />
+        </button>
+      </header>
+      <main class="mainemergency3" id="mainEergencyStats">
+        <button class="newcrisislog" id="newCrisisLogBtn">
+          <h1 class="newcrisislogtext">New Crisis Log</h1>
+        </button>
+        <h1 class="my-last-crisis">My last crisis</h1>
+        <img
+          class="stats-graph-icon"
+          alt=""
+          src="../public/stats-graph@2x.png"
+        />
+
+        <h1 class="my-last-crisis">What to look out for</h1>
+        <section class="allergenssymptoms" id="symptomsAndAllergens">
+          <h1 class="my-last-crisis">My Most Common Symptoms</h1>
+          <section class="frame-parent" id="symptomsSection">
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="../public/sneeze-blue@2x.png" />
+
+              <div class="cough1">Cough</div>
+            </div>
+            <div class="torso-group">
+              <img class="exercise-icon" alt="" src="../public/torso1@2x.png" />
+
+              <div class="pollen">
+                <p class="chest1">Chest</p>
+                <p class="chest1">compressions</p>
+              </div>
+            </div>
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="../public/lungs1@2x.png" />
+
+              <div class="pollen">Dysponea</div>
+            </div>
+          </section>
+          <h1 class="my-last-crisis">My Most Common Allergens</h1>
+          <section class="frame-parent" id="allergensSection">
+            <div class="exercise-parent">
+              <img
+                class="exercise-icon"
+                alt=""
+                src="../public/exercise@2x.png"
+              />
+
+              <div class="pollen">Activities</div>
+            </div>
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="../public/broom1@2x.png" />
+
+              <div class="pollen">Dust</div>
+            </div>
+            <div class="sneeze-container">
+              <img
+                class="exercise-icon"
+                alt=""
+                src="../public/particle@2x.png"
+              />
+
+              <div class="pollen">Pollen</div>
+            </div>
+          </section>
+        </section>
+      </main>
+      <nav class="navbaremergency" id="navBarEmergency">
+        <button class="home4" id="homeBtn">
+          <img class="home-icon2" alt="" src="../public/home@2x.png" />
+        </button>
+        <button class="home4" id="airQltyBtn">
+          <img class="home-icon2" alt="" src="../public/airQualityLogoGrey@2x.png" />
+        </button>
+        <button class="home4" id="inhalerBtn">
+          <img class="home-icon2" alt="" src="../public/inhalerLogo@2x.png" />
+        </button>
+        <img class="exercise-icon" alt="" src="../public/hospital2@2x.png" />
+      </nav>
+    </div>
+
+    <div id="addCrisisPopup" class="popup-overlay" style="display: none">
+      <!-- Content from AddCrisis.html will be loaded here -->
+    </div>
+
+    <script src="../js/Emergency3.js" type="module"></script>
+    <script src="../js/AddCrisis.js" type="module"></script>
+  </body>
+</html>

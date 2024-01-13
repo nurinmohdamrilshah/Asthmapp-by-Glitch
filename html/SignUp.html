@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, width=device-width" />
+
+    <link rel="stylesheet" href="../css/SignUp.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="sign-up6">
+      <header class="header3" id="HeaderSignUp">
+        <div class="headercontents2">
+          <button class="top-nav4" id="backBtn">
+            <img
+              class="monotone-chevron-left-lg3"
+              alt=""
+              src="../public/monotone-chevron-left-lg1@2x.png"
+            />
+
+            <div class="text20">My Conversations</div>
+            <div class="monotone-question3">
+              <img class="vector-icon7" alt="" src="../public/vector@2x.png" />
+
+              <div class="vector3"></div>
+            </div>
+          </button>
+          <img
+            class="asthmapp-logo-dark-11"
+            loading="eager"
+            alt=""
+            src="../public/AsthmappLogoDark@2x.png"
+          />
+
+          <h1 class="signuptitle" id="h1SignUp">Sign Up For Free!</h1>
+        </div>
+      </header>
+      <main class="mainsignup" id="mainSignUp">
+        <div class="form1">
+          <section class="email2" id="sectionEmail">
+            <div class="input-fields4">
+              <h2 class="name4" id="h2EmailAdress">Email Address</h2>
+              <div class="content8">
+                <div class="text21">
+                  <img
+                    class="monotone-chevron-left-lg3"
+                    alt=""
+                    src="../public/emailIcon@2x.png"
+                  />
+
+                  <input
+                    class="loremus-ipsumus-d4"
+                    name="emailAdress"
+                    id="emailAdress"
+                    placeholder="example@gmail.com"
+                    type="email"
+                  />
+                </div>
+                <img
+                  class="solid-eye-icon2"
+                  alt=""
+                  src="../public/eye-password@2x.png"
+                />
+              </div>
+            </div>
+          </section>
+          <section class="email2" id="sectionUserName">
+            <div class="input-fields4">
+              <h2 class="name4" id="h2Username">Username</h2>
+              <div class="content8">
+                <input
+                  class="text22"
+                  name="userName"
+                  id="userName"
+                  placeholder="example"
+                  type="text"
+                />
+
+                <img
+                  class="solid-eye-icon2"
+                  alt=""
+                  src="../public/eye-password@2x.png"
+                />
+              </div>
+            </div>
+          </section>
+          <section class="frame1" id="sectionPasswords">
+            <section class="password2" id="sectionNewPassword">
+              <div class="input-fields4">
+                <h2 class="name6" id="h2Password">Password</h2>
+                <div class="content8">
+                  <div class="text21">
+                    <img
+                      class="passwordicon2"
+                      alt=""
+                      src="../public/passwordicon.svg"
+                    />
+
+                    <input
+                      class="loremus-ipsumus-d5"
+                      name="newPassword"
+                      id="newPassword"
+                      placeholder="********"
+                      type="password"
+                    />
+                  </div>
+                  <button class="solid-eye2" id="PasswordEye2">
+                    <img
+                      class="vector-icon8"
+                      alt=""
+                      src="../public/eye-password@2x.png"
+                    />
+                  </button>
+                </div>
+              </div>
+            </section>
+            <div class="password3">
+              <div class="input-fields4">
+                <h2 class="name6" id="h2ConfirmPassword">Confirm Password</h2>
+                <div class="content8">
+                  <div class="text21">
+                    <img
+                      class="passwordicon2"
+                      alt=""
+                      src="../public/passwordicon.svg"
+                    />
+
+                    <input
+                      class="loremus-ipsumus-d5"
+                      name="passwordConfirm"
+                      id="passwordConfirm"
+                      type="password"
+                    />
+                  </div>
+                  <button class="solid-eye2" id="PasswordEye2">
+                    <img
+                      class="vector-icon8"
+                      alt=""
+                      src="../public/eye-password@2x.png"
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <section class="alert-notification-main2" id="errorSection">
+              <div class="alert-notification-main3">
+                <div class="content12">
+                  <img
+                    class="solid-warning-icon1"
+                    alt=""
+                    src="../public/solid-warning@2x.png"
+                  />
+
+                  <small class="must-have-a1" id="errorPassword"
+                    >ERROR: Invalid Password
+                  </small>
+                </div>
+              </div>
+            </section>
+          </section>
+        </div>
+        <button class="button-primary6" autofocus="{true}" id="signUpBtn">
+          <div class="button-primary7" id="buttonPrimaryContainer">
+            <div class="content13">
+              <b class="text25">Sign Up</b>
+            </div>
+          </div>
+        </button>
+      </main>
+    </div>
+    <!-- Include Firebase JavaScript SDK -->
+<!--    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>-->
+<!--    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>-->
+    <script src="./dist/index.js">
+    </script>
+
+  </body>
+</html>
+
+
+<!--var topNav = document.getElementById("backBtn");-->
+<!--if (topNav) {-->
+<!--topNav.addEventListener("click", function (e) {-->
+<!--window.location.href = "./index.html";-->
+<!--});-->
+<!--}-->
+
+<!--var buttonPrimaryContainer = document.getElementById("buttonPrimaryContainer");-->
+<!--if (buttonPrimaryContainer) {-->
+<!--buttonPrimaryContainer.addEventListener("click", function (e) {-->
+<!--window.location.href = "./Settings.html";-->
+<!--});-->
+<!--}-->
+
+<!--var buttonPrimary = document.getElementById("signUpBtn");-->
+<!--if (buttonPrimary) {-->
+<!--buttonPrimary.addEventListener("click", function (e) {-->
+<!--window.location.href = "./Home.html";-->
+<!--});-->
+<!--}-->
