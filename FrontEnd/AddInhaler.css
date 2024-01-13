@@ -1,0 +1,419 @@
+.inhaler-icon20 {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: cover;
+}
+.add-inhalermodify-inhaler1 {
+  margin: 0;
+  position: relative;
+  font-size: inherit;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  font-family: inherit;
+}
+.close-icon15 {
+  position: relative;
+  width: 0.93rem;
+  height: 0.93rem;
+  object-fit: cover;
+}
+.close15 {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 1.13rem;
+  height: 1.13rem;
+}
+.inhaler-container {
+  align-self: stretch;
+  border-radius: 12px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.31rem;
+  gap: 0.63rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.add-inhaler-child {
+  position: relative;
+  width: 17.81rem;
+  height: 0.06rem;
+  object-fit: contain;
+}
+.inhaler-name1,
+.statistics10 {
+  margin: 0;
+  position: relative;
+  letter-spacing: -0.01em;
+  font-family: inherit;
+}
+.statistics10 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.inhaler-name1 {
+  font-size: inherit;
+  font-weight: 400;
+}
+.inhaler-name-parent,
+.text-input8 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.text-input8 {
+  border: 0;
+  outline: 0;
+  font-family: "Plus Jakarta Sans";
+  font-size: 0.88rem;
+  background-color: #f0ecec;
+  border-radius: 12px;
+  width: 5.63rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  justify-content: center;
+  padding: 0.13rem 0.31rem;
+  box-sizing: border-box;
+  color: #1e385f;
+}
+.inhaler-name-parent {
+  align-self: stretch;
+  height: 1.5rem;
+  justify-content: space-between;
+}
+.frame-child1,
+.statistics-parent7 {
+  font-family: "Plus Jakarta Sans";
+  font-size: 0.88rem;
+  color: #1e385f;
+}
+.statistics-parent7 {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0 0.63rem;
+  gap: 0.63rem;
+  text-align: left;
+}
+.frame-child1 {
+  border: 0;
+  outline: 0;
+  background-color: #f0ecec;
+  position: relative;
+  border-radius: 12px;
+  width: 5.19rem;
+  height: 1.56rem;
+  padding: 0.25rem 1rem 0.19rem;
+  box-sizing: border-box;
+}
+.expiry-date-parent {
+  align-self: stretch;
+  height: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+}
+.prevention2,
+.statistics-parent8 {
+  font-family: "Plus Jakarta Sans";
+  color: #1e385f;
+}
+.statistics-parent8 {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 0 0.63rem;
+  gap: 0.63rem;
+  text-align: left;
+  font-size: 1rem;
+}
+.prevention2 {
+  position: relative;
+  font-size: 0.5rem;
+  letter-spacing: -0.01em;
+  text-align: center;
+  display: inline-block;
+  width: 2.81rem;
+}
+.schedule-group {
+  cursor: pointer;
+  border: 0;
+  padding: 0.31rem;
+  background-color: #f0ecec;
+  border-radius: 10px;
+  width: 6.88rem;
+  height: 3.13rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 0.38rem;
+}
+.coughing-group,
+.frame-parent6 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.coughing-group {
+  cursor: pointer;
+  border: 0;
+  padding: 0.31rem;
+  background-color: #f0ecec;
+  border-radius: 10px;
+  width: 6.88rem;
+  height: 3.13rem;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.frame-parent6 {
+  align-self: stretch;
+  flex-direction: row;
+}
+.plus-math-wrapper {
+  cursor: pointer;
+  border: 0;
+  padding: 0.13rem;
+  background-color: #b2e1e7;
+  border-radius: 64px;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.alarm-parent,
+.statistics-parent10 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.statistics-parent10 {
+  align-self: stretch;
+  justify-content: space-between;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e385f;
+  font-family: "Plus Jakarta Sans";
+}
+.alarm-parent {
+  justify-content: flex-start;
+  gap: 0.31rem;
+}
+.frame-parent7,
+.text48 {
+  font-family: "Plus Jakarta Sans";
+  text-align: left;
+}
+.frame-parent7 {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 0 0.63rem;
+  gap: 0.63rem;
+  font-size: 0.88rem;
+  color: #1e385f;
+}
+.text48 {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.content25 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+.button-primary15,
+.button-primary16 {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.button-primary16 {
+  cursor: pointer;
+  border: 0;
+  padding: 1rem 2rem;
+  background-color: #b2e1e7;
+  flex: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  align-items: center;
+}
+.button-primary15 {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  height: 2.38rem;
+  align-items: flex-start;
+}
+.add-inhaler1,
+.frame11 {
+  display: flex;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+.add-inhaler1 {
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
+  width: 20.06rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0.44rem 1.25rem 0.63rem;
+  gap: 0.63rem;
+}
+.frame11 {
+  position: absolute;
+  width: 100%;
+  top: 4.88rem;
+  right: 0;
+  left: 0;
+  filter: drop-shadow(0 0 34px rgba(0, 0, 0, 0.6));
+  height: 45.88rem;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 2.81rem 1.88rem;
+}
+.text-icon10 {
+  top: calc(50% - 5px);
+  left: 2.13rem;
+  width: 1.75rem;
+  height: 0.69rem;
+}
+.battery-icon10,
+.notch-icon10,
+.text-icon10 {
+  position: absolute;
+  object-fit: cover;
+}
+.notch-icon10 {
+  top: -0.12rem;
+  left: 4.88rem;
+  width: 0;
+  height: 0;
+}
+.battery-icon10 {
+  top: 0;
+  right: 0.01rem;
+  width: 1.52rem;
+  height: 0.71rem;
+}
+.mobile-signal-icon10,
+.wifi-icon10 {
+  position: relative;
+  width: 0.96rem;
+  height: 0.69rem;
+  object-fit: cover;
+}
+.mobile-signal-icon10 {
+  width: 1.06rem;
+  height: 0.67rem;
+}
+.recording-indicator-icon10 {
+  position: absolute;
+  top: -0.58rem;
+  right: 3.53rem;
+  width: 0.38rem;
+  height: 0.38rem;
+  object-fit: cover;
+  display: none;
+}
+.right-side10 {
+  position: absolute;
+  top: 1.08rem;
+  right: 0.91rem;
+  width: 4.17rem;
+  height: 0.71rem;
+}
+.iphone-x-or-newer10 {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 187.5px);
+  width: 23.44rem;
+  height: 2.75rem;
+  overflow: hidden;
+}
+.asthmapp-logo-light-112 {
+  position: relative;
+  width: 6.88rem;
+  height: 3.66rem;
+  object-fit: cover;
+}
+.asthmapp-logo-light-1-parent1 {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.frame-inner3 {
+  position: absolute;
+  bottom: 0.03rem;
+  left: calc(50% - 187.5px);
+  width: 23.44rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.63rem;
+  box-sizing: border-box;
+}
+.frame12,
+.home-indicator8 {
+  position: absolute;
+  background-color: #1e385f;
+}
+.frame12 {
+  top: 0;
+  left: 0;
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  width: 23.44rem;
+  height: 5.75rem;
+  overflow: hidden;
+}
+.home-indicator8 {
+  bottom: 0.5rem;
+  left: calc(50% - 66.5px);
+  border-radius: 1.5px;
+  width: 8.38rem;
+  height: 0.31rem;
+}
+.home-indicator7 {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 187.5px);
+  width: 23.44rem;
+  height: 2.13rem;
+}
+.add-inhaler {
+  position: relative;
+  border-radius: 32px;
+  background-color: #7a8aa1;
+  width: 100%;
+  height: 50.75rem;
+  overflow: hidden;
+}

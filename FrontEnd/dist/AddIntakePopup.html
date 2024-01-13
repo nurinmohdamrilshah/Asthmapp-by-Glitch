@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <link rel="stylesheet" href="/AddIntakePopup.426864a2.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+  </head>
+  <body>
+    <div class="addintakepopup">
+      <header class="headeraddintake" id="headerAddIntake">
+        <img class="inhaler-icon7" alt="" src="/inhalerLogoDark@2x.6d50cc99.png">
+
+        <b class="add-intake">Add Intake</b>
+        <button class="close6" id="closeBtn">
+          <img class="close-icon6" alt="" src="/close1@2x.41885bbc.png">
+        </button>
+      </header>
+      <img class="addintakepopup-child" alt="" src="/vector-4@2x.2f82d1a8.png">
+
+      <section class="inputtimeintakesecion" id="inputTimeIntakeSecion">
+        <h1 class="header17">Input time of intake</h1>
+        <div class="inputtimeintakediv" id="inputTimeIntakeDiv">
+          <h2 class="time-of-intake">Time of intake:</h2>
+          <input class="intaketimevar" name="intakeTimeVar" placeholder="Time Of Intake" type="datetime-local">
+        </div>
+      </section>
+      <section class="inputnbpuffssection" id="inputNbPuffsSection">
+        <h1 class="header17">Input number of puffs</h1>
+        <div class="inputtimeintakediv" id="inputNbPuffsDiv">
+          <h2 class="time-of-intake">Number of puffs</h2>
+          <input class="intaketimevar" name="nbPuffsVar" placeholder="Number Of Puffs" type="number">
+        </div>
+      </section>
+      <section class="inputtimeintakesecion" id="selectInhalerSection">
+        <b class="add-intake">Select Inhaler</b>
+        <section class="btnssection" id="symptomsSection">
+          <button class="inhaler11" id="inhaler1Btn">
+            <div class="inhaler12">Inhaler1</div>
+          </button>
+          <button class="inhaler11" id="inhaler2Btn">
+            <div class="inhaler12">Inhaler2</div>
+          </button>
+        </section>
+      </section>
+      <button class="addintakebtn" id="addIntakeBtn">
+        <div class="content15">
+          <b class="text35">Add Intake</b>
+        </div>
+      </button>
+    </div>
+
+    <script>var popupclose = document.getElementById("closeBtn");
+if (popupclose) popupclose.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
+if (popupaddIntakeBtn) popupaddIntakeBtn.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+
+</script>
+  <script src="/AddIntakePopup.b254627e.js"></script></body>
+</html>

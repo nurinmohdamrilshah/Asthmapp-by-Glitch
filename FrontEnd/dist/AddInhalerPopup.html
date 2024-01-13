@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <link rel="stylesheet" href="/AddInhalerPopup.af999256.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+  </head>
+  <body>
+    <div class="addinhalerpopup">
+      <header class="headereditinhaler" id="headerEditInhaler">
+        <img class="schedule-icon" alt="" src="/inhalerLogoDark@2x.6d50cc99.png">
+
+        <h1 class="add-inhalermodify-inhaler">Add Inhaler/Modify inhaler</h1>
+        <button class="close7" id="closeBtn">
+          <img class="close-icon7" alt="" src="/close1@2x.41885bbc.png">
+        </button>
+      </header>
+      <img class="addinhalerpopup-child" alt="" src="/vector-4@2x.2f82d1a8.png">
+
+      <section class="inputinhalernamesection" id="inputInhalerNameSection">
+        <h1 class="header20">Input Inhaler Name</h1>
+        <div class="inhalername">
+          <h3 class="inhaler-name">Inhaler Name:</h3>
+          <input class="text-input3" name="inhalerNameVar" placeholder="Name" type="text">
+        </div>
+        <div class="inhalername">
+          <h3 class="inhaler-name">Number of Doses:</h3>
+          <input class="text-input3" name="nbDosesInhalerVar" placeholder="Total doses" type="number">
+        </div>
+      </section>
+      <section class="inputexpirydatesection" id="inputExpiryDateSection">
+        <h1 class="add-inhalermodify-inhaler">Input Expiry Date</h1>
+        <div class="expirydate">
+          <h3 class="inhaler-name">Expiry Date:</h3>
+          <input class="expirydate-child" name="expiryDateVar" placeholder="date" type="date">
+        </div>
+      </section>
+      <section class="inputexpirydatesection" id="chooseInhalerTypeSection">
+        <h1 class="add-inhalermodify-inhaler">Choose inhaler type</h1>
+        <section class="inhalertypebtns" id="InhalerTypeBtns">
+          <button class="schedule-parent" id="preventionBtn">
+            <img class="schedule-icon" alt="" src="/schedule@2x.05aa0131.png">
+
+            <div class="prevention">Prevention</div>
+          </button>
+          <button class="coughing-parent" id="crisisInhalerBtn">
+            <img class="schedule-icon" alt="" src="/coughing@2x.d0f3f04b.png">
+
+            <div class="prevention">Crisis</div>
+          </button>
+        </section>
+      </section>
+      <img class="addinhalerpopup-child" alt="" src="/vector-6@2x.e785c995.png">
+
+      <section class="dosageprescriptionsection" id="dosagePrescriptionSection">
+        <header class="header23">
+          <h1 class="add-inhalermodify-inhaler">Dosage Prescription</h1>
+          <button class="addreminderbtn" id="addReminderBtn">
+            <img class="schedule-icon" alt="" src="/plus-math@2x.b153d77f.png">
+          </button>
+        </header>
+        <ul class="reminderul" id="reminderUL">
+          <div class="label" id="Label">
+            <img class="schedule-icon" alt="" src="/alarm@2x.73a4439f.png">
+
+            <h3 class="inhaler-name" id="NameOfDose">Dose 1</h3>
+          </div>
+          <input class="text-input5" name="reminderTimeVar" placeholder="Time" type="datetime-local">
+        </ul>
+      </section>
+      <button class="button-primary8" id="applyBtn">
+        <div class="content16">
+          <b class="text36">Submit Inhaler</b>
+        </div>
+      </button>
+    </div>
+
+    <script>var popupclose = document.getElementById("closeBtn");
+if (popupclose) popupclose.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+var popupbuttonPrimary = document.getElementById("applyBtn");
+if (popupbuttonPrimary) popupbuttonPrimary.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+
+</script>
+  <script src="/AddInhalerPopup.5c196ed4.js"></script></body>
+</html>

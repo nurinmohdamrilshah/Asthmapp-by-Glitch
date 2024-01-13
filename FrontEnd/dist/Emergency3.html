@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <link rel="stylesheet" href="/Emergency3.30e2ed77.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+  </head>
+  <body>
+    <div class="emergency-3">
+      <header class="headeremergency" id="headerEmegency">
+        <button class="top-nav5" id="back">
+          <div class="top-nav6">
+            <img class="emergencylogo-icon" alt="" src="/monotone-chevron-left-lg@2x.243b550b.png">
+
+            <div class="text29">OTP Setup</div>
+            <div class="monotone-question4">
+              <img class="vector-icon10" alt="" src="/vector@2x.e2e48276.png">
+
+              <div class="vector4"></div>
+            </div>
+          </div>
+        </button>
+        <section class="headerlogos1">
+          <img class="asthmapp-logo-light-12" alt="" src="/asthmappLogoLight@2x.aaf6479e.png">
+
+          <img class="emergencylogo-icon" alt="" src="/eergencyLogo@2x.982a1d2b.png">
+        </section>
+        <button class="close2" id="close">
+          <img class="close-icon2" alt="" src="/close@2x.be688429.png">
+        </button>
+      </header>
+      <main class="mainemergency3" id="mainEergencyStats">
+        <button class="newcrisislog" id="newCrisisLogBtn">
+          <h1 class="newcrisislogtext">New Crisis Log</h1>
+        </button>
+        <h1 class="my-last-crisis">My last crisis</h1>
+        <img class="stats-graph-icon" alt="" src="/stats-graph@2x.f765246f.png">
+
+        <h1 class="my-last-crisis">What to look out for</h1>
+        <section class="allergenssymptoms" id="symptomsAndAllergens">
+          <h1 class="my-last-crisis">My Most Common Symptoms</h1>
+          <section class="frame-parent" id="symptomsSection">
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="/sneeze3@2x.3f4d912c.png">
+
+              <div class="cough1">Cough</div>
+            </div>
+            <div class="torso-group">
+              <img class="exercise-icon" alt="" src="/torso1@2x.5e29a8f0.png">
+
+              <div class="pollen">
+                <p class="chest1">Chest</p>
+                <p class="chest1">compressions</p>
+              </div>
+            </div>
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="/lungs1@2x.02ab9220.png">
+
+              <div class="pollen">Dysponea</div>
+            </div>
+          </section>
+          <h1 class="my-last-crisis">My Most Common Allergens</h1>
+          <section class="frame-parent" id="allergensSection">
+            <div class="exercise-parent">
+              <img class="exercise-icon" alt="" src="/exercise@2x.96b2719f.png">
+
+              <div class="pollen">Activities</div>
+            </div>
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="/broom1@2x.86a2307b.png">
+
+              <div class="pollen">Dust</div>
+            </div>
+            <div class="sneeze-container">
+              <img class="exercise-icon" alt="" src="/particle@2x.8664f8b2.png">
+
+              <div class="pollen">Pollen</div>
+            </div>
+          </section>
+        </section>
+      </main>
+      <nav class="navbaremergency" id="navBarEmergency">
+        <button class="home4" id="homeBtn">
+          <img class="home-icon2" alt="" src="/home@2x.3319814c.png">
+        </button>
+        <button class="home4" id="airQltyBtn">
+          <img class="home-icon2" alt="" src="/cloud2@2x.3a876ea7.png">
+        </button>
+        <button class="home4" id="inhalerBtn">
+          <img class="home-icon2" alt="" src="/inhaler@2x.bc1882dc.png">
+        </button>
+        <img class="exercise-icon" alt="" src="/hospital2@2x.fb39b54e.png">
+      </nav>
+    </div>
+
+    <div id="addCrisisPopup" class="popup-overlay" style="display: none">
+      <div class="add-crisis">
+        <header class="header7">
+          <img class="torso-icon" alt="" src="/crisisLogo@2x.ddc2bd99.png">
+
+          <b class="add-crisis1">Add Crisis</b>
+          <button class="close1" id="close">
+            <img class="close-icon1" alt="" src="/close1@2x.41885bbc.png">
+          </button>
+        </header>
+        <img class="add-crisis-child" alt="" src="/vector-4@2x.2f82d1a8.png">
+
+        <section class="crisistime">
+          <h1 class="header8">Input crisis time</h1>
+          <div class="crisistimediv">
+            <h2 class="date-and-time">Date and time:</h2>
+            <input class="text-input" name="crisisDateInput" placeholder="Date & Time" type="datetime-local">
+          </div>
+        </section>
+        <section class="crisistime">
+          <h1 class="header9">Input symptoms</h1>
+          <section class="framebtns" id="symptomsSection">
+            <button class="sneeze-parent" id="wheezingBtn">
+              <img class="torso-icon" alt="" src="/sneeze1@2x.13f9fd25.png">
+
+              <div class="wheezing">Wheezing</div>
+            </button>
+            <button class="sneeze-parent" id="coughBtn">
+              <img class="torso-icon" alt="" src="/sneeze2@2x.057ff2e5.png">
+
+              <div class="wheezing">Cough</div>
+            </button>
+            <button class="torso-parent" id="chestCompressinsBtn">
+              <img class="torso-icon" alt="" src="/torso@2x.dad5a8a5.png">
+
+              <div class="chest-compressions">
+                <p class="chest">Chest</p>
+                <p class="chest">compressions</p>
+              </div>
+            </button>
+            <button class="lungs-parent" id="DysponeaBtn">
+              <img class="torso-icon" alt="" src="/lungs@2x.bec69d60.png">
+
+              <div class="dysponea">Dysponea</div>
+            </button>
+          </section>
+          <section class="framebtns" id="symptomsSection">
+            <button class="sneeze-parent" id="stressBtn">
+              <img class="torso-icon" alt="" src="/sad-face@2x.3bb2af02.png">
+
+              <div class="wheezing">Stress</div>
+            </button>
+            <button class="sneeze-parent" id="feverBtn">
+              <img class="torso-icon" alt="" src="/thermometer@2x.543ae8f9.png">
+
+              <div class="wheezing">Fever</div>
+            </button>
+            <button class="torso-parent" id="tingleBtn">
+              <img class="torso-icon" alt="" src="/stomach-pain@2x.1eaca773.png">
+
+              <div class="chest-compressions">Tingle</div>
+            </button>
+            <button class="lungs-parent" id="dizzinessBtn">
+              <img class="torso-icon" alt="" src="/dizzy-person@2x.e249e69f.png">
+
+              <div class="dysponea">Dizziness</div>
+            </button>
+          </section>
+        </section>
+        <section class="crisistime">
+          <h1 class="header9">Input allergen cause</h1>
+          <section class="framebtns" id="symptomsSection">
+            <button class="smoking-parent" id="smokeBtn">
+              <img class="torso-icon" alt="" src="/smoking@2x.44ce810c.png">
+
+              <div class="wheezing">Smoke</div>
+            </button>
+            <button class="smoking-parent" id="animalsBtn">
+              <img class="torso-icon" alt="" src="/pets@2x.4e670e52.png">
+
+              <div class="wheezing">Animals</div>
+            </button>
+            <button class="broom-parent" id="dustBtn">
+              <img class="torso-icon" alt="" src="/broom@2x.62cce0a5.png">
+
+              <div class="chest-compressions">Dust</div>
+            </button>
+            <button class="factory-parent" id="airQualityBtn">
+              <img class="torso-icon" alt="" src="/factory@2x.7fc0919f.png">
+
+              <div class="dysponea">Air Quality</div>
+            </button>
+            <button class="factory-parent" id="GreeneryBtn">
+              <img class="torso-icon" alt="" src="/forest@2x.1f5f9d9d.png">
+
+              <div class="dysponea">Greenery</div>
+            </button>
+          </section>
+          <section class="framebtns" id="symptomsSection">
+            <button class="smoking-parent" id="stressBtn">
+              <img class="torso-icon" alt="" src="/sad-face@2x.3bb2af02.png">
+
+              <div class="wheezing">Stress</div>
+            </button>
+            <button class="factory-parent" id="temp&HumidityBtn">
+              <img class="torso-icon" alt="" src="/thermometer1@2x.0d68a870.png">
+
+              <div class="wheezing">Temp & Humidity</div>
+            </button>
+            <button class="broom-parent" id="actiitiesBtn">
+              <img class="torso-icon" alt="" src="/running@2x.cec44ed7.png">
+
+              <div class="chest-compressions">Activities</div>
+            </button>
+            <button class="factory-parent" id="perfumesBtn">
+              <img class="torso-icon" alt="" src="/perfume@2x.8f1def67.png">
+
+              <div class="dysponea">Perfumes</div>
+            </button>
+            <button class="factory-parent" id="foodAllergyBtn">
+              <img class="torso-icon" alt="" src="/grocery-bag@2x.36d4e4f5.png">
+
+              <div class="dysponea">Food Allergy</div>
+            </button>
+          </section>
+        </section>
+        <section class="crisistime">
+          <h1 class="header9">Location</h1>
+          <section class="framebtns" id="symptomsSection">
+            <button class="smoking-parent" id="HomeLoctionBtn">
+              <img class="torso-icon" alt="" src="/exterior@2x.d90ea8d1.png">
+
+              <div class="wheezing">Home</div>
+            </button>
+            <button class="factory-parent" id="workSchoolBtn">
+              <img class="torso-icon" alt="" src="/business@2x.c0d3fe4d.png">
+
+              <div class="wheezing">Work/School</div>
+            </button>
+            <button class="broom-parent" id="outsideBtn">
+              <img class="torso-icon" alt="" src="/national-park@2x.bc739199.png">
+
+              <div class="chest-compressions">Outside</div>
+            </button>
+            <button class="factory-parent" id="friendHouseBtn">
+              <img class="torso-icon" alt="" src="/house@2x.c0dbd061.png">
+
+              <div class="dysponea">Friend House</div>
+            </button>
+            <button class="factory-parent" id="otherBtn">
+              <img class="torso-icon" alt="" src="/ellipsis@2x.5aea42c1.png">
+
+              <div class="dysponea">Other</div>
+            </button>
+          </section>
+          <section class="more">
+            <div class="more-detailoptional">More detail:(optional)</div>
+            <div class="text-input1">
+              <div class="text27">
+                <div class="more-detailoptional">Example</div>
+              </div>
+            </div>
+          </section>
+        </section>
+        <section class="crisistime">
+          <h1 class="header9">Resolution</h1>
+          <section class="framebtns" id="symptomsSection">
+            <button class="sneeze-parent" id="inhalerResolBtn">
+              <img class="torso-icon" alt="" src="/asthma@2x.598f3dfe.png">
+
+              <div class="wheezing">Inhaler</div>
+            </button>
+            <button class="sneeze-parent" id="hospitalizationBtn">
+              <img class="torso-icon" alt="" src="/hospital-bed@2x.4b3ccb41.png">
+
+              <div class="chest-compressions">Hospitalization</div>
+            </button>
+            <button class="sneeze-parent" id="oxygenMaskBtn">
+              <img class="torso-icon" alt="" src="/patient-oxygen-mask@2x.17230d35.png">
+
+              <div class="chest-compressions">Oxygen Mask</div>
+            </button>
+            <button class="torso-parent" id="BreathingExercisesBtn">
+              <img class="torso-icon" alt="" src="/lungs@2x.bec69d60.png">
+
+              <div class="breathing-exercises">Breathing exercises</div>
+            </button>
+          </section>
+          <section class="more">
+            <h2 class="date-and-time">Time of resolution</h2>
+            <input class="text-input2" name="resolutionTimeInput" placeholder="Date & Time" type="datetime-local">
+          </section>
+        </section>
+        <div class="addcrisisbtn" id="popupaddCrisisBtnContainer">
+          <b class="more-detailoptional">Sign In</b>
+        </div>
+      </div>
+    </div>
+
+    <script>var popupclose = document.getElementById("close");
+if (popupclose) popupclose.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
+if (popupaddCrisisBtnContainer) popupaddCrisisBtnContainer.addEventListener("click", function(e) {
+    var popup = e.currentTarget.parentNode;
+    function isOverlay(node) {
+        return !!(node && node.classList && node.classList.contains("popup-overlay"));
+    }
+    while(popup && !isOverlay(popup))popup = popup.parentNode;
+    if (isOverlay(popup)) popup.style.display = "none";
+});
+var topNav = document.getElementById("back");
+if (topNav) topNav.addEventListener("click", function(e) {
+    window.location.href = "./Emergency1.html";
+});
+var close = document.getElementById("close");
+if (close) close.addEventListener("click", function(e) {
+    window.location.href = "./Home.html";
+});
+var newCrisisLog = document.getElementById("newCrisisLogBtn");
+if (newCrisisLog) newCrisisLog.addEventListener("click", function() {
+    var popup = document.getElementById("addCrisisPopup");
+    if (!popup) return;
+    var popupStyle = popup.style;
+    if (popupStyle) {
+        popupStyle.display = "flex";
+        popupStyle.zIndex = 100;
+        popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+        popupStyle.alignItems = "center";
+        popupStyle.justifyContent = "center";
+    }
+    popup.setAttribute("closable", "");
+    var onClick = popup.onClick || function(e) {
+        if (e.target === popup && popup.hasAttribute("closable")) popupStyle.display = "none";
+    };
+    popup.addEventListener("click", onClick);
+});
+var home = document.getElementById("homeBtn");
+if (home) home.addEventListener("click", function(e) {
+    window.location.href = "./Home.html";
+});
+var cloud = document.getElementById("airQltyBtn");
+if (cloud) cloud.addEventListener("click", function(e) {
+    window.location.href = "./AirQuality01.html";
+});
+var inhaler = document.getElementById("inhalerBtn");
+if (inhaler) inhaler.addEventListener("click", function(e) {
+    window.location.href = "./MyInhaler.html";
+});
+
+</script>
+  <script src="/Emergency3.fec699c1.js"></script></body>
+</html>
