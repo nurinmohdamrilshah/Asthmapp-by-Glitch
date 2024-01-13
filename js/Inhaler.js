@@ -1,7 +1,6 @@
-
-export class Dosage{
+class Dosage{
     constructor(time){
-        this.reminderTime = time;
+        this.reminderTime = Date.parse(time);
         this.maxPuffAllowed = 2;
     }
     getReminderTime(){
@@ -12,7 +11,7 @@ export class Dosage{
     }
 }
 
-export class Intake{
+class Intake{
     static allIntakes=[]
     constructor(intakeTime, puffs, whichInhaler){
         this.timestamp = Date.parse(intakeTime);
@@ -28,7 +27,7 @@ export class Intake{
         return this.puffTaken
     }
     forWhichInhaler(){
-        return this.inhaler
+        return this.inhaler.getName()
     }
     static getAllIntakes(){
         return Intake.allIntakes;
@@ -38,9 +37,9 @@ export class Intake{
     }
 }
 
-export class Inhaler{
+class Inhaler{
     static inhalers = [];
-    //static favInhaler = null;
+    static favInhaler = null;
 
     constructor(inhalerName,vol,expDate,type){
         this.volume = vol;
@@ -68,36 +67,25 @@ export class Inhaler{
     }
 
     setDose(intakeTime){
-        this.newDose = new Dosage(intakeTime);
-        this.dose.push(this.newDose);
+        this.dose.push(new Dosage(intakeTime));
         let now = Date.now();
         // setting next dose using for loop
-        for (let i = 0; i < this.getAllDoses().length;i++){
+        for (let i = 0; i >= this.getAllDoses().length();i++){
             let doses = this.getAllDoses();
             let allDiff = [];
-            if (doses[i].getReminderTime().getTime()>now){
-                let diff = (doses[i].getReminderTime().getTime())-now;
+            if (doses(i).getTime()>now.getTime()){
+                let diff = doses(i).getTime()-now.getTime();
                 allDiff.push(diff);
-                if (Math.min.apply(Math,allDiff) === diff){
-                    this.nextDose = doses[i];
+                if (allDiff.min() === diff){
+                    this.nextDose = doses(i);
                 }
             }
+            else this.dose.splice(i,1)
         }
-    }
-    getVol(){
-        return this.volume
-    }
-
-    getNextDose(){
-        return this.nextDose
-    }
-
-    getNewDose(){
-        return this.newDose
     }
 
     getDose(index){
-        return this.dose[index];
+        return this.dose(index);
     }
 
     getAllDoses(){
@@ -115,10 +103,6 @@ export class Inhaler{
         //if (this.lastIntakeTime<(this.nextDose.getTime()-3600000)){}
         this.volume = this.volume - (this.lastIntake.getPuffs()*5);
         //this.isAlmostEmpty();
-    }
-
-    getLastIntake(){
-        return this.lastIntake
     }
 
     removeLastIntake(){
@@ -148,14 +132,14 @@ export class Inhaler{
         return Inhaler.inhalers[index];
     }
     static getFavInhaler(){
-
         return Inhaler.favInhaler
     }
 
     static getAllInhalers(){
         return Inhaler.inhalers;
     }
-    // setFav(){
-    //     this.name = this.name + '(fav)';
-    // }
+    setFav(){
+        Inhaler.favInhaler=this;
+    }
+
 }
