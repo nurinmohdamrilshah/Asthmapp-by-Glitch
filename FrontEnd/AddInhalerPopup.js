@@ -143,7 +143,7 @@ addInhalerBtn.addEventListener('click', function () {
                 let newInhalerDB = child(inhalerDB,'/'+newInhaler.getName())
                 set(newInhalerDB, {
                     inhaler: newInhaler,
-                    fav: null
+                    fav: false
                 }).then(r => {})
                 for(let i=0;i<=reminderTimes.length;i++) {
                     newInhaler.setDose(new Date(reminderTimes[i]));
