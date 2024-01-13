@@ -1,0 +1,444 @@
+.monotone-chevron-left-lg7 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+}
+
+.text39 {
+  letter-spacing: -.01em;
+  color: #090e1d;
+  text-align: left;
+  flex-shrink: 0;
+  width: 17.94rem;
+  height: 1.56rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: none;
+  position: relative;
+}
+
+.vector-icon13 {
+  object-fit: cover;
+  border-radius: 3px;
+  width: 41.67%;
+  max-width: 100%;
+  height: 54.17%;
+  max-height: 100%;
+  position: absolute;
+  inset: 16.67% 29.17% 29.17%;
+  overflow: hidden;
+}
+
+.vector7 {
+  background-color: #090e1d;
+  border-radius: .5px;
+  width: 8.33%;
+  height: 8.33%;
+  position: absolute;
+  inset: 79.17% 45.83% 12.5%;
+}
+
+.monotone-question7 {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: none;
+  position: relative;
+}
+
+.top-nav11, .top-nav12 {
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  display: flex;
+}
+
+.top-nav12 {
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-nav11 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  align-items: flex-start;
+  width: 1.75rem;
+  padding: 0;
+}
+
+.asthmapp-logo-light-17 {
+  object-fit: cover;
+  width: 6.88rem;
+  height: 3.66rem;
+  position: relative;
+}
+
+.headerlogos6 {
+  flex-direction: column;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.close-icon10 {
+  object-fit: cover;
+  width: .93rem;
+  height: .93rem;
+  position: relative;
+}
+
+.close10 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 1.13rem;
+  height: 1.13rem;
+  padding: 0;
+  position: relative;
+}
+
+.headerairquality1 {
+  background-color: #1e385f;
+  border-radius: 0 0 24px 24px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: flex-start;
+  padding: .75rem 1.5rem .31rem;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 4px 4px #00000040;
+}
+
+.your-area3 {
+  letter-spacing: -.01em;
+  color: #7a8aa1;
+  text-align: left;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.londonbtn {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 3.75rem;
+  height: 1.13rem;
+  padding: 0;
+  position: relative;
+}
+
+.travel {
+  letter-spacing: -.01em;
+  position: relative;
+}
+
+.navairqltytravel, .travelpageselect {
+  border-radius: 10px;
+  align-items: center;
+  display: flex;
+}
+
+.travelpageselect {
+  background-color: #b2e1e7;
+  flex-direction: column;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding: .31rem .63rem;
+}
+
+.navairqltytravel {
+  text-align: left;
+  color: #fff;
+  background-color: #fff;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  margin: 0;
+  padding: 0 0 0 .63rem;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+  box-shadow: 0 4px 4px #00000040;
+}
+
+.travelmap-icon {
+  object-fit: cover;
+  width: 21.44rem;
+  height: 13.63rem;
+  position: relative;
+}
+
+.aqi2, .b12 {
+  letter-spacing: -.01em;
+  position: relative;
+}
+
+.aqi2 {
+  font-size: inherit;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.b12 {
+  color: #4d6b4c;
+  text-align: center;
+  font-size: 1.63rem;
+}
+
+.aqi-widget2, .pollutants1 {
+  text-align: left;
+  color: #1e385f;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: flex-start;
+  font-family: Plus Jakarta Sans;
+  display: flex;
+}
+
+.aqi-widget2 {
+  background-color: #b6ddb4;
+  border-radius: 0 36px;
+  padding: .38rem 2.25rem;
+  font-size: 1rem;
+}
+
+.pollutants1 {
+  padding: 0 .63rem;
+  font-size: .88rem;
+  overflow: hidden;
+}
+
+.heading3 {
+  letter-spacing: -.01em;
+  width: 2.25rem;
+  height: 1.13rem;
+  display: inline-block;
+  position: absolute;
+  top: calc(50% - 9px);
+  left: calc(50% - 18px);
+}
+
+.path-icon6, .path-icon7 {
+  object-fit: cover;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.path-icon7 {
+  width: 50%;
+  left: 50%;
+}
+
+.frame-div {
+  width: 2.5rem;
+  height: 2.5rem;
+  position: relative;
+}
+
+.percentages1 {
+  text-align: center;
+  color: #1e385f;
+  background-color: #fff;
+  border-radius: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: center;
+  padding: .63rem;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+  display: flex;
+}
+
+.widget-home2 {
+  background-color: #fff9;
+  border-radius: 12px;
+  width: 16.25rem;
+  height: 6.81rem;
+  position: absolute;
+  top: 0;
+  left: .63rem;
+  overflow: hidden;
+}
+
+.group-child11, .group-child12 {
+  border-radius: 12px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.group-child11 {
+  box-sizing: border-box;
+  opacity: .3;
+  background-color: #e8e8e8;
+  border: 1px solid #727272;
+  height: 100%;
+  top: 0;
+}
+
+.group-child12 {
+  background-color: #febb60;
+  height: 70.56%;
+  top: 29.44%;
+}
+
+.rectangle-parent5 {
+  width: 66.67%;
+  height: 83.83%;
+  position: absolute;
+  inset: 0 19.05% 16.17% 14.29%;
+}
+
+.m7 {
+  width: 100%;
+  height: 11.81%;
+  display: inline-block;
+  position: absolute;
+  top: 88.19%;
+  left: 0;
+}
+
+.group-parent5 {
+  width: 1.31rem;
+  height: 5.88rem;
+  position: relative;
+}
+
+.group-child14 {
+  background-color: #ff8a84;
+  border-radius: 12px;
+  width: 100%;
+  height: 91.12%;
+  position: absolute;
+  inset: 9.01% 0 -.13%;
+}
+
+.group-parent6 {
+  opacity: .5;
+  width: 1.31rem;
+  height: 5.88rem;
+  position: relative;
+}
+
+.group-child16, .group-child20 {
+  background-color: #b6ddb4;
+  border-radius: 12px;
+  width: 100%;
+  height: 30.84%;
+  position: absolute;
+  inset: 69.29% 0 -.13%;
+}
+
+.group-child20 {
+  box-sizing: border-box;
+  border: 1px solid #c6c6c8;
+  height: 9.64%;
+  top: 90.48%;
+}
+
+.instance-group {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 15.88rem;
+  display: flex;
+  position: absolute;
+  top: .25rem;
+  left: 1.56rem;
+}
+
+.graph1 {
+  text-align: center;
+  color: #727272;
+  width: 17.56rem;
+  height: 6.88rem;
+  font-family: Roboto;
+  font-size: 1.25rem;
+  position: relative;
+}
+
+.maintravelinsights, .travelinsights {
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  display: flex;
+}
+
+.travelinsights {
+  background-color: #fcf8f8;
+  border-radius: 12px;
+  gap: .63rem;
+  padding: .63rem 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 2px 20px 5px #0000001a;
+}
+
+.maintravelinsights {
+  filter: drop-shadow(0 0 10px #0003);
+  gap: .75rem;
+  padding: .75rem 1.88rem;
+}
+
+.cloud-icon7, .home9 {
+  width: 2.25rem;
+  height: 2.25rem;
+  position: relative;
+}
+
+.home9 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  padding: 0;
+}
+
+.cloud-icon7 {
+  object-fit: cover;
+}
+
+.air-quality-3, .navbarairqlty1 {
+  justify-content: space-between;
+  align-items: flex-start;
+  display: flex;
+}
+
+.navbarairqlty1 {
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 32px 32px 0 0;
+  flex-direction: row;
+  align-self: stretch;
+  height: 5.13rem;
+  margin: 0;
+  padding: .63rem 1.88rem;
+  box-shadow: 0 0 34px #0009;
+}
+
+.air-quality-3 {
+  background-color: #fcf8f8;
+  border-radius: 32px;
+  flex-direction: column;
+  width: 100%;
+  height: 50.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/*# sourceMappingURL=AirQuality3.4259f1d2.css.map */

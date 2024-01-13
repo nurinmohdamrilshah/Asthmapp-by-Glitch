@@ -1,0 +1,675 @@
+.text-icon5 {
+  width: 1.75rem;
+  height: .69rem;
+  top: calc(50% - 5px);
+  left: 2.13rem;
+}
+
+.battery-icon5, .notch-icon5, .text-icon5 {
+  object-fit: cover;
+  position: absolute;
+}
+
+.notch-icon5 {
+  width: 0;
+  height: 0;
+  top: -.12rem;
+  left: 4.88rem;
+}
+
+.battery-icon5 {
+  width: 1.52rem;
+  height: .71rem;
+  top: 0;
+  right: .01rem;
+}
+
+.mobile-signal-icon5, .wifi-icon5 {
+  object-fit: cover;
+  width: .96rem;
+  height: .69rem;
+  position: relative;
+}
+
+.mobile-signal-icon5 {
+  width: 1.06rem;
+  height: .67rem;
+}
+
+.recording-indicator-icon5 {
+  object-fit: cover;
+  width: .38rem;
+  height: .38rem;
+  display: none;
+  position: absolute;
+  top: -.58rem;
+  right: 3.53rem;
+}
+
+.right-side5 {
+  width: 4.17rem;
+  height: .71rem;
+  position: absolute;
+  top: 1.08rem;
+  right: .91rem;
+}
+
+.iphone-x-or-newer5 {
+  flex-shrink: 0;
+  align-self: stretch;
+  height: 2.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.male-user-icon {
+  object-fit: cover;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.profile-picture {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 3.13rem;
+  height: 2.38rem;
+  padding: 0;
+  position: relative;
+}
+
+.hello-name {
+  letter-spacing: -.01em;
+  width: 9.56rem;
+  display: inline-block;
+  position: relative;
+}
+
+.userhome {
+  text-align: center;
+  color: #fff;
+  flex-direction: column;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: .06rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+}
+
+.asthmapp-logo-light-11 {
+  object-fit: cover;
+  width: 6.88rem;
+  height: 3.66rem;
+  position: relative;
+}
+
+.pageheader, .pageheader-contents {
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: flex-start;
+  padding: 0 .63rem;
+  display: flex;
+}
+
+.pageheader {
+  border-radius: 32px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0 0 1.5rem;
+  overflow: hidden;
+}
+
+.cloud-icon1 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+}
+
+.air-quality {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+  position: relative;
+}
+
+.header4 {
+  color: inherit;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: .56rem;
+  text-decoration: none;
+  display: flex;
+}
+
+.place-marker-icon {
+  object-fit: cover;
+  width: 1.44rem;
+  height: 1.69rem;
+  position: relative;
+}
+
+.headerinsights {
+  text-align: left;
+  color: #1e385f;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 6rem;
+  height: 1.5rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+}
+
+.b1 {
+  letter-spacing: -.01em;
+  color: #4d6b4c;
+  text-align: center;
+  font-size: 1.63rem;
+  position: relative;
+}
+
+.aqi-widget1 {
+  text-align: left;
+  color: #1e385f;
+  background-color: #b6ddb4;
+  border-radius: 0 36px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: flex-start;
+  padding: .38rem 2.25rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+}
+
+.sudden-drop-in {
+  letter-spacing: -.01em;
+  font-size: .88rem;
+  position: relative;
+}
+
+.airqltyinsights {
+  box-sizing: border-box;
+  text-align: left;
+  color: #1e385f;
+  background: linear-gradient(#6767678c, #86868696 27.08%, #a2a2a2a1 45.83%, #dadadab3);
+  border-radius: 25px 0 0;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-self: stretch;
+  align-items: flex-start;
+  height: 8.94rem;
+  padding: .63rem 1.25rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 20px 5px #0000001a;
+}
+
+.airqltyinsights, .airqltywidget, .header5 {
+  justify-content: flex-start;
+  gap: .38rem;
+  display: flex;
+}
+
+.airqltywidget {
+  box-sizing: border-box;
+  text-align: left;
+  color: #1e385f;
+  background-color: #fff9;
+  border-radius: 12px;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-self: stretch;
+  align-items: flex-start;
+  height: 11.25rem;
+  padding: .44rem 0 0 1.25rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 20px 5px #0000001a;
+}
+
+.header5 {
+  color: inherit;
+  flex-direction: row;
+  align-items: center;
+  text-decoration: none;
+}
+
+.text26 {
+  letter-spacing: -.01em;
+  color: #fff;
+  text-align: center;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  position: relative;
+}
+
+.quickintakebtn {
+  cursor: pointer;
+  background-color: #b2e1e7;
+  border: 0;
+  border-radius: 12px;
+  flex-direction: row;
+  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  padding: .63rem;
+  display: flex;
+  box-shadow: 0 4px 10px #0003;
+}
+
+.statistics {
+  letter-spacing: -.01em;
+  margin: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  position: relative;
+}
+
+.my-next-intake {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 400;
+}
+
+.my-next-intake, .nextremindervar {
+  letter-spacing: -.01em;
+  margin: 0;
+  position: relative;
+}
+
+.reminderframe {
+  background-color: #fff;
+  border-radius: 10px;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  padding: .31rem;
+}
+
+.expiryframe, .nextintake, .reminderframe {
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
+
+.nextintake {
+  justify-content: space-between;
+  align-self: stretch;
+}
+
+.expiryframe {
+  box-sizing: border-box;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 10px;
+  flex-shrink: 0;
+  justify-content: center;
+  width: 4.13rem;
+  padding: .31rem;
+}
+
+.inhalerstats, .myinhalerwidget {
+  text-align: left;
+  color: #1e385f;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: .38rem;
+  font-family: Plus Jakarta Sans;
+  display: flex;
+}
+
+.inhalerstats {
+  flex: 1;
+  padding: 0 .63rem;
+  font-size: .88rem;
+}
+
+.myinhalerwidget {
+  box-sizing: border-box;
+  background-color: #fff9;
+  border-radius: 12px;
+  height: 11.25rem;
+  padding: .63rem;
+  font-size: 1rem;
+}
+
+.hospital-icon1 {
+  object-fit: cover;
+  width: 1.56rem;
+  height: 1.69rem;
+  position: relative;
+}
+
+.emergency {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  flex-shrink: 0;
+  width: 5.5rem;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+  display: inline-block;
+  position: relative;
+}
+
+.header6 {
+  color: inherit;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+  display: flex;
+}
+
+.add-phone-icon {
+  object-fit: cover;
+  width: 3.06rem;
+  height: 2.95rem;
+  position: relative;
+}
+
+.home2 {
+  cursor: pointer;
+  background-color: #febb60;
+  border: 0;
+  border-radius: 64px;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  padding: 1.88rem 1.94rem;
+  display: flex;
+}
+
+.crisis-steps {
+  letter-spacing: -.01em;
+  color: #1e385f;
+  text-align: left;
+  margin: 0;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  font-weight: 700;
+  position: relative;
+}
+
+.sneeze-icon {
+  object-fit: cover;
+  width: 2.25rem;
+  height: 2.25rem;
+  position: relative;
+}
+
+.actions, .crisisstepsbtn {
+  flex: 1;
+  justify-content: center;
+  align-self: stretch;
+  align-items: center;
+  padding: .63rem;
+  display: flex;
+}
+
+.crisisstepsbtn {
+  cursor: pointer;
+  background-color: #fff9;
+  border: 0;
+  border-radius: 12px;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.actions {
+  flex-direction: row;
+  gap: 1.25rem;
+}
+
+.emergencywidget, .mainhome {
+  flex-direction: column;
+  align-self: stretch;
+  align-items: flex-start;
+  display: flex;
+}
+
+.emergencywidget {
+  box-sizing: border-box;
+  text-align: left;
+  color: #1e385f;
+  background-color: #fff9;
+  border-radius: 12px;
+  flex-shrink: 0;
+  justify-content: space-between;
+  height: 11.25rem;
+  padding: .38rem 1.25rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 20px 5px #0000001a;
+}
+
+.mainhome {
+  justify-content: flex-start;
+  gap: .75rem;
+  padding: 0 1.5rem;
+}
+
+.cloud {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  position: relative;
+}
+
+.frame2 {
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 32px 32px 0 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: flex-start;
+  height: 5.13rem;
+  margin: 0;
+  padding: .63rem 1.88rem;
+  display: flex;
+  box-shadow: 0 0 34px #0009;
+}
+
+.home-selected {
+  background-color: #1e385f;
+  border-radius: 1.5px;
+  width: 8.38rem;
+  height: .31rem;
+  position: absolute;
+  bottom: .5rem;
+  left: calc(50% - 66.5px);
+}
+
+.home-indicator {
+  align-self: stretch;
+  height: 2.13rem;
+  margin-top: -2.31rem;
+  position: relative;
+}
+
+.home1, .navbar {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  overflow: hidden;
+}
+
+.navbar {
+  mix-blend-mode: normal;
+  justify-content: flex-end;
+  align-self: stretch;
+}
+
+.home1 {
+  background-image: url("home2@3x.d686ab1f.png");
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 32px;
+  justify-content: space-between;
+  width: 100%;
+  height: 50.75rem;
+  position: relative;
+}
+
+.inhaler-icon6 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+}
+
+.quick-intake {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+  position: relative;
+}
+
+.close-icon5 {
+  object-fit: cover;
+  width: .93rem;
+  height: .93rem;
+  position: relative;
+}
+
+.close5 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 1.13rem;
+  height: 1.13rem;
+  padding: 0;
+  position: relative;
+}
+
+.headerquickintake {
+  text-align: left;
+  color: #1e385f;
+  background-color: #fff;
+  border-radius: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: center;
+  padding: .31rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+}
+
+.quickintakepopup-child {
+  object-fit: contain;
+  width: 17.81rem;
+  height: .06rem;
+  position: relative;
+}
+
+.favinhalervar {
+  letter-spacing: -.01em;
+  font-size: .88rem;
+  position: relative;
+}
+
+.maininhalerintake {
+  box-sizing: border-box;
+  text-align: left;
+  color: #1e385f;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: .63rem;
+  height: 3.38rem;
+  padding: 0 .63rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+}
+
+.text34 {
+  letter-spacing: -.01em;
+  position: relative;
+}
+
+.cancelbtn, .content14 {
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
+
+.content14 {
+  flex-shrink: 0;
+  justify-content: flex-start;
+}
+
+.cancelbtn {
+  cursor: pointer;
+  background-color: #b2e1e7;
+  border-radius: 12px;
+  justify-content: center;
+  align-self: stretch;
+  padding: 1rem 2rem;
+  overflow: hidden;
+}
+
+.quickintakepopup-item {
+  object-fit: contain;
+  width: 17.56rem;
+  height: .88rem;
+  position: relative;
+}
+
+.quickintakepopup {
+  box-sizing: border-box;
+  text-align: left;
+  color: #fff;
+  background-color: #fff;
+  border-radius: 12px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: .63rem;
+  width: 20.06rem;
+  max-width: 90%;
+  max-height: 90%;
+  padding: .44rem 1.25rem .63rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 20px 5px #0000001a;
+}
+
+/*# sourceMappingURL=Home.eab813d4.css.map */

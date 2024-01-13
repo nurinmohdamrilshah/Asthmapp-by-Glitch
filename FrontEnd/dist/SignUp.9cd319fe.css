@@ -1,0 +1,454 @@
+.text-icon3 {
+  width: 1.75rem;
+  height: .69rem;
+  top: calc(50% - 5px);
+  left: 2.13rem;
+}
+
+.battery-icon3, .notch-icon3, .text-icon3 {
+  object-fit: cover;
+  position: absolute;
+}
+
+.notch-icon3 {
+  width: 0;
+  height: 0;
+  top: -.12rem;
+  left: 4.88rem;
+}
+
+.battery-icon3 {
+  width: 1.52rem;
+  height: .71rem;
+  top: 0;
+  right: .01rem;
+}
+
+.mobile-signal-icon3, .wifi-icon3 {
+  object-fit: cover;
+  width: .96rem;
+  height: .69rem;
+  position: relative;
+}
+
+.mobile-signal-icon3 {
+  width: 1.06rem;
+  height: .67rem;
+}
+
+.recording-indicator-icon3 {
+  object-fit: cover;
+  width: .38rem;
+  height: .38rem;
+  display: none;
+  position: absolute;
+  top: -.58rem;
+  right: 3.53rem;
+}
+
+.right-side3 {
+  width: 4.17rem;
+  height: .71rem;
+  position: absolute;
+  top: 1.08rem;
+  right: .91rem;
+}
+
+.iphone-x-or-newer3 {
+  flex-shrink: 0;
+  align-self: stretch;
+  height: 2.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.monotone-chevron-left-lg3 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+}
+
+.text20 {
+  letter-spacing: -.01em;
+  color: #090e1d;
+  text-align: left;
+  flex: 1;
+  font-family: Plus Jakarta Sans;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: none;
+  position: relative;
+}
+
+.vector-icon7 {
+  object-fit: cover;
+  border-radius: 3px;
+  width: 41.67%;
+  max-width: 100%;
+  height: 54.17%;
+  max-height: 100%;
+  position: absolute;
+  inset: 16.67% 29.17% 29.17%;
+  overflow: hidden;
+}
+
+.vector3 {
+  background-color: #090e1d;
+  border-radius: .5px;
+  width: 8.33%;
+  height: 8.33%;
+  position: absolute;
+  inset: 79.17% 45.83% 12.5%;
+}
+
+.monotone-question3 {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: none;
+  position: relative;
+}
+
+.top-nav4 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: center;
+  gap: 1rem;
+  padding: 0;
+  display: flex;
+}
+
+.asthmapp-logo-dark-11 {
+  object-fit: cover;
+  width: 13.06rem;
+  height: 6.94rem;
+  position: relative;
+}
+
+.signuptitle {
+  font-size: inherit;
+  letter-spacing: -.02em;
+  width: 23.44rem;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 800;
+  line-height: 2.38rem;
+  display: inline-block;
+  position: relative;
+}
+
+.header3, .headercontents2 {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: center;
+  gap: .75rem;
+  display: flex;
+}
+
+.header3 {
+  text-align: center;
+  color: #1e385f;
+  border-radius: 32px;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  font-family: Plus Jakarta Sans;
+  font-size: 1.88rem;
+  overflow: hidden;
+}
+
+.loremus-ipsumus-d4, .name4 {
+  letter-spacing: -.01em;
+  position: relative;
+}
+
+.name4 {
+  font-size: inherit;
+  align-self: stretch;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.loremus-ipsumus-d4 {
+  color: #1e385f;
+  text-align: left;
+  background-color: #0000;
+  border: 0;
+  outline: 0;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.text21 {
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  align-items: center;
+  gap: .5rem;
+  display: flex;
+}
+
+.solid-eye-icon2 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: none;
+  position: relative;
+}
+
+.content8 {
+  background-color: #fff;
+  border-radius: 12px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: center;
+  padding: 1rem;
+  display: flex;
+  overflow: hidden;
+}
+
+.email2, .input-fields4, .text22 {
+  justify-content: flex-start;
+  display: flex;
+}
+
+.input-fields4 {
+  flex-direction: column;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: .5rem;
+}
+
+.email2, .text22 {
+  font-family: Plus Jakarta Sans;
+}
+
+.email2 {
+  text-align: left;
+  color: #1e385f;
+  flex-direction: column;
+  align-self: stretch;
+  align-items: flex-start;
+  font-size: 1rem;
+}
+
+.text22 {
+  background-color: #0000;
+  border: 0;
+  outline: 0;
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+  font-size: .88rem;
+}
+
+.name6 {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  align-self: stretch;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 800;
+  position: relative;
+}
+
+.passwordicon2 {
+  object-fit: cover;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.loremus-ipsumus-d5 {
+  letter-spacing: -.01em;
+  color: #1e385f;
+  text-align: left;
+  background-color: #0000;
+  border: 0;
+  outline: 0;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  font-weight: 600;
+  position: relative;
+}
+
+.vector-icon8 {
+  object-fit: cover;
+  width: 84.17%;
+  max-width: 100%;
+  height: 60.83%;
+  max-height: 100%;
+  position: absolute;
+  inset: 19.58% 7.92%;
+  overflow: hidden;
+}
+
+.solid-eye2 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  position: relative;
+}
+
+.password2 {
+  text-align: left;
+  color: #1e385f;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.password2, .password3 {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  display: flex;
+}
+
+.solid-warning-icon1 {
+  object-fit: cover;
+  width: 1.25rem;
+  height: 1.25rem;
+  position: relative;
+}
+
+.must-have-a1 {
+  letter-spacing: -.01em;
+  flex: 1;
+  font-weight: 600;
+  position: relative;
+}
+
+.alert-notification-main3, .content12 {
+  flex-direction: row;
+  flex: 1 0;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.content12 {
+  gap: .25rem;
+}
+
+.alert-notification-main3 {
+  background-color: #fff;
+  border: 1px solid #ff8a84;
+  border-radius: 6px;
+  align-self: stretch;
+  padding: .5rem;
+}
+
+.alert-notification-main2, .form1, .frame1 {
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  display: flex;
+}
+
+.alert-notification-main2 {
+  text-align: left;
+  color: #ff8a84;
+  flex-direction: row;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.form1, .frame1 {
+  flex-direction: column;
+}
+
+.frame1 {
+  text-align: left;
+  color: #1e385f;
+  gap: .75rem;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.form1 {
+  gap: 1rem;
+}
+
+.text25 {
+  letter-spacing: -.01em;
+  color: #fff;
+  text-align: left;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+  position: relative;
+}
+
+.content13 {
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.button-primary6, .button-primary7 {
+  cursor: pointer;
+  flex-direction: row;
+  display: flex;
+}
+
+.button-primary7 {
+  box-sizing: border-box;
+  background-color: #b2e1e7;
+  border-radius: 12px;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  height: 3.5rem;
+  padding: 1rem 2rem;
+  overflow: hidden;
+}
+
+.button-primary6 {
+  background-color: #0000;
+  border: 0;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  padding: 0;
+}
+
+.mainsignup, .sign-up6 {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  display: flex;
+}
+
+.mainsignup {
+  filter: drop-shadow(0 4px 10px #0003);
+  align-self: stretch;
+  gap: 2rem;
+  padding: 0 1.5rem;
+}
+
+.sign-up6 {
+  background-image: url("forgot-password2@3x.9933fdd7.png");
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 32px;
+  gap: 1.63rem;
+  width: 100%;
+  height: 50.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/*# sourceMappingURL=SignUp.9cd319fe.css.map */

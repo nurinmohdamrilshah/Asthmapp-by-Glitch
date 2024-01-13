@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+    <link rel="stylesheet" href="/AirQuality2.d8f2c7c8.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap">
+  </head>
+  <body>
+    <div class="air-quality-2">
+      <header class="headerairquality" id="airQualityHeader">
+        <button class="top-nav" id="backBtn">
+          <div class="top-nav1">
+            <img class="monotone-chevron-left-lg" alt="" src="/monotone-chevron-left-lg@2x.243b550b.png">
+
+            <div class="text8">OTP Setup</div>
+            <div class="monotone-question">
+              <img class="vector-icon3" alt="" src="/vector@2x.e2e48276.png">
+
+              <div class="vector"></div>
+            </div>
+          </div>
+        </button>
+        <div class="headerlogos">
+          <img class="asthmapp-logo-light-1" alt="" src="/asthmappLogoLight@2x.aaf6479e.png">
+
+          <img class="monotone-chevron-left-lg" alt="" src="/airQualityLogo@2x.09d1c1f8.png">
+        </div>
+        <button class="close" id="closeBtn">
+          <img class="close-icon" alt="" src="/close@2x.be688429.png">
+        </button>
+      </header>
+      <main class="mainlondoninsights" id="mainLondonInsights">
+        <nav class="navairqltylondon" id="navAirQltyLondon">
+          <button class="yourareabtn" id="yourAreaBtn">
+            <div class="your-area">Your area</div>
+          </button>
+          <div class="londonpageselect">
+            <div class="london">London</div>
+          </div>
+          <button class="yourareabtn" id="travelBtn">
+            <div class="your-area">Travel</div>
+          </button>
+        </nav>
+        <img class="londonmap-icon" alt="" src="/londonmap@2x.b8ac6b41.png">
+
+        <fieldset class="londoninsights" id="londonInsights">
+          <section class="aqi-widget" id="AQIWidget">
+            <h2 class="aqi">AQI</h2>
+            <b class="b">9/10</b>
+          </section>
+          <section class="pollutants" id="pollutants">
+            <div class="london">PM10</div>
+            <div class="london">NO2</div>
+            <div class="london">SO2</div>
+          </section>
+          <section class="percentages" id="percentages">
+            <div class="heading-parent">
+              <div class="heading">22%</div>
+              <img class="path-icon" alt="" src="/path@2x.fa422025.png">
+
+              <img class="path-icon1" alt="" src="/path1@2x.7a55c8c3.png">
+            </div>
+            <div class="heading-parent">
+              <div class="heading">57%</div>
+              <img class="path-icon" alt="" src="/path2@2x.e2abec6d.png">
+
+              <img class="path-icon1" alt="" src="/path3@2x.50327a79.png">
+            </div>
+            <div class="heading-parent">
+              <div class="heading">80%</div>
+              <img class="path-icon" alt="" src="/path@2x.fa422025.png">
+
+              <img class="path-icon1" alt="" src="/path4@2x.096cf6a7.png">
+            </div>
+          </section>
+          <section class="graph" id="graph">
+            <div class="widget-home"></div>
+            <div class="instance-parent">
+              <div class="group-parent">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="group-item"></div>
+                </div>
+                <b class="m">M</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="rectangle-div"></div>
+                </div>
+                <b class="m">T</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="group-child2"></div>
+                </div>
+                <b class="m">W</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="group-item"></div>
+                </div>
+                <b class="m">T</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="group-child6"></div>
+                </div>
+                <b class="m">F</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="rectangle-div"></div>
+                </div>
+                <b class="m">S</b>
+              </div>
+              <div class="group-container">
+                <div class="rectangle-parent">
+                  <div class="group-child"></div>
+                  <div class="group-child2"></div>
+                </div>
+                <b class="m">S</b>
+              </div>
+            </div>
+          </section>
+        </fieldset>
+      </main>
+      <nav class="navbarairqlty" id="navBarAirQlty">
+        <button class="home" id="HomeBtn">
+          <img class="path-icon" alt="" src="/home@2x.3319814c.png">
+        </button>
+        <img class="cloud-icon" alt="" src="/cloud@2x.ce7e83d4.png">
+
+        <button class="home" id="inhalerBtn">
+          <img class="path-icon" alt="" src="/inhaler@2x.bc1882dc.png">
+        </button>
+        <button class="home" id="emergencyBtn">
+          <img class="path-icon" alt="" src="/hospital@2x.56130b86.png">
+        </button>
+      </nav>
+    </div>
+
+    <script>var topNav = document.getElementById("backBtn");
+if (topNav) topNav.addEventListener("click", function(e) {
+    window.location.href = "./AirQuality01.html";
+});
+var close = document.getElementById("closeBtn");
+if (close) close.addEventListener("click", function(e) {
+    window.location.href = "./Home.html";
+});
+var yourAreaBtn = document.getElementById("yourAreaBtn");
+if (yourAreaBtn) yourAreaBtn.addEventListener("click", function(e) {
+    window.location.href = "./AirQuality01.html";
+});
+var travelBtn = document.getElementById("travelBtn");
+if (travelBtn) travelBtn.addEventListener("click", function(e) {
+    window.location.href = "./AirQuality3.html";
+});
+var home = document.getElementById("HomeBtn");
+if (home) home.addEventListener("click", function(e) {
+    window.location.href = "./Home.html";
+});
+var inhaler = document.getElementById("inhalerBtn");
+if (inhaler) inhaler.addEventListener("click", function(e) {
+    window.location.href = "./MyInhaler.html";
+});
+var hospital = document.getElementById("emergencyBtn");
+if (hospital) hospital.addEventListener("click", function(e) {
+    window.location.href = "./Emergency1.html";
+});
+
+</script>
+  <script src="/AirQuality2.2435ce98.js"></script></body>
+</html>
