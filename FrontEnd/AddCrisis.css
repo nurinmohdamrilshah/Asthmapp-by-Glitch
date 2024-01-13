@@ -215,15 +215,15 @@
 .allergenButton.true,
 .locationButton.true,
 .resolutionButton.true {
-    background-color: #B2E1E7 ;
+  background-color: #B2E1E7 ;
 }
 
 .symptomButton.false,
 .allergenButton.false,
 .locationButton.false,
 .resolutionButton.false {
-    background-color: #f0ecec;
-} 
+  background-color: #f0ecec;
+}
 
 
 .overlay {
@@ -323,18 +323,195 @@
   align-items: center;
   justify-content: center;
 }
-.add-crisis {
+
+
+
+
+
+
+
+
+.monotone-chevron-left-lg5 {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: cover;
+}
+.text30 {
+  position: relative;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-family: "Plus Jakarta Sans";
+  color: #090e1d;
+  text-align: left;
+  display: none;
+  width: 17.94rem;
+  height: 1.56rem;
+  flex-shrink: 0;
+}
+.vector-icon11 {
+  position: absolute;
+  height: 54.17%;
+  width: 41.67%;
+  top: 16.67%;
+  right: 29.17%;
+  bottom: 29.17%;
+  left: 29.17%;
+  border-radius: 3px;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+  object-fit: cover;
+}
+.vector5 {
+  position: absolute;
+  height: 8.33%;
+  width: 8.33%;
+  top: 79.17%;
+  right: 45.83%;
+  bottom: 12.5%;
+  left: 45.83%;
+  border-radius: 0.5px;
+  background-color: #090e1d;
+}
+.monotone-question5 {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: none;
+}
+.top-nav7,
+.top-nav8 {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.top-nav8 {
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1rem;
+}
+.top-nav7 {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  align-items: flex-start;
+}
+.asthmapp-logo-light-13 {
+  position: relative;
+  width: 6.88rem;
+  height: 3.66rem;
+  object-fit: cover;
+}
+.headerlogos2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.close-icon3 {
+  position: relative;
+  width: 0.93rem;
+  height: 0.93rem;
+  object-fit: cover;
+}
+.close3 {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 1.13rem;
+  height: 1.13rem;
+}
+.headeremergency1 {
+  align-self: stretch;
+  border-radius: 0 0 24px 24px;
+  background-color: #1e385f;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  height: 6.25rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem 0.31rem;
+  box-sizing: border-box;
+  z-index: 0;
+}
+
+.mainemergency2 {
+  padding: 1.88rem 1.88rem 5.6rem;
+  z-index: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.38rem;
+}
+
+.home-icon3 {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+  object-fit: cover;
+}
+.home5 {
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.navbaremergency1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.navbaremergency1 {
+  margin: 0;
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  justify-content: flex-end;
+  mix-blend-mode: normal;
+  z-index: 2;
+  border-radius: 32px 32px 0 0;
+  background-color: #fff;
+  box-shadow: 0 0 34px rgba(0, 0, 0, 0.6);
+  height: 5.13rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.63rem 1.88rem;
+  box-sizing: border-box;
+}
+
+
+.add-crisis {
+  position: relative;
   background-color: #fff;
   overflow: auto;
   box-shadow: 0 2px 20px 5px rgba(0, 0, 0, 0.1);
-  width: 20.31rem;
-  max-width: 90%;
+  padding: 0.44rem 1.25rem 0.44rem;
+  width: 22rem;
+  max-width: 100%;
   max-height: 90%;
-  padding: 0.44rem 1.25rem 0.63rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -345,5 +522,19 @@
   font-size: 1rem;
   color: #000; /* Changed text color to black, you can adjust it as needed */
   font-family: "Plus Jakarta Sans", sans-serif; /* Added a generic font-family */
-  z-index: 999;
+  z-index: 1;
+}
+
+.emergency-4 {
+  position: relative;
+  border-radius: 32px;
+  background-color: #7a8aa1;
+  width: 100%;
+  min-height: 50.75rem;
+  overflow: auto;
+  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.63rem;
 }
