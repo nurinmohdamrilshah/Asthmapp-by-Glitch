@@ -1,20 +1,28 @@
-var buttonPrimaryContainer = document.getElementById("buttonPrimaryContainer");
-if (buttonPrimaryContainer) {
-    buttonPrimaryContainer.addEventListener("click", function (e) {
-        window.location.href = "./ForgotPassword2.html";
-    });
+import {initializeApp} from "firebase/app";
+import { getAuth, sendPasswordResetEmail } from './../node_modules/firebase/auth';
+
+
+function forgotPassword(firebaseConfig) {
+    const app = initializeApp(firebaseConfig)
+
+    const auth = getAuth();
+    const forgotPasswordLink = document.getElementById("resetPasswordBtn");
+    const emailAddressInput = document.getElementById('emailInput');
+
+    if (forgotPasswordLink && emailAddressInput) {
+        forgotPasswordLink.addEventListener('click', function(e) {
+            sendPasswordResetEmail(auth, emailAddressInput.value)
+                .then(() => {
+                    console.log("Password reset email sent!");
+                })
+                .catch((error) => {
+                    console.error(`Error sending password reset email: ${error.code}, ${error.message}`);
+                });
+        });
+    } else {
+
+        //console.error("Forgot password link or email input field is missing.");
+    }
 }
 
-var buttonPrimary = document.getElementById("ResetPswdBtn");
-if (buttonPrimary) {
-    buttonPrimary.addEventListener("click", function (e) {
-        window.location.href = "./ForgotPassword2.html";
-    });
-}
-
-var textContainer1 = document.getElementById("textContainer1");
-if (textContainer1) {
-    textContainer1.addEventListener("click", function (e) {
-        window.location.href = "./SignUp.html";
-    });
-}
+export default forgotPassword;
