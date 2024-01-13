@@ -1,4 +1,4 @@
-class Dosage{
+export class Dosage{
     constructor(time){
         this.reminderTime = Date.parse(time);
         this.maxPuffAllowed = 2;
@@ -11,7 +11,7 @@ class Dosage{
     }
 }
 
-class Intake{
+export class Intake{
     static allIntakes=[]
     constructor(intakeTime, puffs, whichInhaler){
         this.timestamp = Date.parse(intakeTime);
@@ -37,7 +37,7 @@ class Intake{
     }
 }
 
-class Inhaler{
+export class Inhaler{
     static inhalers = [];
     static favInhaler = null;
 

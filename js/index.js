@@ -1,10 +1,9 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get, push } from "firebase/database"; // Import the specific Firebase services you need
-import { registerNewUser } from './SignUp';
-console.log('Index Test');
-console.log('FBS loaded:', typeof firebase !== 'undefined' ? 'Yes' : 'No');
+/* == Firebase == */
+import { initializeApp } from './../node_modules/firebase/app';
+import { getDatabase, ref, child, get, push , set} from './../node_modules/firebase/database';
+import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from './../node_modules/firebase/auth';
 
-const webPush = require('web-push')
+console.log('Firebase loaded:', typeof initializeApp !== 'undefined' ? 'Yes' : 'No');
 
 /* === Firebase Setup === */
 // Your web app's Firebase configuration
@@ -20,54 +19,17 @@ const firebaseConfig = {
     measurementId: "G-PLRLWFR1X7"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const messagesRef = ref(db,'users');
+import Nav from "../js/Nav.js";
+import SignIn from "../js/SignIn.js";
+import forgotPassword from "../js/ForgotPassword.js";
+import SignUp from "../js/SignUp.js";
+import Home from "../js/Home.js"
 
-// Element Selection
-const signInBtn = document.getElementById("signInBtn");
-const forgotPasswordLink = document.getElementById("textContainer2");
-const signUpLink = document.getElementById("textContainer3");
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
-
-// Navigation Function
-function navigateTo(url){
-    window.location.href = url;
-}
-
-// Event Listeners
-if (signInBtn) {
-    signInBtn.addEventListener("click", authSignInWithEmail);
-}
-if (forgotPasswordLink) {
-    forgotPasswordLink.addEventListener("click", () => navigateTo("./ForgotPassword.html"));
-}
-if (signUpLink) {
-    signUpLink.addEventListener("click", () => navigateTo("./SignUp.html"));
-}
-
-// Authentication Function
-function authSignInWithEmail(inputName, inputEmail) {
-    const dbRef = firebase.database().ref();
-    console.log("!!!")
-    dbRef.child('users').get().then((snapshot) => {
-        if (snapshot.exists()) {
-            const users = snapshot.val();
-            for (const userId in users) {
-                const user = users[userId];
-                if (user.name === inputName && user.email === inputEmail) {
-                    console.log('Match found:', user);
-                }
-            }
-        } else {
-            console.log('No data available');
-        }
-    }).catch((error) => {
-        console.error(error);
-    });
-}
-
+Nav();
+SignIn(firebaseConfig);
+SignUp(firebaseConfig);
+Home(firebaseConfig);
+forgotPassword(firebaseConfig);
 //setting up for push notification: https://medium.com/@a7ul/beginners-guide-to-web-push-notifications-using-service-workers-cb3474a17679
     const check = () => {
         if (!('serviceWorker' in navigator)) {
