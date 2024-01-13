@@ -1,15 +1,51 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+import { child, get, getDatabase, set, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-// Firebase configuration
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    databaseURL: "https://scrimba-162f5-default-rtdb.europe-west1.firebasedatabase.app/"
+    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
+    authDomain: "asthmapp-121a8.firebaseapp.com",
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "asthmapp-121a8",
+    storageBucket: "asthmapp-121a8.appspot.com",
+    messagingSenderId: "583573518616",
+    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
+    measurementId: "G-PLRLWFR1X7"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const phoneNumbersRef = ref(database, "phoneNumber");
+const analytics = getAnalytics(app);
+
+const auth = getAuth();
+var currentUser = auth.currentUser;
+
+if (currentUser) {
+    var currentUID = currentUser.uid;
+    var currentUserDB = ref(database, '/users/' + currentUID);
+    var contactsDB = child(currentUserDB, '/myContacts');
+} else {
+    currentUID = 'testDosage2';
+    currentUserDB = ref(database, '/users/' + currentUID);
+    contactsDB = child(currentUserDB, '/myContacts');
+}
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = auth.currentUser;
+        currentUID = user.uid;
+        currentUserDB = ref(database, '/users/' + currentUID);
+        contactsDB = child(currentUserDB, '/myContacts');
+    }
+});
+
+
+
 
 // Set up phone numbers 
 
@@ -28,7 +64,7 @@ emergencyContactButtons.forEach((button, index) => {
 
 // Event listener for initiating a call to an emergency contact
 function initiateCall(contactNumber) {
-    onValue(phoneNumbersRef, (snapshot) => {
+    onValue(contactsDB, (snapshot) => {
         const data = snapshot.val();
         const phoneNumberKey = `number${contactNumber}`;
 
@@ -50,7 +86,6 @@ function initiateEmergencyCall() {
     // Use the tel: URI scheme to initiate a call to 999
     window.location.href = "tel:999";
 }
-
 
 
 //Set up elements
