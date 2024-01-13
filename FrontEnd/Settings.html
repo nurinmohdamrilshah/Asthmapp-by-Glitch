@@ -2,124 +2,129 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="initial-scale=1, width=device-width" />
-  <title>Settings</title>
-  <link rel="stylesheet" href="./Settings.css" />
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1, width=device-width"/>
+    <title>Settings</title>
+    <link rel="stylesheet" href="Settings.css"/>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus Jakarta Sans:wght@400;500;600;700;800&display=swap"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap"/>
 </head>
 
 <body>
-  <div class="settings">
-    <header class="header27" id="headersSetting">
-      <div class="headercontent1">
-        <button class="top-nav13" id="backBtn">
-          <div class="top-nav14">
-            <img class="monotone-chevron-left-lg8" alt="" src="./public/monotone-chevron-left-lg@2x.png" />
+<form class="settingsForm" id="settingsForm">
+    <div class="settings">
+        <header class="header27" id="headersSetting">
+            <div class="headercontent1">
+                <button class="top-nav13" id="backBtn">
+                    <div class="top-nav14">
+                        <img class="monotone-chevron-left-lg8" alt="" src="../public/monotone-chevron-left-lg@2x.png"/>
 
-            <div class="text43">OTP Setup</div>
-            <div class="monotone-question8">
-              <img class="vector-icon14" alt="" src="./public/vector@2x.png" />
+                        <div class="text43">OTP Setup</div>
+                        <div class="monotone-question8">
+                            <img class="vector-icon14" alt="" src="../public/vector@2x.png"/>
 
-              <div class="vector8"></div>
+                            <div class="vector8"></div>
+                        </div>
+                    </div>
+                </button>
+                <div class="profilepic">
+                    <img class="male-user-icon1" alt="" src="../public/male-user1@2x.png"/>
+
+                    <button class="change-pic" id="Change picture" title="profile picture">
+                        <img class="change-pic-child" alt="" src="../public/ellipse-4@2x.png"/>
+
+                        <div class="change-pic-item"></div>
+                        <img class="change-pic-inner" alt="" src="../public/group-1323@2x.png"/>
+                    </button>
+                </div>
+                <h1 class="username" id="h1UsernameVar">John Doe</h1>
             </div>
-          </div>
-        </button>
-        <div class="profilepic">
-          <img class="male-user-icon1" alt="" src="./public/male-user1@2x.png" />
+        </header>
+        <main class="mainsettings" id="mainSettings">
+            <div class="area">
+                <div class="myarea">My area</div>
+                <select class="content20" name="postcodeVar" id="myBoroughVar" title="Select your borough">
+                    <option value="Barking">Barking</option>
+                    <option value="Barnet">Barnet</option>
+                    <option value="Bexley">Bexley</option>
+                    <option value="Brent">Brent</option>
+                    <option value="Bromley">Bromley</option>
+                    <option value="Camden">Camden</option>
+                    <option value="City of London">City of London</option>
+                    <option value="Croydon">Croydon</option>
+                    <option value="Ealing">Ealing</option>
+                    <option value="Enfield">Enfield</option>
+                    <option value="Greenwich">Greenwich</option>
+                    <option value="Hackney">Hackney</option>
+                    <option value="Hammersmith">Hammersmith</option>
+                    <option value="Haringey">Haringey</option>
+                    <option value="Harrow">Harrow</option>
+                    <option value="Havering">Havering</option>
+                    <option value="Hillingdon">Hillingdon</option>
+                    <option value="Hounslow">Hounslow</option>
+                    <option value="Islington">Islington</option>
+                    <option value="Kensington and Chelsea">Kensington and Chelsea</option>
+                    <option value="Kingston">Kingston</option>
+                    <option value="Lambeth">Lambeth</option>
+                    <option value="Lewisham">Lewisham</option>
+                    <option value="Merton">Merton</option>
+                    <option value="Newham">Newham</option>
+                    <option value="Redbridge">Redbridge</option>
+                    <option value="Richmond">Richmond</option>
+                    <option value="Southwark">Southwark</option>
+                    <option value="Sutton">Sutton</option>
+                    <option value="Tower Hamlets">Tower Hamlets</option>
+                    <option value="Waltham Forest">Waltham Forest</option>
+                    <option value="Wandsworth">Wandsworth</option>
+                    <option value="Westminster">Westminster</option>
+                </select>
+            </div>
+            <h2 class="accesibility">My account</h2>
+            <div class="area">
+                <h3 class="usernamelabel">Username</h3>
+                <input class="textinput" name="userNameVar" placeholder="Username" type="text" id="usernamevar"/>
+            </div>
+            <div class="area">
+                <h3 class="usernamelabel">Password</h3>
+                <input class="textinput1" placeholder="********" type="text" id="passwordvar"/>
+            </div>
+            <div class="area">
+                <h3 class="usernamelabel">Email</h3>
+                <div class="textinput2">
+                    <input class="emailvar" name="emailVar" placeholder="example@gmail.com" type="email" id="emailvar"/>
+                </div>
+            </div>
+            <div class="area">
+                <h3 class="usernamelabel">Emergency contact 1</h3>
+                <input class="textinput" name="emergencyContactVar1" placeholder="+44 1234567890" type="tel"
+                       id="phonenb1"/>
+            </div>
+            <div class="area">
+                <h3 class="usernamelabel">Emergency contact 2</h3>
+                <input class="textinput" name="emergencyContactVar2" placeholder="+44 1234567890" type="tel"
+                       id="phonenb2"/>
+            </div>
+            <div class="area">
+                <h3 class="usernamelabel">Emergency contact 3</h3>
+                <input class="textinput" name="emergencyContactVar3" placeholder="+44 1234567890" type="tel"
+                       id="phonenb3"/>
+            </div>
+            <button class="update-button" id="update-button">Update Settings</button>
 
-          <button class="change-pic" id="Change picture" title="profile picture">
-            <img class="change-pic-child" alt="" src="./public/ellipse-4@2x.png" />
+                <h2 class="signoutlabel">Sign out</h2>
+                <button class="sign-up7" id="sighOut">
+                    <h3 class="signoutdescription">Want to sign out of the app?</h3>
+                    <a class="signoutlink" href="index.html" id="signOutLink">
+                        <span class="span2"> </span>
+                        <span class="sign-out">Sign Out.</span>
+                    </a>
+                </button>
+                </section>
+                </main>
+                </div>
+                </form>
+<script defer type="module" src="Settings.js"></script>
+                </body>
 
-            <div class="change-pic-item"></div>
-            <img class="change-pic-inner" alt="" src="./public/group-1323@2x.png" />
-          </button>
-        </div>
-        <h1 class="username" id="h1UsernameVar">John Doe</h1>
-      </div>
-    </header>
-    <main class="mainsettings" id="mainSettings">
-      <div class="area">
-        <div class="myarea">My area</div>
-        <select class="content20" name="postcodeVar" id="myBoroughVar" title="Select your borough">
-          <option value="Barking">Barking</option>
-          <option value="Barnet">Barnet</option>
-          <option value="Bexley">Bexley</option>
-          <option value="Brent">Brent</option>
-          <option value="Bromley">Bromley</option>
-          <option value="Camden">Camden</option>
-          <option value="City of London">City of London</option>
-          <option value="Croydon">Croydon</option>
-          <option value="Ealing">Ealing</option>
-          <option value="Enfield">Enfield</option>
-          <option value="Greenwich">Greenwich</option>
-          <option value="Hackney">Hackney</option>
-          <option value="Hammersmith">Hammersmith</option>
-          <option value="Haringey">Haringey</option>
-          <option value="Harrow">Harrow</option>
-          <option value="Havering">Havering</option>
-          <option value="Hillingdon">Hillingdon</option>
-          <option value="Hounslow">Hounslow</option>
-          <option value="Islington">Islington</option>
-          <option value="Kensington and Chelsea">Kensington and Chelsea</option>
-          <option value="Kingston">Kingston</option>
-          <option value="Lambeth">Lambeth</option>
-          <option value="Lewisham">Lewisham</option>
-          <option value="Merton">Merton</option>
-          <option value="Newham">Newham</option>
-          <option value="Redbridge">Redbridge</option>
-          <option value="Richmond">Richmond</option>
-          <option value="Southwark">Southwark</option>
-          <option value="Sutton">Sutton</option>
-          <option value="Tower Hamlets">Tower Hamlets</option>
-          <option value="Waltham Forest">Waltham Forest</option>
-          <option value="Wandsworth">Wandsworth</option>
-          <option value="Westminster">Westminster</option>
-      </select>
-      </div>
-      <h2 class="accesibility">My account</h2>
-      <div class="area">
-        <h3 class="usernamelabel">Username</h3>
-        <input class="textinput" name="userNameVar" placeholder="Username" type="text" id="usernamevar" />
-      </div>
-      <div class="area">
-        <h3 class="usernamelabel">Password</h3>
-        <input class="textinput1" placeholder="********" type="text" id="passwordvar" />
-      </div>
-      <div class="area">
-        <h3 class="usernamelabel">Email</h3>
-        <div class="textinput2">
-          <input class="emailvar" name="emailVar" placeholder="example@gmail.com" type="email" id="emailvar" />
-        </div>
-      </div>
-      <div class="area">
-        <h3 class="usernamelabel">Emergency contact 1</h3>
-        <input class="textinput" name="emergencyContactVar1" placeholder="+44 1234567890" type="tel" id="phonenb1" />
-      </div>
-      <div class="area">
-        <h3 class="usernamelabel">Emergency contact 2</h3>
-        <input class="textinput" name="emergencyContactVar2" placeholder="+44 1234567890" type="tel" id="phonenb2" />
-      </div>
-      <div class="area">
-        <h3 class="usernamelabel">Emergency contact 3</h3>
-        <input class="textinput" name="emergencyContactVar3" placeholder="+44 1234567890" type="tel" id="phonenb3" />
-      </div>
-      <button class="update-button" id="update-button">Update Settings</button>
-      <script src="./Settings.js" type="module"></script>
-      <section class="signout">
-        <h2 class="signoutlabel">Sign out</h2>
-        <button class="sign-up7" id="sighOut">
-          <h3 class="signoutdescription">Want to sign out of the app?</h3>
-          <a class="signoutlink" href="./index.html" id="signOutLink">
-            <span class="span2"> </span>
-            <span class="sign-out">Sign Out.</span>
-          </a>
-        </button>
-      </section>
-    </main>
-  </div>
-</body>
-
-</html>
+                </html>

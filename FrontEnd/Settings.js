@@ -1,10 +1,11 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {child, get, getDatabase, push, ref} from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+import { child, get, getDatabase, set, ref, onValue } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
     authDomain: "asthmapp-121a8.firebaseapp.com",
@@ -23,32 +24,31 @@ const analytics = getAnalytics(app);
 
 const auth = getAuth();
 var currentUser = auth.currentUser;
-if (currentUser){
+
+if (currentUser) {
     var currentUID = currentUser.uid;
-    var currentUserDB = ref(database, '/users/'+currentUID)
-    var myContactsDB = child(currentUserDB, '/myContacts')
-    var myBoroughDB = child(currentUserDB, '/myBorough')
-}
-else{
-    currentUID = 'generalDB';
-    currentUserDB = ref(database,'/users/'+currentUID);
-    myBoroughDB = child(currentUserDB, '/myBorough')
-    myContactsDB = child(currentUserDB, '/myContacts')
+    var currentUserDB = ref(database, '/users/' + currentUID);
+    var boroughDB = child(currentUserDB, '/myBorough');
+    var contactsDB = child(currentUserDB, '/myContacts');
+} else {
+    currentUID = 'testDosage2';
+    currentUserDB = ref(database, '/users/' + currentUID);
+    boroughDB = child(currentUserDB, '/myBorough');
+    contactsDB = child(currentUserDB, '/myContacts');
 }
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = auth.currentUser;
         currentUID = user.uid;
-        currentUserDB = ref(database,'/users/'+currentUID);
-        myBoroughDB = child(currentUserDB, '/myBorough')
-        myContactsDB = child(currentUserDB, '/myContacts')
+        currentUserDB = ref(database, '/users/' + currentUID);
+        boroughDB = child(currentUserDB, '/myBorough');
+        contactsDB = child(currentUserDB, '/myContacts');
     }
-})
-const phoneNumbersInDB = ref(myContactsDB)
-const myBoroughInDB = ref(myBoroughDB);
+});
 
-
+// Declare constants for form and color buttons
+const submitForm = document.getElementById('settingsForm');
 const inputMyBorough = document.getElementById("myBoroughVar");
 const inputContact1 = document.getElementById("phonenb1")
 const inputContact2 = document.getElementById("phonenb2")
@@ -56,53 +56,40 @@ const inputContact3 = document.getElementById("phonenb3")
 const inputUsername = document.getElementById("usernamevar")
 const inputEmail = document.getElementById("emailvar")
 const inputPassword = document.getElementById("passwordvar")
-const updateButtonEl = document.getElementById("update-button")
 
-// Display myPostcode in the input box when the page loads
-onValue(myBoroughInDB, (snapshot) => {
+submitForm.addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the default form submission
+    settingsForm();
+});
+
+onValue(boroughDB, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-        // Update input box with the latest value
         inputMyBorough.value = data.myBorough || "";
     }
 });
 
-// Display phone numbers in input boxes when the page loads
-onValue(phoneNumbersInDB, (snapshot) => {
+onValue(contactsDB, (snapshot) => {
     const data = snapshot.val();
     if (data) {
-        // Update input boxes with the latest values
         inputContact1.value = data.number1 || "";
         inputContact2.value = data.number2 || "";
         inputContact3.value = data.number3 || "";
     }
 });
 
-updateButtonEl.addEventListener("click", function() {
+function settingsForm() {
     let myBoroughVar = inputMyBorough.value;
     let phoneNumber1 = inputContact1.value;
     let phoneNumber2 = inputContact2.value;
     let phoneNumber3 = inputContact3.value;
-
-    // Use set instead of push to update the values
-    set(myBoroughInDB, { myBorough: myBoroughVar })
-    .then(() => {
-        console.log("Data set successfully");
-    })
-    .catch((error) => {
-        console.error("Error setting data:", error);
-    });
-
-set(phoneNumbersInDB, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 })
-    .then(() => {
-        console.log("Data set successfully");
-    })
-    .catch((error) => {
-        console.error("Error setting data:", error);
-    });
-
-});
-
+    // add Boroughs
+    let currentBoroughDB = child(currentUserDB, '/myBorough/');
+    let phoneNumbersInDb = child(currentUserDB, '/myContacts/');
+//Changed
+    set(currentBoroughDB, { myBorough: myBoroughVar }) 
+    set(phoneNumbersInDb, { number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3 })
+}
 
 
 //link to home page
