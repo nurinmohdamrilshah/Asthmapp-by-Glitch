@@ -1,0 +1,505 @@
+.text-icon6 {
+  width: 1.75rem;
+  height: .69rem;
+  top: calc(50% - 5px);
+  left: 2.13rem;
+}
+
+.battery-icon6, .notch-icon6, .text-icon6 {
+  object-fit: cover;
+  position: absolute;
+}
+
+.notch-icon6 {
+  width: 0;
+  height: 0;
+  top: -.12rem;
+  left: 4.88rem;
+}
+
+.battery-icon6 {
+  width: 1.52rem;
+  height: .71rem;
+  top: 0;
+  right: .01rem;
+}
+
+.mobile-signal-icon6, .wifi-icon6 {
+  object-fit: cover;
+  width: .96rem;
+  height: .69rem;
+  position: relative;
+}
+
+.mobile-signal-icon6 {
+  width: 1.06rem;
+  height: .67rem;
+}
+
+.recording-indicator-icon6 {
+  object-fit: cover;
+  width: .38rem;
+  height: .38rem;
+  display: none;
+  position: absolute;
+  top: -.58rem;
+  right: 3.53rem;
+}
+
+.right-side6 {
+  width: 4.17rem;
+  height: .71rem;
+  position: absolute;
+  top: 1.08rem;
+  right: .91rem;
+}
+
+.iphone-x-or-newer6 {
+  flex-shrink: 0;
+  align-self: stretch;
+  height: 2.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.monotone-chevron-left-lg8 {
+  object-fit: cover;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+}
+
+.text43 {
+  letter-spacing: -.01em;
+  color: #090e1d;
+  text-align: left;
+  flex: 1;
+  font-family: Plus Jakarta Sans;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: none;
+  position: relative;
+}
+
+.vector-icon14 {
+  object-fit: cover;
+  border-radius: 3px;
+  width: 41.67%;
+  max-width: 100%;
+  height: 54.17%;
+  max-height: 100%;
+  position: absolute;
+  inset: 16.67% 29.17% 29.17%;
+  overflow: hidden;
+}
+
+.vector8 {
+  background-color: #090e1d;
+  border-radius: .5px;
+  width: 8.33%;
+  height: 8.33%;
+  position: absolute;
+  inset: 79.17% 45.83% 12.5%;
+}
+
+.monotone-question8 {
+  width: 1.5rem;
+  height: 1.5rem;
+  display: none;
+  position: relative;
+}
+
+.top-nav13, .top-nav14 {
+  flex-direction: row;
+  justify-content: flex-start;
+  display: flex;
+}
+
+.top-nav14 {
+  flex: 1 0;
+  align-items: center;
+  gap: 1rem;
+}
+
+.top-nav13 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  align-items: flex-start;
+  width: 20.44rem;
+  padding: 0;
+}
+
+.change-pic-child, .male-user-icon1 {
+  object-fit: cover;
+  z-index: 0;
+  width: 8.19rem;
+  height: 8.94rem;
+  position: relative;
+}
+
+.change-pic-child {
+  width: 7.94rem;
+  height: 7.94rem;
+}
+
+.change-pic-inner, .change-pic-item {
+  position: absolute;
+  margin: 0 !important;
+}
+
+.change-pic-item {
+  z-index: 1;
+  background-color: #b2e1e7;
+  border-radius: 50%;
+  width: 1.88rem;
+  height: 1.88rem;
+  top: 6.06rem;
+  left: 5.31rem;
+}
+
+.change-pic-inner {
+  object-fit: cover;
+  z-index: 2;
+  width: 1.27rem;
+  height: 1.27rem;
+  top: 6.36rem;
+  left: 5.62rem;
+}
+
+.change-pic, .profilepic {
+  flex-direction: row;
+  align-items: flex-start;
+  display: flex;
+}
+
+.change-pic {
+  cursor: pointer;
+  z-index: 1;
+  background-color: #0000;
+  border: 0;
+  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 0;
+  position: absolute;
+  top: .5rem;
+  left: .13rem;
+  margin: 0 !important;
+}
+
+.profilepic {
+  justify-content: flex-start;
+  gap: .63rem;
+  position: relative;
+  box-shadow: 0 4px 10px #0003;
+}
+
+.username {
+  font-size: inherit;
+  letter-spacing: -.02em;
+  width: 20.44rem;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 800;
+  line-height: 2.38rem;
+  display: inline-block;
+  position: relative;
+}
+
+.header27, .headercontent1 {
+  flex-direction: column;
+  align-self: stretch;
+  align-items: center;
+  display: flex;
+}
+
+.headercontent1 {
+  box-sizing: border-box;
+  justify-content: space-between;
+  height: 14.31rem;
+  padding: .63rem 0;
+}
+
+.header27 {
+  text-align: center;
+  color: #fff;
+  border-radius: 32px;
+  justify-content: flex-end;
+  font-family: Plus Jakarta Sans;
+  font-size: 1.88rem;
+  overflow: hidden;
+}
+
+.myarea {
+  letter-spacing: -.01em;
+  flex-shrink: 0;
+  width: 3.63rem;
+  font-weight: 800;
+  display: inline-block;
+  position: relative;
+}
+
+.area, .content20 {
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
+
+.content20 {
+  filter: blur();
+  color: #1e385f;
+  mix-blend-mode: normal;
+  background-color: #f0ecec;
+  border: 0;
+  border-radius: 12px;
+  outline: 0;
+  justify-content: flex-start;
+  padding: .38rem .75rem;
+  font-family: Plus Jakarta Sans;
+  font-size: .75rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.area {
+  justify-content: space-between;
+  align-self: stretch;
+}
+
+.accesibility, .dyslexialabel {
+  letter-spacing: -.01em;
+  margin: 0;
+  font-family: inherit;
+  position: relative;
+}
+
+.accesibility {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dyslexialabel {
+  font-size: inherit;
+  flex-shrink: 0;
+  width: 12.5rem;
+  font-weight: 400;
+  display: inline-block;
+}
+
+.button {
+  background-color: #fff;
+  border-radius: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  position: relative;
+  box-shadow: 0 1px 1px #0000001f, 0 2px 5px #676e7614;
+}
+
+.toggle, .toggles {
+  flex-direction: row;
+  flex-shrink: 0;
+  align-items: center;
+  display: flex;
+}
+
+.toggles {
+  box-sizing: border-box;
+  background-color: #b2e1e7;
+  border-radius: 100px;
+  justify-content: flex-start;
+  width: 2.75rem;
+  height: 1.5rem;
+  padding: .13rem .19rem;
+  overflow: hidden;
+}
+
+.toggle {
+  justify-content: space-between;
+  width: 2.94rem;
+}
+
+.usernamelabel {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 400;
+  position: relative;
+}
+
+.textinput {
+  box-sizing: border-box;
+  background-color: #f0ecec;
+  border-radius: 12px;
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 11.56rem;
+  padding: .31rem;
+  display: flex;
+}
+
+.emailvar, .textinput, .textinput1 {
+  color: #1e385f;
+  border: 0;
+  outline: 0;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.textinput1 {
+  box-sizing: border-box;
+  background-color: #f0ecec;
+  border-radius: 12px;
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 11.56rem;
+  padding: .31rem;
+  display: flex;
+}
+
+.emailvar {
+  letter-spacing: -.01em;
+  text-align: left;
+  background-color: #0000;
+  position: relative;
+}
+
+.textinput2 {
+  box-sizing: border-box;
+  background-color: #f0ecec;
+  border-radius: 12px;
+  flex-direction: row;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  width: 11.56rem;
+  padding: .31rem;
+  display: flex;
+}
+
+.notificationslabel {
+  font-size: inherit;
+  letter-spacing: -.01em;
+  flex-shrink: 0;
+  width: 12.5rem;
+  margin: 0;
+  font-family: inherit;
+  font-weight: 700;
+  display: inline-block;
+  position: relative;
+}
+
+.notifications {
+  flex-direction: row;
+  justify-content: space-between;
+  align-self: stretch;
+  align-items: center;
+  font-size: 1rem;
+  display: flex;
+}
+
+.signoutdescription, .signoutlabel {
+  letter-spacing: -.01em;
+  margin: 0;
+  position: relative;
+}
+
+.signoutlabel {
+  font-size: inherit;
+  width: 12.5rem;
+  font-family: inherit;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.signoutdescription {
+  text-align: center;
+  font-size: .88rem;
+}
+
+.sign-out, .signoutdescription, .span2 {
+  color: #1e385f;
+  font-family: Plus Jakarta Sans;
+  font-weight: 600;
+}
+
+.sign-out {
+  color: #b2e1e7;
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.signoutlink {
+  letter-spacing: -.01em;
+  text-align: center;
+  cursor: pointer;
+  font-size: .88rem;
+  text-decoration: none;
+  position: relative;
+}
+
+.sign-up7 {
+  cursor: pointer;
+  background-color: #0000;
+  border: 0;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  display: flex;
+}
+
+.mainsettings, .settings, .signout {
+  flex-direction: column;
+  display: flex;
+}
+
+.signout {
+  text-align: left;
+  color: #1e385f;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  font-family: Plus Jakarta Sans;
+  font-size: 1rem;
+}
+
+.mainsettings, .settings {
+  overflow: hidden;
+}
+
+.mainsettings {
+  box-sizing: border-box;
+  text-align: left;
+  color: #1e385f;
+  background-color: #fcf8f8;
+  border-radius: 24px 24px 0 0;
+  flex-shrink: 0;
+  justify-content: flex-start;
+  align-self: stretch;
+  align-items: flex-start;
+  gap: .63rem;
+  height: 31.25rem;
+  padding: .75rem .63rem 0;
+  font-family: Plus Jakarta Sans;
+  font-size: .88rem;
+}
+
+.settings {
+  background-image: url("home2@3x.d686ab1f.png");
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 32px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 50.75rem;
+  position: relative;
+}
+
+/*# sourceMappingURL=Settings.ba31762e.css.map */

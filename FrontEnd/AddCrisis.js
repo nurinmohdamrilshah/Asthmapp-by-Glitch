@@ -1,47 +1,14 @@
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "firebase/app";
-    import { getAnalytics } from "firebase/analytics";
-    import {child, get, getDatabase, push, ref} from "firebase/database";
-    import { getAuth, onAuthStateChanged } from "firebase/auth";
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
 
+// Initialize Firebase
+const appSettings = {
+    databaseURL: "https://scrimba-162f5-default-rtdb.europe-west1.firebasedatabase.app/"
+};
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
-        authDomain: "asthmapp-121a8.firebaseapp.com",
-        databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "asthmapp-121a8",
-        storageBucket: "asthmapp-121a8.appspot.com",
-        messagingSenderId: "583573518616",
-        appId: "1:583573518616:web:921a17f44e5fca27b3066d",
-        measurementId: "G-PLRLWFR1X7"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const analytics = getAnalytics(app);
-
-    const auth = getAuth();
-    var currentUser = auth.currentUser;
-    if (currentUser){
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/'+currentUID)
-        var crisisLogDB = child(currentUserDB, '/crisisLog')
-    }
-    else{
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database,'/users/'+currentUID);
-        crisisLogDB = child(currentUserDB, '/crisisLog')
-    }
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = auth.currentUser;
-            currentUID = user.uid;
-            currentUserDB = ref(database,'/users/'+currentUID);
-            crisisLogDB = child(currentUserDB, '/crisisLog')
-        }
-    })
+const app = initializeApp(appSettings);
+const database = getDatabase(app);
 
 // Declare constants for form and color buttons
 const crisisForm = document.getElementById('crisisForm');
@@ -55,7 +22,6 @@ crisisForm.addEventListener('submit', function (e) {
     e.preventDefault(); // Prevent the default form submission
     submitForm();
     resetForm();
-    closePopup(e);
 });
 
 // Toggle state when symptom buttons are clicked
@@ -112,10 +78,10 @@ function submitForm() {
     const selectedAllergenButtons = document.querySelectorAll('.allergenButton.true');
     const selectedLocationButtons = document.querySelectorAll('.locationButton.true');
     const selectedResolutionButtons = document.querySelectorAll('.resolutionButton.true'); // Added selected resolution buttons
-    const resDateTimeInput = document.getElementById('resDateTimeInput').value; 
+    const resDateTimeInput = document.getElementById('resDateTimeInput').value;
 
     // Reference to the database node where you want to store the data
-    const dataRef = ref(crisisLogDB);
+    const dataRef = ref(database, 'ADDCRISISTEST');
 
     // Sample data to be added
     const newData = {
@@ -231,32 +197,4 @@ function resetForm() {
 
     // Clear the display result
     displayResult.textContent = '';
-}
-
-
-
-function closePopup(event) {
-    let popup = event.currentTarget.parentNode;
-
-    function isOverlay(node) {
-        return !!(node && node.classList && node.classList.contains("popup-overlay"));
-    }
-
-    while (popup && !isOverlay(popup)) {
-        popup = popup.parentNode;
-    }
-
-    if (isOverlay(popup)) {
-        popup.style.display = "none";
-    }
-}
-
-var popupclose = document.getElementById("close");
-if (popupclose) {
-    popupclose.addEventListener("click", closePopup);
-}
-
-var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
-if (popupaddCrisisBtnContainer) {
-    popupaddCrisisBtnContainer.addEventListener("click", closePopup);
 }
