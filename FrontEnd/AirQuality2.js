@@ -1,4 +1,9 @@
 AQIdata = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0'};
+function sendtag(location){
+    const areaname = location;
+    localStorage.setItem('areaname', location)
+
+}
 function handleButtonClick(selectedButtonId) {
     // Remove 'highlight' class from all buttons
     var buttons = document.querySelectorAll('.yourareabtn');
