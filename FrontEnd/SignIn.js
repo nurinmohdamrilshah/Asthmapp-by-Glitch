@@ -1,6 +1,6 @@
-import forgotPassword from "../js/ForgotPassword.js";
+import forgotPassword from "./ForgotPassword.js";
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from './../node_modules/firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import Nav from "./Nav.js";
 
 
@@ -20,7 +20,7 @@ function SignIn(firebaseConfig) {
                 .then((userCredential) => {
                     const user = userCredential.user;
                     console.log('SignIn successful', user);
-                    window.location.href = '../html/Home.html';
+                    window.location.href = 'Home.html';
                 })
                 .catch((error) => {
                     // Handle errors here
