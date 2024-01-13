@@ -30,83 +30,82 @@ SignIn(firebaseConfig);
 SignUp(firebaseConfig);
 //Home(firebaseConfig);
 forgotPassword(firebaseConfig);
-
-//setting up for push notification: https://medium.com/@a7ul/beginners-guide-to-web-push-notifications-using-service-workers-cb3474a17679
-    const check = () => {
-        if (!('serviceWorker' in navigator)) {
-            throw new Error('No Service Worker support!')
-        }
-        if (!('PushManager' in window)) {
-            throw new Error('No Push API Support!')
-        }
-    }
-    const registerServiceWorker = async () => {
-        const swRegistration = await navigator.serviceWorker.register('service-worker.js'); //notice the file name
-        return swRegistration;
-    }
-    export const requestNotificationPermission = async () => {
-        const permission = await window.Notification.requestPermission();
-        if(permission !== 'granted'){
-            alert('You need to allow notifications to receive dosage reminders!')
-            throw new Error('Permission not granted for Notification');
-        }
-    }
-    export const showLocalNotification = (title, body, swRegistration) => {
-        const options = {
-            body
-        };
-        swRegistration.showNotification(title, options);
-    }
-
-    const express = require('express')
-    const cors = require('cors')
-    const bodyParser = require('body-parser')
-    const appExpress = express()
-    appExpress.use(cors())
-    appExpress.use(bodyParser.json())
-    const port = 4000
-
-    const subscriptionDB = { subscription: null }
-
-    const saveToDatabase = async subscription => {
-        subscriptionDB.subscription = subscription
-    }
-
-    appExpress.post('/save-subscription', async (req, res) => {
-        const subscription = req.body
-        await saveToDatabase(subscription)
-        res.json({ message: 'success' })
-    })
-
-    const vapidKeys = {
-        publicKey:'BL0MajlgAZHbKuGhHZJ_pEVZmvw71StnX8bn3CVo9_iskfUrTYMSY7kFWKK-VCdtsO68NPtvARVACw5tpoVf-zg',
-        privateKey:'4ihHI7IaOlwPN6lGB3ka2qp0LRmKrDyNlSgC5CCnmKU'
-    }
-
-    webPush.setVapidDetails(
-        'mailto:myuserid@email.com',
-        vapidKeys.publicKey,
-        vapidKeys.privateKey
-    )
-    const sendNotification = (subscription, dataToSend) => {
-        webPush.sendNotification(subscription, dataToSend)
-    }
-
-    appExpress.get('/send-notification', (req, res) => {
-        const subscription = dummyDb.subscription //get subscription from your databse here.
-        const message = 'Hello World'
-        sendNotification(subscription, message)
-        res.json({ message: 'message sent' })
-    })
-
-    appExpress.listen(port, () => console.log(`Example app listening on port ${port}!`))
-
-const main = async () => {
-    check()
-    const swRegistration = await registerServiceWorker();
-    const permission =  await requestNotificationPermission();
-    showLocalNotification('This is title', 'this is the message', swRegistration);
-}
-main()
+//
+// //setting up for push notification: https://medium.com/@a7ul/beginners-guide-to-web-push-notifications-using-service-workers-cb3474a17679
+//     const check = () => {
+//         if (!('serviceWorker' in navigator)) {
+//             throw new Error('No Service Worker support!')
+//         }
+//         if (!('PushManager' in window)) {
+//             throw new Error('No Push API Support!')
+//         }
+//     }
+//     const registerServiceWorker = async () => {
+//         const swRegistration = await navigator.serviceWorker.register('service-worker.js'); //notice the file name
+//         return swRegistration;
+//     }
+//     export const requestNotificationPermission = async () => {
+//         const permission = await window.Notification.requestPermission();
+//         if(permission !== 'granted'){
+//             alert('You need to allow notifications to receive dosage reminders!')
+//             throw new Error('Permission not granted for Notification');
+//         }
+//     }
+//     export const showLocalNotification = (title, body, swRegistration) => {
+//         const options = {
+//             body
+//         };
+//         swRegistration.showNotification(title, options);
+//     }
+//
+//     const express = require('express')
+//     const cors = require('cors')
+//     const bodyParser = require('body-parser')
+//     const appExpress = express()
+//     appExpress.use(cors())
+//     appExpress.use(bodyParser.json())
+//     const port = 4000
+//
+//     const subscriptionDB = { subscription: null }
+//
+//     const saveToDatabase = async subscription => {
+//         subscriptionDB.subscription = subscription
+//     }
+//
+//     appExpress.post('/save-subscription', async (req, res) => {
+//         const subscription = req.body
+//         await saveToDatabase(subscription)
+//         res.json({ message: 'success' })
+//     })
+//
+//     const vapidKeys = {
+//         publicKey:'BL0MajlgAZHbKuGhHZJ_pEVZmvw71StnX8bn3CVo9_iskfUrTYMSY7kFWKK-VCdtsO68NPtvARVACw5tpoVf-zg',
+//         privateKey:'4ihHI7IaOlwPN6lGB3ka2qp0LRmKrDyNlSgC5CCnmKU'
+//     }
+//
+//     webPush.setVapidDetails(
+//         'mailto:myuserid@email.com',
+//         vapidKeys.publicKey,
+//         vapidKeys.privateKey
+//     )
+//     const sendNotification = (subscription, dataToSend) => {
+//         webPush.sendNotification(subscription, dataToSend)
+//     }
+//
+//     appExpress.get('/send-notification', (req, res) => {
+//         const subscription = dummyDb.subscription //get subscription from your databse here.
+//         const message = 'Hello World'
+//         sendNotification(subscription, message)
+//         res.json({ message: 'message sent' })
+//     })
+//
+//     appExpress.listen(port, () => console.log(`Example app listening on port ${port}!`))
+//
+// const main = async () => {
+//     check()
+//     const swRegistration = await registerServiceWorker();
+//     const permission =  await requestNotificationPermission();
+//     showLocalNotification('This is title', 'this is the message', swRegistration);
+// }
 
 
