@@ -31,7 +31,7 @@ import Emergency1 from "./Emergency1.js";
 import Home from "./Home.js"
 import MyUsageLog from "./MyUsageLog.js";
 import SymptomsChart from "./SymptomsChart.js";
-
+import log from "./log.js"
 Nav();
 Settings(firebaseConfig);
 SignIn(firebaseConfig);
@@ -44,6 +44,6 @@ Emergency1(firebaseConfig)
 Home(firebaseConfig);
 MyUsageLog(firebaseConfig);
 SymptomsChart(firebaseConfig);
-
+log(firebaseConfig)
 
 
