@@ -2,7 +2,6 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, set, onValue } from 'firebase/database';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
-import Nav from "./Nav.js";
 
 function Settings(firebaseConfig) {
     const settingsBtn = document.getElementById("settingsBtn")

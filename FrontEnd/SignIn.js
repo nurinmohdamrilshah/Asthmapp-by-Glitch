@@ -1,7 +1,6 @@
 import forgotPassword from "./ForgotPassword.js";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import Nav from "./Nav.js";
 
 
 function SignIn(firebaseConfig) {

@@ -20,7 +20,6 @@ const firebaseConfig = {
     measurementId: "G-PLRLWFR1X7"
 };
 
-import Nav from "./Nav.js";
 import SignIn from "./SignIn.js";
 import forgotPassword from "./ForgotPassword.js";
 import SignUp from "./SignUp.js";
@@ -34,7 +33,6 @@ import MyUsageLog from "./MyUsageLog.js";
 import SymptomsChart from "./SymptomsChart.js";
 import log from "./log.js"
 
-// Nav();
 Settings(firebaseConfig);
 SignIn(firebaseConfig);
 SignUp(firebaseConfig);
@@ -43,7 +41,7 @@ forgotPassword(firebaseConfig);
 // AddIntakePopup(firebaseConfig);
 // AllergensChart(firebaseConfig);
 // Emergency1(firebaseConfig)
-Home(firebaseConfig);
+// Home(firebaseConfig);
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
 // log(firebaseConfig)
