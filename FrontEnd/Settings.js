@@ -1,10 +1,17 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, set, onValue } from 'firebase/database';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
 import Nav from "./Nav.js";
 
 function Settings(firebaseConfig) {
+    const settingsBtn = document.getElementById("settingsBtn")
+    if (settingsBtn){
+        settingsBtn.addEventListener("click", function(event){
+            console.log("Settings btn pressed");
+            window.location.href = './Settings.html'
+        });
+    }
     console.log("Entered settings");
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -115,15 +122,31 @@ function Settings(firebaseConfig) {
         return phoneRegex.test(number);
     }
 
-    // Navigation Links
-    const backPageLink = document.getElementById("backBtn");
-    const signOutLink = document.getElementById("sighOut");
+    const signOutLink = document.getElementById("signOutLink")
+    if (signOutLink) {
+        signOutLink.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
 
-    backPageLink.addEventListener("click", () => Nav());
-    signOutLink.addEventListener("click", () => {
-        console.log("Clicked nav button")
-        Nav()
-    });
+            signOut(auth).then(() => {
+                console.log("Signed Out");
+                // Redirect after successful sign out
+                window.location.href = './index.html';
+            }).catch((error) => {
+                console.error("Error Signing Out: ", error);
+                alert("Error Signing Out");
+            });
+        });
+    }
+
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+        backBtn.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevents any default action associated with the button
+            console.log("Back button pressed");
+            window.history.back(); // Navigates to the previous page in history
+        });
+    }
+
 }
 
 export default Settings;

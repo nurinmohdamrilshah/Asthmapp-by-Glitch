@@ -5,6 +5,13 @@ import Nav from "./Nav.js";
 
 
 function SignIn(firebaseConfig) {
+    const signInButton = document.getElementById("signInBtn")
+    if (signInButton){
+        signInButton.addEventListener("click", function(event){
+            console.log("Forgot password btn");
+            Nav()
+        });
+    }
     const app = initializeApp(firebaseConfig);
     console.log("Entered SignIn Function");
 
@@ -20,7 +27,7 @@ function SignIn(firebaseConfig) {
                 .then((userCredential) => {
                     const user = userCredential.user;
                     console.log('SignIn successful', user);
-                    Nav();
+                    window.location.href = "./Home.html"
                 })
                 .catch((error) => {
                     // Handle errors here

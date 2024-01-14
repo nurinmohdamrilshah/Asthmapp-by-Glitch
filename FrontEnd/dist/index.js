@@ -12474,9 +12474,6 @@
     function viewGetServerCache(view) {
         return view.viewCache_.serverCache.getNode();
     }
-    function viewGetCompleteNode(view) {
-        return viewCacheGetCompleteEventSnap(view.viewCache_);
-    }
     function viewGetCompleteServerCache(view, path) {
         const cache = viewCacheGetCompleteServerSnap(view.viewCache_);
         if (cache) {
@@ -13137,33 +13134,6 @@
             }
         });
         return writeTreeCalcCompleteEventCache(writeTree, path, serverCache, writeIdsToExclude, includeHiddenSets);
-    }
-    function syncTreeGetServerValue(syncTree, query) {
-        const path = query._path;
-        let serverCache = null;
-        // Any covering writes will necessarily be at the root, so really all we need to find is the server cache.
-        // Consider optimizing this once there's a better understanding of what actual behavior will be.
-        syncTree.syncPointTree_.foreachOnPath(path, (pathToSyncPoint, sp) => {
-            const relativePath = newRelativePath(pathToSyncPoint, path);
-            serverCache =
-                serverCache || syncPointGetCompleteServerCache(sp, relativePath);
-        });
-        let syncPoint = syncTree.syncPointTree_.get(path);
-        if (!syncPoint) {
-            syncPoint = new SyncPoint();
-            syncTree.syncPointTree_ = syncTree.syncPointTree_.set(path, syncPoint);
-        }
-        else {
-            serverCache =
-                serverCache || syncPointGetCompleteServerCache(syncPoint, newEmptyPath());
-        }
-        const serverCacheComplete = serverCache != null;
-        const serverCacheNode = serverCacheComplete
-            ? new CacheNode(serverCache, true, false)
-            : null;
-        const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, query._path);
-        const view = syncPointGetView(syncPoint, query, writesCache, serverCacheComplete ? serverCacheNode.getNode() : ChildrenNode.EMPTY_NODE, serverCacheComplete);
-        return viewGetCompleteNode(view);
     }
     /**
      * A helper method that visits all descendant and ancestor SyncPoints, applying the operation.
@@ -14209,63 +14179,6 @@
     function repoGetNextWriteId(repo) {
         return repo.nextWriteId_++;
     }
-    /**
-     * The purpose of `getValue` is to return the latest known value
-     * satisfying `query`.
-     *
-     * This method will first check for in-memory cached values
-     * belonging to active listeners. If they are found, such values
-     * are considered to be the most up-to-date.
-     *
-     * If the client is not connected, this method will wait until the
-     *  repo has established a connection and then request the value for `query`.
-     * If the client is not able to retrieve the query result for another reason,
-     * it reports an error.
-     *
-     * @param query - The query to surface a value for.
-     */
-    function repoGetValue(repo, query, eventRegistration) {
-        // Only active queries are cached. There is no persisted cache.
-        const cached = syncTreeGetServerValue(repo.serverSyncTree_, query);
-        if (cached != null) {
-            return Promise.resolve(cached);
-        }
-        return repo.server_.get(query).then(payload => {
-            const node = nodeFromJSON(payload).withIndex(query._queryParams.getIndex());
-            /**
-             * Below we simulate the actions of an `onlyOnce` `onValue()` event where:
-             * Add an event registration,
-             * Update data at the path,
-             * Raise any events,
-             * Cleanup the SyncTree
-             */
-            syncTreeAddEventRegistration(repo.serverSyncTree_, query, eventRegistration, true);
-            let events;
-            if (query._queryParams.loadsAllData()) {
-                events = syncTreeApplyServerOverwrite(repo.serverSyncTree_, query._path, node);
-            }
-            else {
-                const tag = syncTreeTagForQuery(repo.serverSyncTree_, query);
-                events = syncTreeApplyTaggedQueryOverwrite(repo.serverSyncTree_, query._path, node, tag);
-            }
-            /*
-             * We need to raise events in the scenario where `get()` is called at a parent path, and
-             * while the `get()` is pending, `onValue` is called at a child location. While get() is waiting
-             * for the data, `onValue` will register a new event. Then, get() will come back, and update the syncTree
-             * and its corresponding serverCache, including the child location where `onValue` is called. Then,
-             * `onValue` will receive the event from the server, but look at the syncTree and see that the data received
-             * from the server is already at the SyncPoint, and so the `onValue` callback will never get fired.
-             * Calling `eventQueueRaiseEventsForChangedPath()` is the correct way to propagate the events and
-             * ensure the corresponding child events will get fired.
-             */
-            eventQueueRaiseEventsForChangedPath(repo.eventQueue_, query._path, events);
-            syncTreeRemoveEventRegistration(repo.serverSyncTree_, query, eventRegistration, null, true);
-            return node;
-        }, err => {
-            repoLog(repo, 'get for query ' + stringify(query) + ' failed: ' + err);
-            return Promise.reject(new Error(err));
-        });
-    }
     function repoSetWithPriority(repo, path, newVal, newPriority, onComplete) {
         repoLog(repo, 'set', {
             path: path.toString(),
@@ -14904,81 +14817,6 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    // Modeled after base64 web-safe chars, but ordered by ASCII.
-    const PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
-    /**
-     * Fancy ID generator that creates 20-character string identifiers with the
-     * following properties:
-     *
-     * 1. They're based on timestamp so that they sort *after* any existing ids.
-     * 2. They contain 72-bits of random data after the timestamp so that IDs won't
-     *    collide with other clients' IDs.
-     * 3. They sort *lexicographically* (so the timestamp is converted to characters
-     *    that will sort properly).
-     * 4. They're monotonically increasing. Even if you generate more than one in
-     *    the same timestamp, the latter ones will sort after the former ones. We do
-     *    this by using the previous random bits but "incrementing" them by 1 (only
-     *    in the case of a timestamp collision).
-     */
-    const nextPushId = (function () {
-        // Timestamp of last push, used to prevent local collisions if you push twice
-        // in one ms.
-        let lastPushTime = 0;
-        // We generate 72-bits of randomness which get turned into 12 characters and
-        // appended to the timestamp to prevent collisions with other clients. We
-        // store the last characters we generated because in the event of a collision,
-        // we'll use those same characters except "incremented" by one.
-        const lastRandChars = [];
-        return function (now) {
-            const duplicateTime = now === lastPushTime;
-            lastPushTime = now;
-            let i;
-            const timeStampChars = new Array(8);
-            for (i = 7; i >= 0; i--) {
-                timeStampChars[i] = PUSH_CHARS.charAt(now % 64);
-                // NOTE: Can't use << here because javascript will convert to int and lose
-                // the upper bits.
-                now = Math.floor(now / 64);
-            }
-            assert(now === 0, 'Cannot push at time == 0');
-            let id = timeStampChars.join('');
-            if (!duplicateTime) {
-                for (i = 0; i < 12; i++) {
-                    lastRandChars[i] = Math.floor(Math.random() * 64);
-                }
-            }
-            else {
-                // If the timestamp hasn't changed since last push, use the same random
-                // number, except incremented by 1.
-                for (i = 11; i >= 0 && lastRandChars[i] === 63; i--) {
-                    lastRandChars[i] = 0;
-                }
-                lastRandChars[i]++;
-            }
-            for (i = 0; i < 12; i++) {
-                id += PUSH_CHARS.charAt(lastRandChars[i]);
-            }
-            assert(id.length === 20, 'nextPushId: Length should be 20.');
-            return id;
-        };
-    })();
-
-    /**
-     * @license
-     * Copyright 2017 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *   http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
     /**
      * Encapsulates the data needed to raise an event
      */
@@ -15246,7 +15084,7 @@
          */
         child(path) {
             const childPath = new Path(path);
-            const childRef = child$1(this.ref, path);
+            const childRef = child(this.ref, path);
             return new DataSnapshot(this._node.getChild(childPath), childRef, PRIORITY_INDEX);
         }
         /**
@@ -15294,7 +15132,7 @@
             const childrenNode = this._node;
             // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a weird return type...
             return !!childrenNode.forEachChild(this._index, (key, node) => {
-                return action(new DataSnapshot(node, child$1(this.ref, key), PRIORITY_INDEX));
+                return action(new DataSnapshot(node, child(this.ref, key), PRIORITY_INDEX));
             });
         }
         /**
@@ -15367,7 +15205,7 @@
     function ref(db, path) {
         db = getModularInstance(db);
         db._checkNotDeleted('ref');
-        return path !== undefined ? child$1(db._root, path) : db._root;
+        return path !== undefined ? child(db._root, path) : db._root;
     }
     /**
      * Gets a `Reference` for the location at the specified relative path.
@@ -15380,7 +15218,7 @@
      *   location.
      * @returns The specified child location.
      */
-    function child$1(parent, path) {
+    function child(parent, path) {
         parent = getModularInstance(parent);
         if (pathGetFront(parent._path) === null) {
             validateRootPathString('child', 'path', path, false);
@@ -15389,54 +15227,6 @@
             validatePathString('child', 'path', path, false);
         }
         return new ReferenceImpl(parent._repo, pathChild(parent._path, path));
-    }
-    /**
-     * Generates a new child location using a unique key and returns its
-     * `Reference`.
-     *
-     * This is the most common pattern for adding data to a collection of items.
-     *
-     * If you provide a value to `push()`, the value is written to the
-     * generated location. If you don't pass a value, nothing is written to the
-     * database and the child remains empty (but you can use the `Reference`
-     * elsewhere).
-     *
-     * The unique keys generated by `push()` are ordered by the current time, so the
-     * resulting list of items is chronologically sorted. The keys are also
-     * designed to be unguessable (they contain 72 random bits of entropy).
-     *
-     * See {@link https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data | Append to a list of data}.
-     * See {@link https://firebase.googleblog.com/2015/02/the-2120-ways-to-ensure-unique_68.html | The 2^120 Ways to Ensure Unique Identifiers}.
-     *
-     * @param parent - The parent location.
-     * @param value - Optional value to be written at the generated location.
-     * @returns Combined `Promise` and `Reference`; resolves when write is complete,
-     * but can be used immediately as the `Reference` to the child location.
-     */
-    function push(parent, value) {
-        parent = getModularInstance(parent);
-        validateWritablePath('push', parent._path);
-        validateFirebaseDataArg('push', value, parent._path, true);
-        const now = repoServerTime(parent._repo);
-        const name = nextPushId(now);
-        // push() returns a ThennableReference whose promise is fulfilled with a
-        // regular Reference. We use child() to create handles to two different
-        // references. The first is turned into a ThennableReference below by adding
-        // then() and catch() methods and is used as the return value of push(). The
-        // second remains a regular Reference and is used as the fulfilled value of
-        // the first ThennableReference.
-        const thennablePushRef = child$1(parent, name);
-        const pushRef = child$1(parent, name);
-        let promise;
-        if (value != null) {
-            promise = set$1(pushRef, value).then(() => pushRef);
-        }
-        else {
-            promise = Promise.resolve(pushRef);
-        }
-        thennablePushRef.then = promise.then.bind(promise);
-        thennablePushRef.catch = promise.then.bind(promise, undefined);
-        return thennablePushRef;
     }
     /**
      * Writes data to this Database location.
@@ -15475,22 +15265,6 @@
         repoSetWithPriority(ref._repo, ref._path, value, 
         /*priority=*/ null, deferred.wrapCallback(() => { }));
         return deferred.promise;
-    }
-    /**
-     * Gets the most up-to-date result for this query.
-     *
-     * @param query - The query to run.
-     * @returns A `Promise` which resolves to the resulting DataSnapshot if a value is
-     * available, or rejects if the client is unable to return a value (e.g., if the
-     * server is unreachable and there is nothing cached).
-     */
-    function get(query) {
-        query = getModularInstance(query);
-        const callbackContext = new CallbackContext(() => { });
-        const container = new ValueEventRegistration(callbackContext);
-        return repoGetValue(query._repo, query, container).then(node => {
-            return new DataSnapshot(node, new ReferenceImpl(query._repo, query._path), query._queryParams.getIndex());
-        });
     }
     /**
      * Represents registration for 'value' events.
@@ -15562,7 +15336,7 @@
         }
         createEvent(change, query) {
             assert(change.childName != null, 'Child events should have a childName.');
-            const childRef = child$1(new ReferenceImpl(query._repo, query._path), change.childName);
+            const childRef = child(new ReferenceImpl(query._repo, query._path), change.childName);
             const index = query._queryParams.getIndex();
             return new DataEvent(change.type, this, new DataSnapshot(change.snapshotNode, childRef, index), change.prevName);
         }
@@ -20520,6 +20294,16 @@
     function onAuthStateChanged(auth, nextOrObserver, error, completed) {
         return getModularInstance(auth).onAuthStateChanged(nextOrObserver, error, completed);
     }
+    /**
+     * Signs out the current user.
+     *
+     * @param auth - The {@link Auth} instance.
+     *
+     * @public
+     */
+    function signOut(auth) {
+        return getModularInstance(auth).signOut();
+    }
 
     const STORAGE_AVAILABLE_KEY = '__sak';
 
@@ -22882,6 +22666,13 @@
     }
 
     function forgotPassword(firebaseConfig) {
+      const forgotPasswordbtn = document.getElementById("forgotPasswordBtn");
+      if (forgotPasswordbtn) {
+        forgotPasswordbtn.addEventListener("click", function (event) {
+          console.log("Forgot password btn");
+          Nav();
+        });
+      }
       initializeApp(firebaseConfig);
       const auth = getAuth();
       const forgotPasswordLink = document.getElementById("ResetPswdBtn");
@@ -22898,6 +22689,13 @@
     }
 
     function SignIn(firebaseConfig) {
+      const signInButton = document.getElementById("signInBtn");
+      if (signInButton) {
+        signInButton.addEventListener("click", function (event) {
+          console.log("Forgot password btn");
+          Nav();
+        });
+      }
       initializeApp(firebaseConfig);
       console.log("Entered SignIn Function");
       const auth = getAuth();
@@ -22909,7 +22707,7 @@
           signInWithEmailAndPassword(auth, email, password).then(userCredential => {
             const user = userCredential.user;
             console.log('SignIn successful', user);
-            Nav();
+            window.location.href = "./Home.html";
           }).catch(error => {
             // Handle errors here
             console.error('Error during sign-in:', error.message);
@@ -23068,6 +22866,7 @@
               }
             }
             signUpWithCheckEmail(emailAddressToPost).then(() => {
+              window.location.href = "./Home.html";
               ErrorHandle('You have successfully sign-up. Please login now.');
             }).catch(error => {
               ErrorHandle(`Error during signup: ${error}`);
@@ -23078,6 +22877,13 @@
     }
 
     function Settings(firebaseConfig) {
+      const settingsBtn = document.getElementById("settingsBtn");
+      if (settingsBtn) {
+        settingsBtn.addEventListener("click", function (event) {
+          console.log("Settings btn pressed");
+          window.location.href = './Settings.html';
+        });
+      }
       console.log("Entered settings");
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
@@ -23098,8 +22904,8 @@
 
       // Sync user data with form inputs
       function syncUserData(userDBRef) {
-        const boroughDB = child$1(userDBRef, '/myBorough');
-        const contactsDB = child$1(userDBRef, '/myContacts');
+        const boroughDB = child(userDBRef, '/myBorough');
+        const contactsDB = child(userDBRef, '/myContacts');
         onValue(boroughDB, snapshot => {
           const data = snapshot.val();
           if (data) {
@@ -23161,8 +22967,8 @@
         saveUserData(currentUserDB, myBoroughVar, phoneNumber1, phoneNumber2, phoneNumber3);
       }
       function saveUserData(userDBRef, borough, phone1, phone2, phone3) {
-        const currentBoroughDB = child$1(userDBRef, '/myBorough/');
-        const phoneNumbersInDb = child$1(userDBRef, '/myContacts/');
+        const currentBoroughDB = child(userDBRef, '/myBorough/');
+        const phoneNumbersInDb = child(userDBRef, '/myContacts/');
         set$1(currentBoroughDB, {
           myBorough: borough
         }).then(() => console.log("Borough data saved")).catch(error => console.error("Error saving borough data: ", error));
@@ -23178,1270 +22984,29 @@
         const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
         return phoneRegex.test(number);
       }
+      const signOutLink = document.getElementById("signOutLink");
+      if (signOutLink) {
+        signOutLink.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevent the default link behavior
 
-      // Navigation Links
-      const backPageLink = document.getElementById("backBtn");
-      const signOutLink = document.getElementById("sighOut");
-      backPageLink.addEventListener("click", () => Nav());
-      signOutLink.addEventListener("click", () => {
-        console.log("Clicked nav button");
-        Nav();
-      });
-    }
-
-    function AddCrisis(firebaseConfig) {
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      const auth = getAuth();
-      var currentUser = auth.currentUser;
-      if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID);
-        child$1(currentUserDB, '/addCrisis');
-      } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-        child$1(currentUserDB, '/addCrisis');
-      }
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUser = auth.currentUser;
-          currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          child$1(currentUserDB, '/addCrisis');
-        }
-      });
-      // Declare constants for form and color buttons
-      const crisisForm = document.getElementById('crisisForm');
-      const symptomButtons = document.querySelectorAll('.symptomButton');
-      const allergenButtons = document.querySelectorAll('.allergenButton');
-      const locationButtons = document.querySelectorAll('.locationButton');
-      const resolutionButtons = document.querySelectorAll('.resolutionButton'); // Added resolution buttons
-      // Attach submit event listener to the form
-      crisisForm.addEventListener('submit', function (e) {
-        e.preventDefault(); // Prevent the default form submission
-        submitForm();
-        resetForm();
-      });
-      // Toggle state when symptom buttons are clicked
-      symptomButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          this.value;
-          const currentState = this.classList.contains('true');
-          // Toggle the selected class and update button text
-          this.classList.toggle('true', !currentState);
-          this.classList.toggle('false', currentState);
-        });
-      });
-      // Toggle state when allergen buttons are clicked
-      allergenButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          this.value;
-          const currentState = this.classList.contains('true');
-          // Toggle the selected class and update button text
-          this.classList.toggle('true', !currentState);
-          this.classList.toggle('false', currentState);
-        });
-      });
-      // Toggle state when location buttons are clicked
-      locationButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          this.value;
-          const currentState = this.classList.contains('true');
-          // Toggle the selected class and update button text
-          this.classList.toggle('true', !currentState);
-          this.classList.toggle('false', currentState);
-        });
-      });
-      // Toggle state when resolution buttons are clicked
-      resolutionButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          this.value;
-          const currentState = this.classList.contains('true');
-          // Toggle the selected class and update button text
-          this.classList.toggle('true', !currentState);
-          this.classList.toggle('false', currentState);
-        });
-      });
-      function submitForm() {
-        const dateTimeInput = document.getElementById('dateTimeInput').value;
-        const selectedSymptomButtons = document.querySelectorAll('.symptomButton.true');
-        const selectedAllergenButtons = document.querySelectorAll('.allergenButton.true');
-        const selectedLocationButtons = document.querySelectorAll('.locationButton.true');
-        const selectedResolutionButtons = document.querySelectorAll('.resolutionButton.true'); // Added selected resolution buttons
-        const resDateTimeInput = document.getElementById('resDateTimeInput').value;
-        let addCrisisDB = child$1(currentUserDB, '/addCrisis/');
-        // Sample data to be added
-        const newData = {
-          dateTimeInput: dateTimeInput,
-          resDateTimeInput: resDateTimeInput,
-          // Added resolution time
-          selected_symptoms: {},
-          selected_allergens: {},
-          selected_locations: {},
-          selected_resolutions: {}
-        };
-        // Add symptoms:
-        newData.selected_symptoms.wheezing = false;
-        newData.selected_symptoms.cough = false;
-        newData.selected_symptoms.chestCompressions = false;
-        newData.selected_symptoms.dysponea = false;
-        newData.selected_symptoms.fever = false;
-        newData.selected_symptoms.tingle = false;
-        newData.selected_symptoms.dizziness = false;
-        if (selectedSymptomButtons.length > 0) {
-          const selectedSymptoms = Array.from(selectedSymptomButtons).map(button => button.value);
-          // Add each selected symptom with a value of true to selected_symptoms
-          selectedSymptoms.forEach(symptom => {
-            newData.selected_symptoms[symptom] = true;
+          signOut(auth).then(() => {
+            console.log("Signed Out");
+            // Redirect after successful sign out
+            window.location.href = './index.html';
+          }).catch(error => {
+            console.error("Error Signing Out: ", error);
+            alert("Error Signing Out");
           });
-        }
-        // Add allergens:
-        newData.selected_allergens.smoke = false;
-        newData.selected_allergens.animals = false;
-        newData.selected_allergens.dust = false;
-        newData.selected_allergens.airQuality = false;
-        newData.selected_allergens.greenery = false;
-        newData.selected_allergens.stress = false;
-        newData.selected_allergens.tempHumidity = false;
-        newData.selected_allergens.activities = false;
-        newData.selected_allergens.perfumes = false;
-        newData.selected_allergens.foodAllergy = false;
-        if (selectedAllergenButtons.length > 0) {
-          const selectedAllergens = Array.from(selectedAllergenButtons).map(button => button.value);
-          // Add each selected allergen with a value of true to selected_allergens
-          selectedAllergens.forEach(allergen => {
-            newData.selected_allergens[allergen] = true;
-          });
-        }
-        // Add locations:
-        newData.selected_locations.home = false;
-        newData.selected_locations.workSchool = false;
-        newData.selected_locations.outside = false;
-        newData.selected_locations.friendHouse = false;
-        newData.selected_locations.other = false;
-        if (selectedLocationButtons.length > 0) {
-          const selectedLocations = Array.from(selectedLocationButtons).map(button => button.value);
-          // Add each selected location with a value of true to selected_locations
-          selectedLocations.forEach(location => {
-            newData.selected_locations[location] = true;
-          });
-        }
-        // Add resolutions:
-        newData.selected_resolutions.inhaler = false;
-        newData.selected_resolutions.hospitalization = false;
-        newData.selected_resolutions.oxygenMask = false;
-        newData.selected_resolutions.breathingExercises = false;
-        if (selectedResolutionButtons.length > 0) {
-          const selectedResolutions = Array.from(selectedResolutionButtons).map(button => button.value);
-          // Add each selected resolution with a value of true to selected_resolutions
-          selectedResolutions.forEach(resolution => {
-            newData.selected_resolutions[resolution] = true;
-          });
-        }
-        // Adding data using push (generates a unique key)
-        push(addCrisisDB, newData);
-      }
-      function resetForm() {
-        // Clear the input values
-        document.getElementById('dateTimeInput').value = '';
-        document.getElementById('resDateTimeInput').value = '';
-        // Reset symptom buttons
-        symptomButtons.forEach(button => {
-          button.classList.remove('true');
-          button.classList.add('false');
-        });
-        // Reset allergen buttons
-        allergenButtons.forEach(button => {
-          button.classList.remove('true');
-          button.classList.add('false');
-        });
-        // Reset location buttons
-        locationButtons.forEach(button => {
-          button.classList.remove('true');
-          button.classList.add('false');
-        });
-        // Reset resolution buttons
-        resolutionButtons.forEach(button => {
-          button.classList.remove('true');
-          button.classList.add('false');
-        });
-        // Clear the display result
-        displayResult.textContent = '';
-      }
-      var popupclose = document.getElementById("close");
-      if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
         });
       }
-      var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
-      if (popupaddCrisisBtnContainer) {
-        popupaddCrisisBtnContainer.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
+      const backBtn = document.getElementById("backBtn");
+      if (backBtn) {
+        backBtn.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevents any default action associated with the button
+          console.log("Back button pressed");
+          window.history.back(); // Navigates to the previous page in history
         });
       }
-    }
-
-    // Import the functions you need from the SDKs you need
-    function AddIntakePopup(firebaseConfig) {
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      getAnalytics(app);
-      const auth = getAuth();
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          var currentUID = user.uid;
-          ref(database, '/users/' + currentUID);
-          ref(database, '/users/' + currentUID + '/inhalers');
-        }
-      });
-      get(inhalerDB).then(snapshot => {
-        if (snapshot.exists()) {
-          var addIntakeBtn = document.getElementById("addIntakeBtn");
-          var inhalerSection = document.getElementById("selectInhalerSection");
-
-          //let newIntakeInhaler = null;
-          function createSelectInhalerBtn(inhaler) {
-            //let choiceInhaler = new Inhaler(inhaler.name, inhaler.volume, inhaler.expiryDate, inhaler.type)
-            let selectInhalerBtn;
-            selectInhalerBtn = document.createElement('button');
-            selectInhalerBtn.className = "inhaler11";
-            inhalerSection.appendChild(selectInhalerBtn);
-            selectInhalerBtn.id = 'select' + inhaler.name;
-            let divBtn = document.createElement('div');
-            divBtn.className = "intaketimevar";
-            divBtn.textContent = inhaler.name;
-            selectInhalerBtn.appendChild(divBtn);
-            selectInhalerBtn.addEventListener('click', function () {
-              var newIntakeInhaler = inhaler;
-              console.log(inhaler.name + ' is selected');
-              addIntakeBtn.addEventListener('click', function () {
-                var newIntakeTime = document.getElementById("intakeTimeVar").value;
-                var newIntakePuffs = document.getElementById("nbPuffsVar").value;
-                //newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
-                //var newIntake = new Intake(newIntakeTime,newIntakePuffs,newIntakeInhaler)
-                let selectedInhalerDB = child$1(inhalerDB, '/' + inhaler.name);
-                let intakesDB = child$1(selectedInhalerDB, '/intakes/');
-                push(intakesDB, {
-                  time: newIntakeTime,
-                  puffNum: newIntakePuffs
-                });
-                console.log('intake data pushed to firebase');
-                get(intakesDB).then(snapshot => {
-                  if (snapshot.exists()) {
-                    var intakeCount = 0;
-                    snapshot.forEach(function (childSnapshot) {
-                      intakeCount++;
-                    });
-                    let dosageDB = child$1(selectedInhalerDB, '/dosage');
-                    get(dosageDB).then(snapshot => {
-                      if (snapshot.exists) {
-                        var numOfDose = 0;
-                        snapshot.forEach(function (childSnapshot) {
-                          numOfDose++;
-                        });
-                      }
-                      if (intakeCount > numOfDose) {
-                        //NOTIFICATION
-                        if (Notification.permission === "granted") {
-                          new Notification("Warning: Too Frequent Usage of " + newIntakeInhaler.getName() + "!", {
-                            body: "It is recommended to space out this inhaler intake according to your registered dose."
-                          });
-                        } else {
-                          alert("Warning:" + newIntakeInhaler.getName() + " is OverUsed!");
-                        }
-                      }
-                    });
-                    window.reload();
-                  }
-                });
-              });
-            });
-          }
-          snapshot.forEach(function (childSnapshot) {
-            let inhalerChoice = childSnapshot.val().inhaler;
-            createSelectInhalerBtn(inhalerChoice);
-          });
-        } else {
-          console.log("No data available");
-        }
-      }).catch(error => {
-        console.error(error);
-      });
-
-      //Navigation
-      // eventListeners.js
-      var popupclose = document.getElementById("closeBtn");
-      if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
-        });
-      }
-      var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
-      if (popupaddIntakeBtn) {
-        popupaddIntakeBtn.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
-        });
-      }
-      var topNav = document.getElementById("back");
-      if (topNav) {
-        Nav();
-      }
-      var close = document.getElementById("closeBtn");
-      if (close) {
-        Nav();
-      }
-      var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
-      if (newInhalerIntake) {
-        newInhalerIntake.addEventListener("click", function () {
-          var popup = document.getElementById("addIntakePopup");
-          if (!popup) return;
-          var popupStyle = popup.style;
-          if (popupStyle) {
-            popupStyle.display = "flex";
-            popupStyle.zIndex = 100;
-            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-            popupStyle.alignItems = "center";
-            popupStyle.justifyContent = "center";
-          }
-          popup.setAttribute("closable", "");
-          var onClick = popup.onClick || function (e) {
-            if (e.target === popup && popup.hasAttribute("closable")) {
-              popupStyle.display = "none";
-            }
-          };
-          popup.addEventListener("click", onClick);
-        });
-      }
-      var home = document.getElementById("homeBtn");
-      if (home) {
-        Nav();
-      }
-      var cloud = document.getElementById("airQualityBtn");
-      if (cloud) {
-        Nav();
-      }
-      var hospital = document.getElementById("emergencyBtn");
-      if (hospital) {
-        Nav();
-      }
-      document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-      document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-    }
-
-    function AllergensChart(firebaseConfig) {
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      const ctx1 = document.getElementById('allergensChart');
-      const auth = getAuth(app);
-      var currentUser = auth.currentUser;
-      var currentUID, currentUserDB;
-      if (currentUser) {
-        currentUID = currentUser.uid;
-        currentUserDB = ref(database, '/users/' + currentUID);
-      } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-      }
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUser = auth.currentUser;
-          currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          boroughDB = child(currentUserDB, '/myBorough');
-        }
-      });
-
-      // const currentUID = "testDosage2";
-
-      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
-      let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery', 'Perfumes', 'Smoke', 'Stress', 'Temp & Humidity'];
-      onValue(entriesInDB, function (snapshot) {
-        let allergens = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const entries = snapshot.val();
-
-        // Counts total number of occurences of allergens for ALL crisis log entries
-        for (var i = 0; i < Object.keys(entries).length; i++) {
-          const entry = Object.keys(entries)[i];
-          const allergensInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_allergens");
-          updateChart(allergens, allergensInDB);
-        }
-        updateChartWithSymptoms(allergens);
-      });
-
-      // Tallies number of occurences for EACH crisis log entry
-      function updateChart(allergens, allergensInDB) {
-        onValue(allergensInDB, function (snapshot) {
-          const data = snapshot.val();
-          if (data != null) {
-            if (data.activites == true) {
-              allergens[0] += 1;
-            }
-            if (data.airQuality == true) {
-              allergens[1] += 1;
-            }
-            if (data.animals == true) {
-              allergens[2] += 1;
-            }
-            if (data.dust == true) {
-              allergens[3] += 1;
-            }
-            if (data.foodAllergy == true) {
-              allergens[4] += 1;
-            }
-            if (data.greenery == true) {
-              allergens[5] += 1;
-            }
-            if (data.perfumes == true) {
-              allergens[6] += 1;
-            }
-            if (data.smoke == true) {
-              allergens[7] += 1;
-            }
-            if (data.stress == true) {
-              allergens[8] += 1;
-            }
-            if (data.tempHumidity == true) {
-              allergens[9] += 1;
-            }
-          }
-        });
-      }
-      function updateChartWithSymptoms(allergens) {
-        const chartConfig = {
-          type: 'doughnut',
-          data: {
-            labels: labels1,
-            datasets: [{
-              label: 'Occurrences',
-              data: allergens,
-              hoverOffset: 4,
-              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
-            }]
-          }
-        };
-        // Check if chart is already initialized
-        if (window.liveChart2) {
-          window.liveChart2.data = chartConfig.data;
-          window.liveChart2.update();
-        } else {
-          // Initialize the chart for the first time
-          window.liveChart2 = new Chart(ctx1, chartConfig);
-        }
-      }
-    }
-
-    // Import the functions you need from the SDKs you need
-    function Emergency1(firebaseConfig) {
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      getAnalytics(app);
-      const auth = getAuth();
-      var currentUser = auth.currentUser;
-      if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID);
-        var contactsDB = child$1(currentUserDB, '/myContacts');
-      } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-        contactsDB = child$1(currentUserDB, '/myContacts');
-      }
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUser = auth.currentUser;
-          currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          contactsDB = child$1(currentUserDB, '/myContacts');
-        }
-      });
-
-      // Set up phone numbers
-
-      const emergencyContactButtons = [document.getElementById("contact1Btn"), document.getElementById("contact2Btn"), document.getElementById("contact3Btn")];
-      const call999Btn = document.getElementById("call999Btn");
-      document.getElementById("displayResult");
-
-      // Attach event listeners to the emergency contact buttons
-      emergencyContactButtons.forEach((button, index) => {
-        button.addEventListener("click", () => initiateCall(index + 1));
-      });
-
-      // Event listener for initiating a call to an emergency contact
-      function initiateCall(contactNumber) {
-        onValue(contactsDB, snapshot => {
-          const data = snapshot.val();
-          const phoneNumberKey = `number${contactNumber}`;
-          if (data && data[phoneNumberKey]) {
-            const phoneNumber = data[phoneNumberKey];
-
-            // Use the tel: URI scheme to initiate a phone call
-            window.location.href = `tel:${phoneNumber}`;
-          } else {
-            alert("Emergency contact not available.");
-          }
-        });
-      }
-
-      // Event listener for calling 999
-      call999Btn.addEventListener("click", initiateEmergencyCall);
-      function initiateEmergencyCall() {
-        // Use the tel: URI scheme to initiate a call to 999
-        window.location.href = "tel:999";
-      }
-
-      //Set up elements
-      var close = document.getElementById("close");
-      var hyperlink = document.getElementById("emergencyStepsMore");
-      var crisisStatsBtn = document.getElementById("crisisStatsBtn");
-      var home = document.getElementById("homeBtn");
-      var cloud = document.getElementById("airQltyBtn");
-      var inhaler = document.getElementById("inhalerBtn");
-
-      // Add event listeners to the elements
-      if (close) {
-        close.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
-      }
-      if (hyperlink) {
-        hyperlink.addEventListener("click", function (e) {
-          window.location.href = "./Emergency2.html";
-        });
-      }
-      if (crisisStatsBtn) {
-        crisisStatsBtn.addEventListener("click", function (e) {
-          window.location.href = "./Emergency3.html";
-        });
-      }
-      if (home) {
-        home.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
-      }
-      if (cloud) {
-        cloud.addEventListener("click", function (e) {
-          window.location.href = "./AirQuality01.html";
-        });
-      }
-      if (inhaler) {
-        inhaler.addEventListener("click", function (e) {
-          window.location.href = "./MyInhaler.html";
-        });
-      }
-    }
-
-    async function setAPI(input1) {
-      let API = 0;
-      let APInumber = 0;
-      if (input1.SO2 != '0') {
-        const SO2 = parseInt(input1.SO2);
-        API = API + SO2;
-        APInumber = APInumber + 1;
-      }
-      if (input1.NO2 != '0') {
-        const NO2 = parseInt(input1.NO2);
-        API = API + NO2;
-        APInumber = APInumber + 1;
-      }
-      if (input1.PM25 != '0') {
-        const PM25 = parseInt(input1.PM25);
-        API = API + PM25;
-        APInumber = APInumber + 1;
-      }
-      if (input1.O3 != '0') {
-        const O3 = parseInt(input1.O3);
-        API = API + O3;
-        APInumber = APInumber + 1;
-      }
-      if (input1.PM10 != '0') {
-        const PM10 = parseInt(input1.PM10);
-        API = API + PM10;
-        APInumber = APInumber + 1;
-      }
-      let APIaverage = API / APInumber;
-      let APIindex = APIaverage.toFixed(1);
-      return APIindex;
-    }
-    async function getAPI(input) {
-      const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
-      const apidata = await response.json();
-      //barking
-      const barking = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      barking.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[0]["@AirQualityIndex"];
-      barking.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[1]["@AirQualityIndex"];
-      barking.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[1].Species[1]["@AirQualityIndex"];
-      barking.AQI = setAPI(barking);
-      if (input == "Barking") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = barking.AQI;
-      }
-      //barnet
-      const barnet = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      barnet.AQI = setAPI(barnet);
-      if (input == "Barnet") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = barnet.AQI;
-      }
-      //bexley
-      const bexley = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      bexley.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[0]["@AirQualityIndex"];
-      bexley.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[1]["@AirQualityIndex"];
-      bexley.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[2]["@AirQualityIndex"];
-      bexley.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[3]["@AirQualityIndex"];
-      bexley.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[2].Species[2]["@AirQualityIndex"];
-      bexley.AQI = setAPI(bexley);
-      if (input == "Bexley") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = bexley.AQI;
-      }
-      //brent
-      const brent = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      brent.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[1]["@AirQualityIndex"];
-      brent.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[2]["@AirQualityIndex"];
-      brent.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[3]["@AirQualityIndex"];
-      brent.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[1].Species[0]["@AirQualityIndex"];
-      brent.AQI = setAPI(brent);
-      if (input == "Brent") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = brent.AQI;
-      }
-      //bromley
-      const bromley = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      bromley.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[0]["@AirQualityIndex"];
-      bromley.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[1]["@AirQualityIndex"];
-      bromley.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[2]["@AirQualityIndex"];
-      bromley.AQI = setAPI(bromley);
-      if (input == "Bromley") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = bromley.AQI;
-      }
-      //camden
-      const camden = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      camden.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[0]["@AirQualityIndex"];
-      camden.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[1]["@AirQualityIndex"];
-      camden.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[2]["@AirQualityIndex"];
-      camden.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[3]["@AirQualityIndex"];
-      camden.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[4]["@AirQualityIndex"];
-      camden.AQI = setAPI(camden);
-      if (input == "Camden") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = camden.AQI;
-      }
-      //city
-      const city = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      city.AQI = setAPI(city);
-      if (input == "City of London") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = city.AQI;
-      }
-      //croydon
-      const croydon = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      croydon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[1].Species["@AirQualityIndex"];
-      croydon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[2].Species["@AirQualityIndex"];
-      croydon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[3].Species[1]["@AirQualityIndex"];
-      croydon.AQI = setAPI(croydon);
-      if (input == "Croydon") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = croydon.AQI;
-      }
-      //ealing
-      const ealing = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      ealing.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[8].Site[1].Species[0]["@AirQualityIndex"];
-      ealing.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[8].Site[2].Species[1]["@AirQualityIndex"];
-      ealing.AQI = setAPI(ealing);
-      if (input == "Ealing") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = ealing.AQI;
-      }
-      //enfield
-      const enfield = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      enfield.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[9].Site[0].Species["@AirQualityIndex"];
-      enfield.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[9].Site[2].Species[1]["@AirQualityIndex"];
-      enfield.AQI = setAPI(enfield);
-      if (input == "Enfield") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = enfield.AQI;
-      }
-      //greenwich
-      const greenwich = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      greenwich.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[0]["@AirQualityIndex"];
-      greenwich.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[1]["@AirQualityIndex"];
-      greenwich.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[2]["@AirQualityIndex"];
-      greenwich.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[7].Species[4]["@AirQualityIndex"];
-      greenwich.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[3].Species[1]["@AirQualityIndex"];
-      greenwich.AQI = setAPI(greenwich);
-      if (input == "Greenwich") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = greenwich.AQI;
-      }
-      //hackney
-      const hackney = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      hackney.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[0]["@AirQualityIndex"];
-      hackney.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[1]["@AirQualityIndex"];
-      hackney.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[2]["@AirQualityIndex"];
-      hackney.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[3]["@AirQualityIndex"];
-      hackney.AQI = setAPI(hackney);
-      if (input == "Hackney") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = hackney.AQI;
-      }
-      //hammersmith
-      const hammersmith = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      hammersmith.AQI = setAPI(hammersmith);
-      if (input == "Hammersmith") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = hammersmith.AQI;
-      }
-
-      //haringey
-      const haringey = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      haringey.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[13].Site[1].Species[0]["@AirQualityIndex"];
-      haringey.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[13].Site[1].Species[1]["@AirQualityIndex"];
-      haringey.AQI = setAPI(haringey);
-      if (input == "Haringey") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = haringey.AQI;
-      }
-      //harrow
-      const harrow = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      harrow.AQI = setAPI(harrow);
-      if (input == "Harrow") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = harrow.AQI;
-      }
-
-      //havering
-      const havering = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      havering.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[1].Species[0]["@AirQualityIndex"];
-      havering.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[1].Species[1]["@AirQualityIndex"];
-      havering.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[0].Species[2]["@AirQualityIndex"];
-      havering.AQI = setAPI(havering);
-      if (input == "Havering") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = havering.AQI;
-      }
-
-      //hillingdon
-      const hillingdon = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      hillingdon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[0]["@AirQualityIndex"];
-      hillingdon.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[1]["@AirQualityIndex"];
-      hillingdon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[2]["@AirQualityIndex"];
-      hillingdon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[3]["@AirQualityIndex"];
-      hillingdon.AQI = setAPI(hillingdon);
-      if (input == "Hillingdon") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = hillingdon.AQI;
-      }
-
-      //hounslow
-      const hounslow = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      hounslow.AQI = setAPI(hounslow);
-      if (input == "Hounslow") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = hounslow.AQI;
-      }
-
-      //islington
-      const islington = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      islington.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[18].Site[0].Species[0]["@AirQualityIndex"];
-      islington.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[18].Site[0].Species[1]["@AirQualityIndex"];
-      islington.AQI = setAPI(islington);
-      if (input == "Islington") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = islington.AQI;
-      }
-
-      //kc
-      const kc = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      kc.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[0]["@AirQualityIndex"];
-      kc.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[1]["@AirQualityIndex"];
-      kc.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[2]["@AirQualityIndex"];
-      kc.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[1].Species[0]["@AirQualityIndex"];
-      kc.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[1].Species[1]["@AirQualityIndex"];
-      kc.AQI = setAPI(kc);
-      if (input == "Kensington and Chelsea") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = kc.AQI;
-      }
-
-      //kingston
-      const kingston = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      kingston.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[0].Species[0]["@AirQualityIndex"];
-      kingston.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[1].Species[1]["@AirQualityIndex"];
-      kingston.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[0].Species[1]["@AirQualityIndex"];
-      kingston.AQI = setAPI(kingston);
-      if (input == "Kingston") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = kingston.AQI;
-      }
-
-      //lambeth
-      const lambeth = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      lambeth.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[0]["@AirQualityIndex"];
-      lambeth.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[1]["@AirQualityIndex"];
-      lambeth.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[2]["@AirQualityIndex"];
-      lambeth.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[1].Species[1]["@AirQualityIndex"];
-      lambeth.AQI = setAPI(lambeth);
-      if (input == "Lambeth") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = lambeth.AQI;
-      }
-
-      //lewisham
-      const lewisham = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      lewisham.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[0]["@AirQualityIndex"];
-      lewisham.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[1]["@AirQualityIndex"];
-      lewisham.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[2]["@AirQualityIndex"];
-      lewisham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[3]["@AirQualityIndex"];
-      lewisham.AQI = setAPI(lewisham);
-      if (input == "Lewisham") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = lewisham.AQI;
-      }
-
-      //merton
-      const merton = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      merton.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[23].Site[1].Species["@AirQualityIndex"];
-      merton.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[23].Site[0].Species["@AirQualityIndex"];
-      merton.AQI = setAPI(merton);
-      if (input == "Merton") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = merton.AQI;
-      }
-
-      //newham
-      const newham = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      newham.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[0]["@AirQualityIndex"];
-      newham.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[1]["@AirQualityIndex"];
-      newham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[2]["@AirQualityIndex"];
-      newham.AQI = setAPI(newham);
-      if (input == "Newham") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = newham.AQI;
-      }
-      //redbridge
-      const redbridge = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      redbridge.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[0]["@AirQualityIndex"];
-      redbridge.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[1]["@AirQualityIndex"];
-      redbridge.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[2]["@AirQualityIndex"];
-      redbridge.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[3]["@AirQualityIndex"];
-      redbridge.AQI = setAPI(redbridge);
-      if (input == "Redbridge") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = redbridge.AQI;
-      }
-
-      //richmond
-      const richmond = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      richmond.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[0].Species[0]["@AirQualityIndex"];
-      richmond.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[1].Species[1]["@AirQualityIndex"];
-      richmond.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[0].Species[1]["@AirQualityIndex"];
-      richmond.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[2].Species[1]["@AirQualityIndex"];
-      richmond.AQI = setAPI(richmond);
-      if (input == "Richmond") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = richmond.AQI;
-      }
-
-      //southwark
-      const southwark = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      southwark.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[0]["@AirQualityIndex"];
-      southwark.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[1]["@AirQualityIndex"];
-      southwark.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[2]["@AirQualityIndex"];
-      southwark.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[3]["@AirQualityIndex"];
-      southwark.AQI = setAPI(southwark);
-      if (input == "Southwark") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = southwark.AQI;
-      }
-
-      //sutton
-      const sutton = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      sutton.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[0].Species[0]["@AirQualityIndex"];
-      sutton.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[0].Species[1]["@AirQualityIndex"];
-      sutton.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[1].Species[1]["@AirQualityIndex"];
-      sutton.AQI = setAPI(sutton);
-      if (input == "Sutton") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = sutton.AQI;
-      }
-
-      //towerhamlet
-      const towerhamlet = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      towerhamlet.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[0]["@AirQualityIndex"];
-      towerhamlet.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[1]["@AirQualityIndex"];
-      towerhamlet.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[2]["@AirQualityIndex"];
-      towerhamlet.AQI = setAPI(towerhamlet);
-      if (input == "Tower Hamlets") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = towerhamlet.AQI;
-      }
-
-      //waltham
-      const waltham = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      waltham.AQI = setAPI(waltham);
-      if (input == "Waltham Forest") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = waltham.AQI;
-      }
-
-      //wandsworth
-      const wandsworth = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      wandsworth.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[0].Species[0]["@AirQualityIndex"];
-      wandsworth.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[0].Species[1]["@AirQualityIndex"];
-      wandsworth.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[1].Species[1]["@AirQualityIndex"];
-      wandsworth.AQI = setAPI(wandsworth);
-      if (input == "Wandsworth") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = wandsworth.AQI;
-      }
-
-      //westminster
-      const westminster = {
-        'SO2': '0',
-        'NO2': '0',
-        'O3': '0',
-        'PM10': '0',
-        'PM25': '0',
-        'AQI': '0'
-      };
-      westminster.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[0]["@AirQualityIndex"];
-      westminster.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[1]["@AirQualityIndex"];
-      westminster.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[2]["@AirQualityIndex"];
-      westminster.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[3]["@AirQualityIndex"];
-      westminster.AQI = setAPI(westminster);
-      if (input == "Westminster") {
-        var areaAQI = document.getElementById('AQInumber');
-        areaAQI.innerText = westminster.AQI;
-      }
-    }
-
-    function Home(firebaseConfig) {
-      console.log("Home");
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      const auth = getAuth();
-      let currentUserDB;
-      console.log("The current user is" + currentUserDB);
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          const currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + user.uid);
-          ref(database, '/users/' + user.uid + '/inhalers');
-          //loadInhalerWidget(inhalerDB);
-          console.log(currentUID);
-        } else {
-          console.log("No user is currenly signed in");
-        }
-      });
-
-      // Load Inhaler Widget Content
-      document.getElementById("fav-inhaler-title");
-      document.getElementById('nextReminderVar');
-      document.getElementById("expiryDateFavVar");
-
-      // Set up navigation
-      function setupNav(elements) {
-        elements.forEach(id => {
-          const element = document.getElementById(id);
-          if (element) {
-            element.addEventListener("click", Nav);
-          }
-        });
-      }
-      const elementsWithNav = ["settingsBtn", "quickIntakeBtn", "crisisStepsBtn", "airQltyBar", "inhalerBar", "emergencyBar"];
-      setupNav(elementsWithNav);
-
-      // Popup cancel button logic
-      var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
-      if (popupcancelBtnContainer) {
-        popupcancelBtnContainer.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          while (popup && !popup.classList.contains("popup-overlay")) {
-            popup = popup.parentNode;
-          }
-          if (popup) {
-            popup.style.display = "none";
-          }
-        });
-      }
-
-      // Update area name and AQI
-      var areaname = document.getElementById('areaname');
-      const areatag = localStorage.getItem('userarea');
-      areaname.innerText = areatag;
-      console.log(getAPI(areatag));
-      Notification.requestPermission().then(permission => {
-        if (permission !== "granted") {
-          alert("You need to allow permissions to receive warnings and dosage reminders!");
-        }
-      });
     }
 
     const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -26558,46 +25123,6 @@
         const analyticsInstance = new AnalyticsService(app);
         return analyticsInstance;
     }
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    /**
-     * Returns an {@link Analytics} instance for the given app.
-     *
-     * @public
-     *
-     * @param app - The {@link @firebase/app#FirebaseApp} to use.
-     */
-    function getAnalytics$1(app = getApp()) {
-        app = getModularInstance(app);
-        // Dependencies
-        const analyticsProvider = _getProvider(app, ANALYTICS_TYPE);
-        if (analyticsProvider.isInitialized()) {
-            return analyticsProvider.getImmediate();
-        }
-        return initializeAnalytics(app);
-    }
-    /**
-     * Returns an {@link Analytics} instance for the given app.
-     *
-     * @public
-     *
-     * @param app - The {@link @firebase/app#FirebaseApp} to use.
-     */
-    function initializeAnalytics(app, options = {}) {
-        // Dependencies
-        const analyticsProvider = _getProvider(app, ANALYTICS_TYPE);
-        if (analyticsProvider.isInitialized()) {
-            const existingInstance = analyticsProvider.getImmediate();
-            if (deepEqual(options, analyticsProvider.getOptions())) {
-                return existingInstance;
-            }
-            else {
-                throw ERROR_FACTORY.create("already-initialized" /* AnalyticsError.ALREADY_INITIALIZED */);
-            }
-        }
-        const analyticsInstance = analyticsProvider.initialize({ options });
-        return analyticsInstance;
-    }
     /**
      * Sends a Google Analytics event with given `eventParams`. This method
      * automatically associates this logged event with this Firebase web
@@ -26651,258 +25176,6 @@
     }
     registerAnalytics();
 
-    // Import the functions you need from the SDKs you need
-
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
-
-    function MyUsageLog(firebaseConfig) {
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      getAnalytics$1(app);
-      const auth = getAuth();
-      var currentUser = auth.currentUser;
-      if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID);
-        var inhalerDB = child$1(currentUserDB, '/inhalers');
-      } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-        inhalerDB = child$1(currentUserDB, '/inhalers');
-      }
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUser = auth.currentUser;
-          currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          inhalerDB = child$1(currentUserDB, '/inhalers');
-        }
-      });
-
-      // eventListeners.js
-      var popupclose = document.getElementById("closeBtn");
-      if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
-        });
-      }
-      var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
-      if (popupaddIntakeBtn) {
-        popupaddIntakeBtn.addEventListener("click", function (e) {
-          var popup = e.currentTarget.parentNode;
-          function isOverlay(node) {
-            return !!(node && node.classList && node.classList.contains("popup-overlay"));
-          }
-          while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-          }
-          if (isOverlay(popup)) {
-            popup.style.display = "none";
-          }
-        });
-      }
-      var topNav = document.getElementById("back");
-      if (topNav) {
-        topNav.addEventListener("click", function (e) {
-          window.location.href = "./MyInhaler.html";
-        });
-      }
-      var close = document.getElementById("closeBtn");
-      if (close) {
-        close.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
-      }
-      var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
-      if (newInhalerIntake) {
-        newInhalerIntake.addEventListener("click", function () {
-          var popup = document.getElementById("addIntakePopup");
-          if (!popup) return;
-          var popupStyle = popup.style;
-          if (popupStyle) {
-            popupStyle.display = "flex";
-            popupStyle.zIndex = 100;
-            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-            popupStyle.alignItems = "center";
-            popupStyle.justifyContent = "center";
-          }
-          popup.setAttribute("closable", "");
-          var onClick = popup.onClick || function (e) {
-            if (e.target === popup && popup.hasAttribute("closable")) {
-              popupStyle.display = "none";
-            }
-          };
-          popup.addEventListener("click", onClick);
-        });
-      }
-      var home = document.getElementById("homeBtn");
-      if (home) {
-        home.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
-      }
-      var cloud = document.getElementById("airQualityBtn");
-      if (cloud) {
-        cloud.addEventListener("click", function (e) {
-          window.location.href = "./AirQuality01.html";
-        });
-      }
-      var hospital = document.getElementById("emergencyBtn");
-      if (hospital) {
-        hospital.addEventListener("click", function (e) {
-          window.location.href = "./Emergency1.html";
-        });
-      }
-      var mainSection = document.getElementById("mainMyInhalerStats");
-      get(inhalerDB).then(snapshot => {
-        if (snapshot.exists()) {
-          snapshot.forEach(function (childSnapshot) {
-            var intakesDB = child$1(inhalerDB, childSnapshot.val().inhaler.name + '/intakes/');
-            get(intakesDB).then(intakeList => {
-              if (intakeList.exists()) {
-                intakeList.forEach(function (intake) {
-                  let intakeLogSection = document.createElement('ul');
-                  intakeLogSection.className = "intakelogsection";
-                  var intakeDateFormat = new Date(intake.val().time);
-                  let intakeTime = document.createElement('h1');
-                  intakeTime.className = "intaketime";
-                  intakeTime.textContent = intakeDateFormat.toLocaleDateString() + " at " + intakeDateFormat.toLocaleTimeString();
-                  intakeLogSection.appendChild(intakeTime);
-                  let intakeLogSection1 = document.createElement('div');
-                  intakeLogSection1.className = "intakelogsection1";
-                  let inhalerPointer = document.createElement('h2');
-                  inhalerPointer.className = "numberofpuffs";
-                  inhalerPointer.textContent = "Inhaler:";
-                  intakeLogSection1.appendChild(inhalerPointer);
-                  let inhalerNameVar = document.createElement('b');
-                  inhalerNameVar.className = "inhalernamevar";
-                  inhalerNameVar.textContent = childSnapshot.val().inhaler.name;
-                  intakeLogSection1.appendChild(inhalerNameVar);
-                  let intakeLogSection2 = document.createElement('div');
-                  intakeLogSection2.className = "intakelogsection1";
-                  let puffsPointer = document.createElement('h2');
-                  puffsPointer.className = "numberofpuffs";
-                  puffsPointer.textContent = "Number of Puffs:";
-                  intakeLogSection2.appendChild(puffsPointer);
-                  let puffsNumVar = document.createElement('b');
-                  puffsNumVar.className = "inhalernamevar";
-                  puffsNumVar.textContent = intake.val().puffNum;
-                  intakeLogSection2.appendChild(puffsNumVar);
-                  intakeLogSection.appendChild(intakeLogSection1);
-                  intakeLogSection.appendChild(intakeLogSection2);
-                  mainSection.appendChild(intakeLogSection);
-                });
-              }
-            });
-          });
-        }
-      });
-    }
-
-    function SymptomsChart(firebaseConfig) {
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-      const ctx = document.getElementById('symptomsChart');
-      const auth = getAuth(app);
-      var currentUser = auth.currentUser;
-      var currentUID, currentUserDB;
-      if (currentUser) {
-        currentUID = currentUser.uid;
-        currentUserDB = ref(database, '/users/' + currentUID);
-      } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-      }
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUser = auth.currentUser;
-          currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          boroughDB = child(currentUserDB, '/myBorough');
-        }
-      });
-      console.log(currentUID);
-      // const currentUID = "testDosage2";
-
-      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
-      let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling', 'Wheezing'];
-      onValue(entriesInDB, function (snapshot) {
-        let symptoms = [0, 0, 0, 0, 0, 0, 0];
-        const entries = snapshot.val();
-
-        // Counts total number of occurences of symptoms for ALL crisis log entries
-        for (var i = 0; i < Object.keys(entries).length; i++) {
-          const entry = Object.keys(entries)[i];
-          const symptomsInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_symptoms");
-          updateChart(symptoms, symptomsInDB);
-        }
-        updateChartWithSymptoms(symptoms);
-      });
-
-      // Tallies number of occurences for EACH crisis log entry
-      function updateChart(symptoms, symptomsInDB) {
-        onValue(symptomsInDB, function (snapshot) {
-          const data = snapshot.val();
-          if (data != null) {
-            if (data.chestCompressions == true) {
-              symptoms[0] += 1;
-            }
-            if (data.cough == true) {
-              symptoms[1] += 1;
-            }
-            if (data.dizziness == true) {
-              symptoms[2] += 1;
-            }
-            if (data.dysponea == true) {
-              symptoms[3] += 1;
-            }
-            if (data.fever == true) {
-              symptoms[4] += 1;
-            }
-            if (data.tingle == true) {
-              symptoms[5] += 1;
-            }
-            if (data.wheezing == true) {
-              symptoms[6] += 1;
-            }
-          }
-        });
-      }
-      function updateChartWithSymptoms(symptoms) {
-        const chartConfig = {
-          type: 'doughnut',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Occurences',
-              data: symptoms,
-              hoverOffset: 4,
-              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
-            }]
-          }
-        };
-        // Check if chart is already initialized
-        if (window.liveChart) {
-          window.liveChart.data = chartConfig.data;
-          window.liveChart.update();
-        } else {
-          // Initialize the chart for the first time
-          window.liveChart = new Chart(ctx, chartConfig);
-        }
-      }
-    }
-
     /* == Firebase == */
     console.log('Firebase loaded:', typeof initializeApp !== 'undefined' ? 'Yes' : 'No');
 
@@ -26919,17 +25192,19 @@
       appId: "1:583573518616:web:921a17f44e5fca27b3066d",
       measurementId: "G-PLRLWFR1X7"
     };
-    Nav();
+
+    // Nav();
     Settings(firebaseConfig);
     SignIn(firebaseConfig);
     SignUp(firebaseConfig);
-    AddCrisis(firebaseConfig);
+    // AddCrisis(firebaseConfig)
     forgotPassword(firebaseConfig);
-    AddIntakePopup(firebaseConfig);
-    AllergensChart(firebaseConfig);
-    Emergency1(firebaseConfig);
-    Home(firebaseConfig);
-    MyUsageLog(firebaseConfig);
-    SymptomsChart(firebaseConfig);
+    // AddIntakePopup(firebaseConfig);
+    // AllergensChart(firebaseConfig);
+    // Emergency1(firebaseConfig)
+    // //Home(firebaseConfig);
+    // MyUsageLog(firebaseConfig);
+    // SymptomsChart(firebaseConfig);
+    // log(firebaseConfig)
 
 })();
