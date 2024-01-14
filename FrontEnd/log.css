@@ -1,0 +1,41 @@
+/* Challenge: Make it so that the user cannot select the text */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    letter-spacing: -0.01em;
+    font-family: "Plus Jakarta Sans";
+    background-color: #FFFFFF;
+    color: #1E385F;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    max-width: 320px;
+    margin: 30px auto;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+ul li {
+    font-size: 20px;
+    background-color: #F0ECEC;
+    padding: 15px;
+    border-radius: 8px;
+    flex-grow: 1;
+    text-align: center;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2)
+}
+
+ul li:hover {
+    background-color: #B2E1E7;
+    cursor: pointer;
+}
