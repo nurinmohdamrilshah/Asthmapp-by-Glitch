@@ -35,12 +35,10 @@ onAuthStateChanged(auth, (user) => {
         currentUser = auth.currentUser;
         currentUID = user.uid;
         currentUserDB = ref(database, '/users/' + currentUID);
-        boroughDB = child(currentUserDB, '/myBorough');
     }
 });
 
 console.log(currentUID);
-// const currentUID = "testDosage2";
 
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
 let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling','Wheezing'];

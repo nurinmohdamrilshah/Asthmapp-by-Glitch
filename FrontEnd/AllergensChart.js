@@ -35,11 +35,8 @@ onAuthStateChanged(auth, (user) => {
         currentUser = auth.currentUser;
         currentUID = user.uid;
         currentUserDB = ref(database, '/users/' + currentUID);
-        boroughDB = child(currentUserDB, '/myBorough');
     }
 });
-
-// const currentUID = "testDosage2";
 
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
 let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery','Perfumes','Smoke','Stress','Temp & Humidity'];
