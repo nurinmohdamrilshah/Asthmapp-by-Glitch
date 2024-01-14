@@ -138,15 +138,15 @@ function Settings(firebaseConfig) {
         });
     }
 
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+        backBtn.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevents any default action associated with the button
+            console.log("Back button pressed");
+            window.history.back(); // Navigates to the previous page in history
+        });
+    }
 
-    // // Navigation Links
-    // const backPageLink = document.getElementById("backBtn");
-    // const signOutLink = document.getElementById("sighOut");
-    //
-    // backPageLink.addEventListener("click", () => Nav());
-    // signOutLink.addEventListener("click", () => {
-    //     console.log("Clicked nav button")
-    // });
 }
 
 export default Settings;
