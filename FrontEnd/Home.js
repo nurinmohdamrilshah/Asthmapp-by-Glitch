@@ -23,24 +23,16 @@ const database = getDatabase(app);
 const analytics = getAnalytics(app);
 
 const auth = getAuth();
-const currentUser = auth.currentUser;
+let currentUser
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        const currentUID = currentUser.uid;
+        const currentUID = user.uid;
+        console.log(currentUID)
         const currentUserDB = ref(database,'/users/'+currentUID)
         const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
     }
 })
-if (currentUser){
-    var currentUID = currentUser.uid;
-    var currentUserDB = ref(database,'/users/'+currentUID)
-    var inhalerDB = child(currentUserDB, '/inhalers')
-}
-else {
-    currentUID = 'testDosage2'
-    currentUserDB = ref(database, '/users/' + currentUID)
-    inhalerDB = child(currentUserDB, '/inhalers')
-}
+
 
 function loadAddCrisisContent() {
     // Fetch the content of AddCrisis.html
