@@ -34,7 +34,7 @@ import SymptomsChart from "./SymptomsChart.js";
 import log from "./log.js"
 
 // Nav();
-//Settings(firebaseConfig);
+Settings(firebaseConfig);
 SignIn(firebaseConfig);
 SignUp(firebaseConfig);
 // AddCrisis(firebaseConfig)
