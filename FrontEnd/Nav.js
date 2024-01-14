@@ -11,8 +11,8 @@ function Nav() {
         "crisisStepsBtn": "Emergency2.html",
         "airQltyBar" : "AirQuality2.html",
         "inhalerBar": "MyInhaler.html",
-        "emergencyBar": "Emergency1.html"
-
+        "emergencyBar": "Emergency1.html",
+        "signUpBtn" : "Home.html"
     };
 
     const navigationButtons = [
@@ -26,7 +26,8 @@ function Nav() {
         document.getElementById("crisisStepsBtn"),
         document.getElementById("airQltyBar"),
         document.getElementById("inhalerBar"),
-        document.getElementById('emergencyBar')
+        document.getElementById('emergencyBar'),
+        document.getElementById('signUpBtn')
     ];
 
     navigationButtons.forEach(btn => {

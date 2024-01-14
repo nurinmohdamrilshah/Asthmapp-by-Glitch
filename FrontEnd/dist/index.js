@@ -22851,9 +22851,10 @@
         "crisisStepsBtn": "Emergency2.html",
         "airQltyBar": "AirQuality2.html",
         "inhalerBar": "MyInhaler.html",
-        "emergencyBar": "Emergency1.html"
+        "emergencyBar": "Emergency1.html",
+        "signUpBtn": "Home.html"
       };
-      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("backPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById('emergencyBar')];
+      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("backPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById('emergencyBar'), document.getElementById('signUpBtn')];
       navigationButtons.forEach(btn => {
         if (btn) {
           btn.addEventListener("click", function (e) {
@@ -22983,6 +22984,7 @@
           // Set user data in the Realtime Database
           if (user) {
             set$1(userRef, userData).then(() => {
+              Nav();
               ErrorHandle(`Signup successful:`);
               console.log('User data updated in the Realtime Database');
             }).catch(error => {
@@ -24387,6 +24389,11 @@
         }
       });
 
+      // Load Inhaler Widget Content
+      document.getElementById("fav-inhaler-title");
+      document.getElementById('nextReminderVar');
+      document.getElementById("expiryDateFavVar");
+
       // Set up navigation
       function setupNav(elements) {
         elements.forEach(id => {
@@ -24420,6 +24427,11 @@
         areaname.innerText = areatag;
         getAPI(areatag);
       }
+      Notification.requestPermission().then(permission => {
+        if (permission !== "granted") {
+          alert("You need to allow permissions to receive warnings and dosage reminders!");
+        }
+      });
     }
 
     const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);

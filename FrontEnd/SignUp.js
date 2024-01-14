@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, get, push , set} from 'firebase/database';
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
+import Nav from "./Nav.js";
 
 function SignUp(firebaseConfig) {
     const app = initializeApp(firebaseConfig);
@@ -61,6 +62,7 @@ function SignUp(firebaseConfig) {
                 if (user) {
                     set(userRef, userData)
                         .then(() => {
+                            Nav();
                             ErrorHandle(`Signup successful:`);
                             console.log('User data updated in the Realtime Database');
                         })
