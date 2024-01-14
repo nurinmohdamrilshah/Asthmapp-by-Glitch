@@ -1,3 +1,4 @@
+//AddIntake Popup.js
 // Import the functions you need from the SDKs you need
 import {initializeApp} from "firebase/app";
 import {child, get, getDatabase, push, ref} from "firebase/database";
@@ -5,7 +6,7 @@ import {getAuth, onAuthStateChanged} from "firebase/auth";
 import {Inhaler, Dosage, Intake} from "./Inhaler.js";
 import Nav from "./Nav.js"
 
-
+//AddIntakePopup page code
 function AddIntakePopup(firebaseConfig) {
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -17,6 +18,7 @@ function AddIntakePopup(firebaseConfig) {
     let currentUID
     let currentUserDB
     let inhalerDB
+
     //identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -109,47 +111,13 @@ function AddIntakePopup(firebaseConfig) {
         }
     }).catch((error) => {
     console.error(error);
-});
+    });
 
 
     //Navigation
     // eventListeners.js
-    var popupclose = document.getElementById("closeBtn");
-    if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
 
-            function isOverlay(node) {
-                return !!(node && node.classList && node.classList.contains("popup-overlay"));
-            }
-
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
-    var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
-    if (popupaddIntakeBtn) {
-        popupaddIntakeBtn.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-
-            function isOverlay(node) {
-                return !!(node && node.classList && node.classList.contains("popup-overlay"));
-            }
-
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
+    //Navigation App Header
     var topNav = document.getElementById("back");
     if (topNav) {
         Nav();
@@ -159,7 +127,7 @@ function AddIntakePopup(firebaseConfig) {
     if (close) {
         Nav();
     }
-
+    //Used to be for when this page was a popup-kept in case
     var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
     if (newInhalerIntake) {
         newInhalerIntake.addEventListener("click", function () {
@@ -185,7 +153,7 @@ function AddIntakePopup(firebaseConfig) {
             popup.addEventListener("click", onClick);
         });
     }
-
+    //Bottom Navigation
     var home = document.getElementById("homeBtn");
     if (home) {
         Nav();
