@@ -1,8 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, sendPasswordResetEmail } from './node_modules/firebase/auth';
-
+import Nav from "./Nav.js"
 
 function forgotPassword(firebaseConfig) {
+    const forgotPasswordbtn = document.getElementById("forgotPasswordBtn")
+    if (forgotPasswordbtn){
+        forgotPasswordbtn.addEventListener("click", function(event){
+            console.log("Forgot password btn");
+            Nav()
+        });
+    }
+
     const app = initializeApp(firebaseConfig)
 
     const auth = getAuth();

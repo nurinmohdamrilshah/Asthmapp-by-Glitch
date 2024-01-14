@@ -20,7 +20,7 @@ function SignIn(firebaseConfig) {
                 .then((userCredential) => {
                     const user = userCredential.user;
                     console.log('SignIn successful', user);
-                    Nav();
+                    window.location.href = "./Home.html"
                 })
                 .catch((error) => {
                     // Handle errors here

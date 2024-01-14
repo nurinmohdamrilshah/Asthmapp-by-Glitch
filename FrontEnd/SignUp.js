@@ -141,6 +141,7 @@ function SignUp(firebaseConfig) {
                 }
                 signUpWithCheckEmail(emailAddressToPost, passwordToPost)
                     .then(() => {
+                        window.location.href="./Home.html"
                         ErrorHandle('You have successfully sign-up. Please login now.');
                     })
                     .catch((error) => {
