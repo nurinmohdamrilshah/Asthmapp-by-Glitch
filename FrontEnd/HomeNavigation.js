@@ -1,12 +1,13 @@
 console.log("Home")
 function setupNavigation() {
     const navigationMap = {
-        "settingsBtn": "./Settings.html", // Replace with actual link
-        "quickIntakeBtn": "./QuickIntake.html", // Replace with actual link
-        "crisisStepsBtn": "./AddCrisis.html", // Replace with actual link
-        "airQltyBar": "./AirQuality02", // Replace with actual link
-        "inhalerBar": "./MyInhaler", // Replace with actual link
-        "emergencyBar": "./Emergency1", // Replace with actual link
+        "settingsBtn": "./Settings.html",
+        "quickIntakeBtn": "./QuickIntakePopup.html",
+        "crisisStepsBtn": "./Emergency2.html",
+        "airQltyBar": "./AirQuality01.html",
+        "inhalerBar": "./MyInhaler.html",
+        "emergencyBar": "./Emergency1.html",
+        "999Home": "./Emergency1.html"
     };
 
     Object.keys(navigationMap).forEach(id => {
