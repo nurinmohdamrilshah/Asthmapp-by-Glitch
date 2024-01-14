@@ -48,11 +48,11 @@ function Settings(firebaseConfig) {
         onValue(userDBRef, (snapshot) => {
             const data = snapshot.val();
             console.log(data)
-            console.
             if (data) {
                 document.getElementById("usernamevar").value = data.username || "";
-                document.getElementById("emailvar").value = data.username || "";
-
+                document.getElementById("emailvar").value = data.email || "";
+                console.log(data.username)
+                console.log(data.emailAddress)
             }
         });
     }
