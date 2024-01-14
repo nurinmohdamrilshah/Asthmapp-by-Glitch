@@ -35,8 +35,11 @@ onAuthStateChanged(auth, (user) => {
         currentUser = auth.currentUser;
         currentUID = user.uid;
         currentUserDB = ref(database, '/users/' + currentUID);
+        boroughDB = child(currentUserDB, '/myBorough');
     }
 });
+
+// const currentUID = "testDosage2";
 
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
 let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery','Perfumes','Smoke','Stress','Temp & Humidity'];
@@ -96,26 +99,25 @@ function updateChart(allergens,allergensInDB) {
 
 function updateChartWithSymptoms(allergens) {
     const chartConfig = {
-        type: 'bar',
+        type: 'doughnut',
         data: {
           labels: labels1,
           datasets: [{
-            label: 'Occurances',
+            label: 'Occurrences',
             data: allergens,
-            borderWidth: 0.3
+            hoverOffset: 4,
+            backgroundColor: [
+                '#FEBB60', 
+                '#DACC8A',
+                '#B6DDB4',
+                '#B4DFCE',
+                '#B2E1E7',
+                '#8DB7C5',
+                '#688DA3',
+                '#4D6E8A',
+                '#365375',
+                '#1E385F']
           }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-                display: false
-              }
-          }
         }
       }
       // Check if chart is already initialized
