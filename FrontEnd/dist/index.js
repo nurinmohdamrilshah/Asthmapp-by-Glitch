@@ -22844,7 +22844,7 @@
         "signUpPageBtn": "SignUp.html",
         "forgotPasswordBtn": "ForgotPassword.html",
         "signInPageBtn": "index.html",
-        "homePageBtn": "home.html",
+        "homePageBtn": "Home.html",
         "settingsBtn": "Settings.html",
         "quickIntakeBtn": "QuickIntakePopup.html",
         "crisisStepsBtn": "Emergency2.html",
@@ -24382,16 +24382,17 @@
     }
 
     function Home(firebaseConfig) {
-      console.log("Entered Home");
-
+      console.log("Home");
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
       const auth = getAuth();
+      let currentUserDB;
+      console.log("The current user is" + currentUserDB);
       onAuthStateChanged(auth, user => {
         if (user) {
           const currentUID = user.uid;
-          ref(database, '/users/' + user.uid);
+          currentUserDB = ref(database, '/users/' + user.uid);
           ref(database, '/users/' + user.uid + '/inhalers');
           //loadInhalerWidget(inhalerDB);
           console.log(currentUID);
@@ -24434,10 +24435,8 @@
       // Update area name and AQI
       var areaname = document.getElementById('areaname');
       const areatag = localStorage.getItem('userarea');
-      if (areaname && areatag) {
-        areaname.innerText = areatag;
-        getAPI(areatag);
-      }
+      areaname.innerText = areatag;
+      console.log(getAPI(areatag));
       Notification.requestPermission().then(permission => {
         if (permission !== "granted") {
           alert("You need to allow permissions to receive warnings and dosage reminders!");

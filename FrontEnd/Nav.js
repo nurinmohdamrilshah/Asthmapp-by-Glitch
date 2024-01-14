@@ -4,7 +4,7 @@ function Nav() {
         "signUpPageBtn": "SignUp.html",
         "forgotPasswordBtn": "ForgotPassword.html",
         "signInPageBtn": "index.html",
-        "homePageBtn": "home.html",
+        "homePageBtn": "Home.html",
         "settingsBtn" : "Settings.html",
         "quickIntakeBtn" : "QuickIntakePopup.html",
         "crisisStepsBtn": "Emergency2.html",

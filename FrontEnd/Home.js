@@ -2,19 +2,18 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, child } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getAPI } from "./utils.js";
+import { getAPI, setAPI } from "./utils.js";
 import Nav from "./Nav.js";
 
 function Home(firebaseConfig) {
-    console.log("Entered Home")
-
+    console.log("Home")
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth();
     let inhalerDB;
     let currentUserDB;
-
+    console.log("The current user is" + currentUserDB)
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const currentUID = user.uid;
@@ -121,10 +120,9 @@ function Home(firebaseConfig) {
     // Update area name and AQI
     var areaname = document.getElementById('areaname');
     const areatag = localStorage.getItem('userarea');
-    if (areaname && areatag) {
-        areaname.innerText = areatag;
-        getAPI(areatag);
-    }
+    areaname.innerText = areatag;
+    console.log(getAPI(areatag));
+
 
     Notification.requestPermission().then((permission)=>{
         if(permission !== "granted"){
