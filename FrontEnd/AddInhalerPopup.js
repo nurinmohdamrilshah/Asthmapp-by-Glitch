@@ -55,12 +55,16 @@ function addInhalerPopup(firebaseConfig) {
 
     const auth = getAuth();
     let currentUser
+    let currentUID
+    let currentUserDB
+    let inhalerDB
     //identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUID = user.uid;
-            const currentUserDB = ref(database,'/users/'+currentUID)
-            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+            currentUser = user
+            currentUID = user.uid;
+            currentUserDB = ref(database,'/users/'+currentUID)
+            inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
 
