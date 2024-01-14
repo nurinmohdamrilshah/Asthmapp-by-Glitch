@@ -284,8 +284,10 @@ async function setmapSO2() {
 //for NO2 reading display
 async function setmapNO2(){
     handleButtonClick('NO2')
+    //reference 1 from https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
+    //end of reference 1//
     clear();
     //barking
     const barkingNO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[0]["@AirQualityIndex"];
