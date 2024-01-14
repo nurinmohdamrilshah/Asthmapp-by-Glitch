@@ -2,7 +2,6 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, get, push , set} from 'firebase/database';
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
-import Nav from "./Nav.js";
 
 function SignUp(firebaseConfig) {
     const app = initializeApp(firebaseConfig);

@@ -23018,21 +23018,21 @@
     }
 
     function Home(firebaseConfig) {
+      console.log("Home");
       // Set up navigation
-      function setupNav(elements) {
-        elements.forEach(id => {
-          const element = document.getElementById(id);
-          if (element) {
-            element.addEventListener("click", Nav);
-          }
-        });
-      }
-      const elementsWithNav = ["settingsBtn", "quickIntakeBtn", "crisisStepsBtn", "airQltyBar", "inhalerBar", "emergencyBar"];
-      setupNav(elementsWithNav);
-
+      // function setupNav(elements) {
+      //     elements.forEach(id => {
+      //         const element = document.getElementById(id);
+      //         if (element) {
+      //             element.addEventListener("click", Nav);
+      //         }
+      //     });
+      // }
       //
-      // console.log("Home")
-      // Initialize Firebase
+      // const elementsWithNav = ["settingsBtn", "quickIntakeBtn", "crisisStepsBtn", "airQltyBar", "inhalerBar", "emergencyBar"];
+      // setupNav(elementsWithNav);
+
+      // //Initializing Firebase and Database Structure
       // const app = initializeApp(firebaseConfig);
       // const database = getDatabase(app);
       // const auth = getAuth();
@@ -23041,6 +23041,7 @@
       // console.log("The current user is" + currentUserDB)
       //
       // onAuthStateChanged(auth, (user) => {
+      //     console.log("onauthstatechanged")
       //     if (user) {
       //         const currentUID = user.uid;
       //         currentUserDB = ref(database, '/users/' + user.uid);
@@ -23051,11 +23052,11 @@
       //         console.log("No user is currently signed in")
       //     }
       // });
-      // //
-      // // // Load Add Crisis Content
-      // // function loadAddCrisisContent() {
-      // //     fetch('./QuickIntake.html')
-      // //         .then(response => response.text())
+
+      // Load Add Crisis Content
+      // function loadAddCrisisContent() {
+      //     fetch('./QuickIntake.html')
+      //         .then(response => response.text())
       //         .then(data => {
       //             document.getElementById('quickIntakePopup').innerHTML = data;
       //             var overlay = document.getElementById('overlay');
@@ -23067,59 +23068,69 @@
       //         })
       //         .catch(error => console.error('Error loading content:', error));
       // }
-      //
-      // // Load Inhaler Widget Content
+
+      // Load Inhaler Widget Content
       // var favInhalerName = document.getElementById("fav-inhaler-title")
       // var nextReminderTime = document.getElementById('nextReminderVar');
       // var intakeExpiresIn = document.getElementById("expiryDateFavVar");
       // function loadInhalerWidget(inhalerDBRef) {
+      //     console.log("Loading Inhaler Widget...");
       //     get(inhalerDBRef).then((snapshot) => {
       //         if (snapshot.exists()) {
-      //             // Process and display favorite inhaler details
+      //             console.log("Snapshot exists:", snapshot.val());
       //             snapshot.forEach(function (childSnapshot) {
+      //                 console.log("Child snapshot:", childSnapshot.val());
       //                 if (childSnapshot.val().inhaler.fav) {
-      //                     var UserFavInhaler = childSnapshot.val().inhaler
-      //                     favInhalerName.textContent = "My Favourite Inhaler: "+childSnapshot.val().inhaler.name
-      //                     let newInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
-      //                     let dosageDB = child(newInhalerDB, '/dosage')
+      //                     var UserFavInhaler = childSnapshot.val().inhaler;
+      //                     console.log("Favorite Inhaler:", UserFavInhaler);
+      //                     favInhalerName.textContent = "My Favourite Inhaler: " + UserFavInhaler.name;
+      //                     let newInhalerDB = child(inhalerDB, '/' + UserFavInhaler.name);
+      //                     let dosageDB = child(newInhalerDB, '/dosage');
       //                     get(dosageDB).then((snapshot) => {
       //                         if (snapshot.exists()) {
+      //                             console.log("Dosage snapshot:", snapshot.val());
       //                             let allDiffTime = [];
       //                             snapshot.forEach(function (childSnapshot) {
-      //                                 if ((childSnapshot.val().time - Date.now()) > 0) {
-      //                                     var diffTime = childSnapshot.val().time - Date.now()
-      //                                     allDiffTime.push(diffTime)
+      //                                 var diffTime = childSnapshot.val().time - Date.now();
+      //                                 console.log("Diff time for reminder:", diffTime);
+      //                                 if (diffTime > 0) {
+      //                                     allDiffTime.push(diffTime);
       //                                     if (Math.min.apply(Math, allDiffTime) === diffTime) {
-      //                                         var nextTime = new Date(childSnapshot.val().time)
-      //                                         nextReminderTime.textContent = nextTime.toLocaleTimeString()
+      //                                         var nextTime = new Date(childSnapshot.val().time);
+      //                                         console.log("Next reminder time:", nextTime);
+      //                                         nextReminderTime.textContent = nextTime.toLocaleTimeString();
       //                                     }
+      //                                 } else {
+      //                                     nextReminderTime.textContent = "[add new reminder]";
+      //                                     console.log("Time for a new reminder.");
       //                                 }
-      //                                 else{
-      //                                     nextReminderTime.textContent = "[add new reminder]"
-      //                                 }
-      //                             })
+      //                             });
       //                         }
-      //                         else{
-      //                             nextReminderTime.textContent = "[add reminder]"
+      //                         else {
+      //                             nextReminderTime.textContent = "[add reminder]";
+      //                             console.log("No reminders found, needs to add reminder.");
       //                         }
-      //                     })
-      //                     let milliUntilExp = Number(childSnapshot.val().inhaler.expiryDate)-Date.now();
-      //                     let hoursUntilExp = (milliUntilExp/86400000)
-      //                     intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString()+" hours";
+      //                     });
+      //                     let milliUntilExp = Number(UserFavInhaler.expiryDate) - Date.now();
+      //                     let hoursUntilExp = (milliUntilExp / 86400000);
+      //                     console.log("Hours until expiration:", hoursUntilExp);
+      //                     intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString() + " hours";
       //                 }
-      //             })
+      //             });
       //         }
-      //         else{
-      //             nextReminderTime.textContent = "[no inhaler added]"
-      //             intakeExpiresIn.textContent = "[no inhaler added]"
+      //         else {
+      //             nextReminderTime.textContent = "[no inhaler added]";
+      //             intakeExpiresIn.textContent = "[no inhaler added]";
+      //             console.log("No inhaler data found.");
       //         }
+      //     }).catch((error) => {
+      //         console.error("Error fetching data:", error);
       //     });
       // }
-      // loadInhalerWidget(inhalerDB)
       //
+      // loadInhalerWidget(inhalerDB);
 
-      //
-      // // Popup cancel button logic
+      // Popup cancel button logic
       // var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
       // if (popupcancelBtnContainer) {
       //     popupcancelBtnContainer.addEventListener("click", function (e) {
@@ -23132,7 +23143,7 @@
       //         }
       //     });
       // }
-      //
+
       // // Update area name and AQI
       // var areaname = document.getElementById('areaname');
       // const areatag = localStorage.getItem('userarea');
@@ -25331,8 +25342,6 @@
       appId: "1:583573518616:web:921a17f44e5fca27b3066d",
       measurementId: "G-PLRLWFR1X7"
     };
-
-    // Nav();
     Settings(firebaseConfig);
     SignIn(firebaseConfig);
     SignUp(firebaseConfig);
