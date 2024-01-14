@@ -23,9 +23,11 @@ import Nav from "./Nav.js";
 import SignIn from "./SignIn.js";
 import forgotPassword from "./ForgotPassword.js";
 import SignUp from "./SignUp.js";
+import Settings from "./Settings.js";
 //import Home from "./Home.js"
 
 Nav();
+Settings(firebaseConfig);
 SignIn(firebaseConfig);
 SignUp(firebaseConfig);
 //Home(firebaseConfig);
