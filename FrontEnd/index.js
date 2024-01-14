@@ -24,15 +24,27 @@ import SignIn from "./SignIn.js";
 import forgotPassword from "./ForgotPassword.js";
 import SignUp from "./SignUp.js";
 import Settings from "./Settings.js";
-//import Home from "./Home.js"
+import AddCrisis from "./AddCrisis.js";
+import AddIntakePopup from "./AddIntakePopup.js";
+import AllergensChart from "./AllergensChart.js";
+import Emergency1 from "./Emergency1.js";
+import Home from "./Home.js"
+import MyUsageLog from "./MyUsageLog.js";
+import SymptomsChart from "./SymptomsChart.js";
 
 Nav();
 Settings(firebaseConfig);
 SignIn(firebaseConfig);
 SignUp(firebaseConfig);
-//Home(firebaseConfig);
+AddCrisis(firebaseConfig)
 forgotPassword(firebaseConfig);
-//
+AddIntakePopup(firebaseConfig);
+AllergensChart(firebaseConfig);
+Emergency1(firebaseConfig)
+Home(firebaseConfig);
+MyUsageLog(firebaseConfig);
+SymptomsChart(firebaseConfig);
+
 // //setting up for push notification: https://medium.com/@a7ul/beginners-guide-to-web-push-notifications-using-service-workers-cb3474a17679
 //     const check = () => {
 //         if (!('serviceWorker' in navigator)) {

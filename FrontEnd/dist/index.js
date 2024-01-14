@@ -830,6 +830,17 @@
             }
         });
     }
+    /**
+     *
+     * This method checks whether cookie is enabled within current browser
+     * @return true if cookie is enabled within current browser
+     */
+    function areCookiesEnabled() {
+        if (typeof navigator === 'undefined' || !navigator.cookieEnabled) {
+            return false;
+        }
+        return true;
+    }
 
     /**
      * @license
@@ -1731,6 +1742,71 @@
 
     /**
      * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * The amount of milliseconds to exponentially increase.
+     */
+    const DEFAULT_INTERVAL_MILLIS = 1000;
+    /**
+     * The factor to backoff by.
+     * Should be a number greater than 1.
+     */
+    const DEFAULT_BACKOFF_FACTOR = 2;
+    /**
+     * The maximum milliseconds to increase to.
+     *
+     * <p>Visible for testing
+     */
+    const MAX_VALUE_MILLIS = 4 * 60 * 60 * 1000; // Four hours, like iOS and Android.
+    /**
+     * The percentage of backoff time to randomize by.
+     * See
+     * http://go/safe-client-behavior#step-1-determine-the-appropriate-retry-interval-to-handle-spike-traffic
+     * for context.
+     *
+     * <p>Visible for testing
+     */
+    const RANDOM_FACTOR = 0.5;
+    /**
+     * Based on the backoff method from
+     * https://github.com/google/closure-library/blob/master/closure/goog/math/exponentialbackoff.js.
+     * Extracted here so we don't need to pass metadata and a stateful ExponentialBackoff object around.
+     */
+    function calculateBackoffMillis(backoffCount, intervalMillis = DEFAULT_INTERVAL_MILLIS, backoffFactor = DEFAULT_BACKOFF_FACTOR) {
+        // Calculates an exponentially increasing value.
+        // Deviation: calculates value from count and a constant interval, so we only need to save value
+        // and count to restore state.
+        const currBaseValue = intervalMillis * Math.pow(backoffFactor, backoffCount);
+        // A random "fuzz" to avoid waves of retries.
+        // Deviation: randomFactor is required.
+        const randomWait = Math.round(
+        // A fraction of the backoff value to add/subtract.
+        // Deviation: changes multiplication order to improve readability.
+        RANDOM_FACTOR *
+            currBaseValue *
+            // A random float (rounded to int by Math.round above) in the range [-1, 1]. Determines
+            // if we add or subtract.
+            (Math.random() - 0.5) *
+            2);
+        // Limits backoff to max to avoid effectively permanent backoff.
+        return Math.min(MAX_VALUE_MILLIS, currBaseValue + randomWait);
+    }
+
+    /**
+     * @license
      * Copyright 2021 Google LLC
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
@@ -2318,14 +2394,14 @@
         }
     }
 
-    const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
+    const instanceOfAny$1 = (object, constructors) => constructors.some((c) => object instanceof c);
 
-    let idbProxyableTypes;
-    let cursorAdvanceMethods;
+    let idbProxyableTypes$1;
+    let cursorAdvanceMethods$1;
     // This is a function to prevent it throwing up in node environments.
-    function getIdbProxyableTypes() {
-        return (idbProxyableTypes ||
-            (idbProxyableTypes = [
+    function getIdbProxyableTypes$1() {
+        return (idbProxyableTypes$1 ||
+            (idbProxyableTypes$1 = [
                 IDBDatabase,
                 IDBObjectStore,
                 IDBIndex,
@@ -2334,27 +2410,27 @@
             ]));
     }
     // This is a function to prevent it throwing up in node environments.
-    function getCursorAdvanceMethods() {
-        return (cursorAdvanceMethods ||
-            (cursorAdvanceMethods = [
+    function getCursorAdvanceMethods$1() {
+        return (cursorAdvanceMethods$1 ||
+            (cursorAdvanceMethods$1 = [
                 IDBCursor.prototype.advance,
                 IDBCursor.prototype.continue,
                 IDBCursor.prototype.continuePrimaryKey,
             ]));
     }
-    const cursorRequestMap = new WeakMap();
-    const transactionDoneMap = new WeakMap();
-    const transactionStoreNamesMap = new WeakMap();
-    const transformCache = new WeakMap();
-    const reverseTransformCache = new WeakMap();
-    function promisifyRequest(request) {
+    const cursorRequestMap$1 = new WeakMap();
+    const transactionDoneMap$1 = new WeakMap();
+    const transactionStoreNamesMap$1 = new WeakMap();
+    const transformCache$1 = new WeakMap();
+    const reverseTransformCache$1 = new WeakMap();
+    function promisifyRequest$1(request) {
         const promise = new Promise((resolve, reject) => {
             const unlisten = () => {
                 request.removeEventListener('success', success);
                 request.removeEventListener('error', error);
             };
             const success = () => {
-                resolve(wrap(request.result));
+                resolve(wrap$1(request.result));
                 unlisten();
             };
             const error = () => {
@@ -2369,19 +2445,19 @@
             // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
             // (see wrapFunction).
             if (value instanceof IDBCursor) {
-                cursorRequestMap.set(value, request);
+                cursorRequestMap$1.set(value, request);
             }
             // Catching to avoid "Uncaught Promise exceptions"
         })
             .catch(() => { });
         // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
         // is because we create many promises from a single IDBRequest.
-        reverseTransformCache.set(promise, request);
+        reverseTransformCache$1.set(promise, request);
         return promise;
     }
-    function cacheDonePromiseForTransaction(tx) {
+    function cacheDonePromiseForTransaction$1(tx) {
         // Early bail if we've already created a done promise for this transaction.
-        if (transactionDoneMap.has(tx))
+        if (transactionDoneMap$1.has(tx))
             return;
         const done = new Promise((resolve, reject) => {
             const unlisten = () => {
@@ -2402,17 +2478,17 @@
             tx.addEventListener('abort', error);
         });
         // Cache it for later retrieval.
-        transactionDoneMap.set(tx, done);
+        transactionDoneMap$1.set(tx, done);
     }
-    let idbProxyTraps = {
+    let idbProxyTraps$1 = {
         get(target, prop, receiver) {
             if (target instanceof IDBTransaction) {
                 // Special handling for transaction.done.
                 if (prop === 'done')
-                    return transactionDoneMap.get(target);
+                    return transactionDoneMap$1.get(target);
                 // Polyfill for objectStoreNames because of Edge.
                 if (prop === 'objectStoreNames') {
-                    return target.objectStoreNames || transactionStoreNamesMap.get(target);
+                    return target.objectStoreNames || transactionStoreNamesMap$1.get(target);
                 }
                 // Make tx.store return the only store in the transaction, or undefined if there are many.
                 if (prop === 'store') {
@@ -2422,7 +2498,7 @@
                 }
             }
             // Else transform whatever we get back.
-            return wrap(target[prop]);
+            return wrap$1(target[prop]);
         },
         set(target, prop, value) {
             target[prop] = value;
@@ -2436,19 +2512,19 @@
             return prop in target;
         },
     };
-    function replaceTraps(callback) {
-        idbProxyTraps = callback(idbProxyTraps);
+    function replaceTraps$1(callback) {
+        idbProxyTraps$1 = callback(idbProxyTraps$1);
     }
-    function wrapFunction(func) {
+    function wrapFunction$1(func) {
         // Due to expected object equality (which is enforced by the caching in `wrap`), we
         // only create one new func per func.
         // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
         if (func === IDBDatabase.prototype.transaction &&
             !('objectStoreNames' in IDBTransaction.prototype)) {
             return function (storeNames, ...args) {
-                const tx = func.call(unwrap(this), storeNames, ...args);
-                transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
-                return wrap(tx);
+                const tx = func.call(unwrap$1(this), storeNames, ...args);
+                transactionStoreNamesMap$1.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
+                return wrap$1(tx);
             };
         }
         // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
@@ -2456,51 +2532,51 @@
         // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
         // with real promises, so each advance methods returns a new promise for the cursor object, or
         // undefined if the end of the cursor has been reached.
-        if (getCursorAdvanceMethods().includes(func)) {
+        if (getCursorAdvanceMethods$1().includes(func)) {
             return function (...args) {
                 // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
                 // the original object.
-                func.apply(unwrap(this), args);
-                return wrap(cursorRequestMap.get(this));
+                func.apply(unwrap$1(this), args);
+                return wrap$1(cursorRequestMap$1.get(this));
             };
         }
         return function (...args) {
             // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
             // the original object.
-            return wrap(func.apply(unwrap(this), args));
+            return wrap$1(func.apply(unwrap$1(this), args));
         };
     }
-    function transformCachableValue(value) {
+    function transformCachableValue$1(value) {
         if (typeof value === 'function')
-            return wrapFunction(value);
+            return wrapFunction$1(value);
         // This doesn't return, it just creates a 'done' promise for the transaction,
         // which is later returned for transaction.done (see idbObjectHandler).
         if (value instanceof IDBTransaction)
-            cacheDonePromiseForTransaction(value);
-        if (instanceOfAny(value, getIdbProxyableTypes()))
-            return new Proxy(value, idbProxyTraps);
+            cacheDonePromiseForTransaction$1(value);
+        if (instanceOfAny$1(value, getIdbProxyableTypes$1()))
+            return new Proxy(value, idbProxyTraps$1);
         // Return the same value back if we're not going to transform it.
         return value;
     }
-    function wrap(value) {
+    function wrap$1(value) {
         // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
         // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
         if (value instanceof IDBRequest)
-            return promisifyRequest(value);
+            return promisifyRequest$1(value);
         // If we've already transformed this value before, reuse the transformed value.
         // This is faster, but it also provides object equality.
-        if (transformCache.has(value))
-            return transformCache.get(value);
-        const newValue = transformCachableValue(value);
+        if (transformCache$1.has(value))
+            return transformCache$1.get(value);
+        const newValue = transformCachableValue$1(value);
         // Not all types are transformed.
         // These may be primitive types, so they can't be WeakMap keys.
         if (newValue !== value) {
-            transformCache.set(value, newValue);
-            reverseTransformCache.set(newValue, value);
+            transformCache$1.set(value, newValue);
+            reverseTransformCache$1.set(newValue, value);
         }
         return newValue;
     }
-    const unwrap = (value) => reverseTransformCache.get(value);
+    const unwrap$1 = (value) => reverseTransformCache$1.get(value);
 
     /**
      * Open a database.
@@ -2509,12 +2585,12 @@
      * @param version Schema version.
      * @param callbacks Additional callbacks.
      */
-    function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
+    function openDB$1(name, version, { blocked, upgrade, blocking, terminated } = {}) {
         const request = indexedDB.open(name, version);
-        const openPromise = wrap(request);
+        const openPromise = wrap$1(request);
         if (upgrade) {
             request.addEventListener('upgradeneeded', (event) => {
-                upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction), event);
+                upgrade(wrap$1(request.result), event.oldVersion, event.newVersion, wrap$1(request.transaction), event);
             });
         }
         if (blocked) {
@@ -2534,24 +2610,24 @@
         return openPromise;
     }
 
-    const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
-    const writeMethods = ['put', 'add', 'delete', 'clear'];
-    const cachedMethods = new Map();
-    function getMethod(target, prop) {
+    const readMethods$1 = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
+    const writeMethods$1 = ['put', 'add', 'delete', 'clear'];
+    const cachedMethods$1 = new Map();
+    function getMethod$1(target, prop) {
         if (!(target instanceof IDBDatabase &&
             !(prop in target) &&
             typeof prop === 'string')) {
             return;
         }
-        if (cachedMethods.get(prop))
-            return cachedMethods.get(prop);
+        if (cachedMethods$1.get(prop))
+            return cachedMethods$1.get(prop);
         const targetFuncName = prop.replace(/FromIndex$/, '');
         const useIndex = prop !== targetFuncName;
-        const isWrite = writeMethods.includes(targetFuncName);
+        const isWrite = writeMethods$1.includes(targetFuncName);
         if (
         // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
         !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
-            !(isWrite || readMethods.includes(targetFuncName))) {
+            !(isWrite || readMethods$1.includes(targetFuncName))) {
             return;
         }
         const method = async function (storeName, ...args) {
@@ -2570,13 +2646,13 @@
                 isWrite && tx.done,
             ]))[0];
         };
-        cachedMethods.set(prop, method);
+        cachedMethods$1.set(prop, method);
         return method;
     }
-    replaceTraps((oldTraps) => ({
+    replaceTraps$1((oldTraps) => ({
         ...oldTraps,
-        get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
-        has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
+        get: (target, prop, receiver) => getMethod$1(target, prop) || oldTraps.get(target, prop, receiver),
+        has: (target, prop) => !!getMethod$1(target, prop) || oldTraps.has(target, prop),
     }));
 
     /**
@@ -2651,7 +2727,7 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    const logger$1 = new Logger('@firebase/app');
+    const logger$2 = new Logger('@firebase/app');
 
     const name$n = "@firebase/app-compat";
 
@@ -2691,16 +2767,16 @@
 
     const name$5 = "@firebase/remote-config-compat";
 
-    const name$4 = "@firebase/storage";
+    const name$4$1 = "@firebase/storage";
 
-    const name$3 = "@firebase/storage-compat";
+    const name$3$1 = "@firebase/storage-compat";
 
     const name$2$1 = "@firebase/firestore";
 
     const name$1$1 = "@firebase/firestore-compat";
 
     const name$p = "firebase";
-    const version$3 = "10.7.1";
+    const version$5 = "10.7.1";
 
     /**
      * @license
@@ -2745,8 +2821,8 @@
         [name$7]: 'fire-perf-compat',
         [name$6]: 'fire-rc',
         [name$5]: 'fire-rc-compat',
-        [name$4]: 'fire-gcs',
-        [name$3]: 'fire-gcs-compat',
+        [name$4$1]: 'fire-gcs',
+        [name$3$1]: 'fire-gcs-compat',
         [name$2$1]: 'fire-fst',
         [name$1$1]: 'fire-fst-compat',
         'fire-js': 'fire-js',
@@ -2790,7 +2866,7 @@
             app.container.addComponent(component);
         }
         catch (e) {
-            logger$1.debug(`Component ${component.name} failed to register with FirebaseApp ${app.name}`, e);
+            logger$2.debug(`Component ${component.name} failed to register with FirebaseApp ${app.name}`, e);
         }
     }
     /**
@@ -2803,7 +2879,7 @@
     function _registerComponent(component) {
         const componentName = component.name;
         if (_components.has(componentName)) {
-            logger$1.debug(`There were multiple attempts to register component ${componentName}.`);
+            logger$2.debug(`There were multiple attempts to register component ${componentName}.`);
             return false;
         }
         _components.set(componentName, component);
@@ -2848,7 +2924,7 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    const ERRORS = {
+    const ERRORS$1 = {
         ["no-app" /* AppError.NO_APP */]: "No Firebase App '{$appName}' has been created - " +
             'call initializeApp() first',
         ["bad-app-name" /* AppError.BAD_APP_NAME */]: "Illegal App name: '{$appName}",
@@ -2863,7 +2939,7 @@
         ["idb-set" /* AppError.IDB_WRITE */]: 'Error thrown when writing to IndexedDB. Original error: {$originalErrorMessage}.',
         ["idb-delete" /* AppError.IDB_DELETE */]: 'Error thrown when deleting from IndexedDB. Original error: {$originalErrorMessage}.'
     };
-    const ERROR_FACTORY = new ErrorFactory('app', 'Firebase', ERRORS);
+    const ERROR_FACTORY$2 = new ErrorFactory('app', 'Firebase', ERRORS$1);
 
     /**
      * @license
@@ -2927,7 +3003,7 @@
          */
         checkDestroyed() {
             if (this.isDeleted) {
-                throw ERROR_FACTORY.create("app-deleted" /* AppError.APP_DELETED */, { appName: this._name });
+                throw ERROR_FACTORY$2.create("app-deleted" /* AppError.APP_DELETED */, { appName: this._name });
             }
         }
     }
@@ -2953,7 +3029,7 @@
      *
      * @public
      */
-    const SDK_VERSION$1 = version$3;
+    const SDK_VERSION$1 = version$5;
     function initializeApp(_options, rawConfig = {}) {
         let options = _options;
         if (typeof rawConfig !== 'object') {
@@ -2963,13 +3039,13 @@
         const config = Object.assign({ name: DEFAULT_ENTRY_NAME, automaticDataCollectionEnabled: false }, rawConfig);
         const name = config.name;
         if (typeof name !== 'string' || !name) {
-            throw ERROR_FACTORY.create("bad-app-name" /* AppError.BAD_APP_NAME */, {
+            throw ERROR_FACTORY$2.create("bad-app-name" /* AppError.BAD_APP_NAME */, {
                 appName: String(name)
             });
         }
         options || (options = getDefaultAppConfig());
         if (!options) {
-            throw ERROR_FACTORY.create("no-options" /* AppError.NO_OPTIONS */);
+            throw ERROR_FACTORY$2.create("no-options" /* AppError.NO_OPTIONS */);
         }
         const existingApp = _apps.get(name);
         if (existingApp) {
@@ -2979,7 +3055,7 @@
                 return existingApp;
             }
             else {
-                throw ERROR_FACTORY.create("duplicate-app" /* AppError.DUPLICATE_APP */, { appName: name });
+                throw ERROR_FACTORY$2.create("duplicate-app" /* AppError.DUPLICATE_APP */, { appName: name });
             }
         }
         const container = new ComponentContainer(name);
@@ -3025,7 +3101,7 @@
             return initializeApp();
         }
         if (!app) {
-            throw ERROR_FACTORY.create("no-app" /* AppError.NO_APP */, { appName: name });
+            throw ERROR_FACTORY$2.create("no-app" /* AppError.NO_APP */, { appName: name });
         }
         return app;
     }
@@ -3060,7 +3136,7 @@
             if (versionMismatch) {
                 warning.push(`version name "${version}" contains illegal characters (whitespace or "/")`);
             }
-            logger$1.warn(warning.join(' '));
+            logger$2.warn(warning.join(' '));
             return;
         }
         _registerComponent(new Component(`${library}-version`, () => ({ library, version }), "VERSION" /* ComponentType.VERSION */));
@@ -3085,10 +3161,10 @@
     const DB_NAME$1 = 'firebase-heartbeat-database';
     const DB_VERSION$1 = 1;
     const STORE_NAME = 'firebase-heartbeat-store';
-    let dbPromise = null;
-    function getDbPromise() {
-        if (!dbPromise) {
-            dbPromise = openDB(DB_NAME$1, DB_VERSION$1, {
+    let dbPromise$1 = null;
+    function getDbPromise$1() {
+        if (!dbPromise$1) {
+            dbPromise$1 = openDB$1(DB_NAME$1, DB_VERSION$1, {
                 upgrade: (db, oldVersion) => {
                     // We don't use 'break' in this switch statement, the fall-through
                     // behavior is what we want, because if there are multiple versions between
@@ -3101,16 +3177,16 @@
                     }
                 }
             }).catch(e => {
-                throw ERROR_FACTORY.create("idb-open" /* AppError.IDB_OPEN */, {
+                throw ERROR_FACTORY$2.create("idb-open" /* AppError.IDB_OPEN */, {
                     originalErrorMessage: e.message
                 });
             });
         }
-        return dbPromise;
+        return dbPromise$1;
     }
     async function readHeartbeatsFromIndexedDB(app) {
         try {
-            const db = await getDbPromise();
+            const db = await getDbPromise$1();
             const result = await db
                 .transaction(STORE_NAME)
                 .objectStore(STORE_NAME)
@@ -3119,19 +3195,19 @@
         }
         catch (e) {
             if (e instanceof FirebaseError) {
-                logger$1.warn(e.message);
+                logger$2.warn(e.message);
             }
             else {
-                const idbGetError = ERROR_FACTORY.create("idb-get" /* AppError.IDB_GET */, {
+                const idbGetError = ERROR_FACTORY$2.create("idb-get" /* AppError.IDB_GET */, {
                     originalErrorMessage: e === null || e === void 0 ? void 0 : e.message
                 });
-                logger$1.warn(idbGetError.message);
+                logger$2.warn(idbGetError.message);
             }
         }
     }
     async function writeHeartbeatsToIndexedDB(app, heartbeatObject) {
         try {
-            const db = await getDbPromise();
+            const db = await getDbPromise$1();
             const tx = db.transaction(STORE_NAME, 'readwrite');
             const objectStore = tx.objectStore(STORE_NAME);
             await objectStore.put(heartbeatObject, computeKey(app));
@@ -3139,13 +3215,13 @@
         }
         catch (e) {
             if (e instanceof FirebaseError) {
-                logger$1.warn(e.message);
+                logger$2.warn(e.message);
             }
             else {
-                const idbGetError = ERROR_FACTORY.create("idb-set" /* AppError.IDB_WRITE */, {
+                const idbGetError = ERROR_FACTORY$2.create("idb-set" /* AppError.IDB_WRITE */, {
                     originalErrorMessage: e === null || e === void 0 ? void 0 : e.message
                 });
-                logger$1.warn(idbGetError.message);
+                logger$2.warn(idbGetError.message);
             }
         }
     }
@@ -3431,8 +3507,8 @@
      */
     registerCoreComponents('');
 
-    var name$2 = "firebase";
-    var version$2 = "10.7.1";
+    var name$4 = "firebase";
+    var version$4 = "10.7.1";
 
     /**
      * @license
@@ -3450,10 +3526,10 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
-    registerVersion(name$2, version$2, 'app');
+    registerVersion(name$4, version$4, 'app');
 
-    const name$1 = "@firebase/database";
-    const version$1 = "1.0.2";
+    const name$3 = "@firebase/database";
+    const version$3 = "1.0.2";
 
     /**
      * @license
@@ -3704,7 +3780,7 @@
     /**
      * Use this for all debug messages in Firebase.
      */
-    let logger = null;
+    let logger$1 = null;
     /**
      * Flag to check for log availability on first log message
      */
@@ -3718,29 +3794,29 @@
         assert(!persistent || logger_ === true || logger_ === false, "Can't turn on custom loggers persistently.");
         if (logger_ === true) {
             logClient$1.logLevel = LogLevel.VERBOSE;
-            logger = logClient$1.log.bind(logClient$1);
+            logger$1 = logClient$1.log.bind(logClient$1);
             if (persistent) {
                 SessionStorage.set('logging_enabled', true);
             }
         }
         else if (typeof logger_ === 'function') {
-            logger = logger_;
+            logger$1 = logger_;
         }
         else {
-            logger = null;
+            logger$1 = null;
             SessionStorage.remove('logging_enabled');
         }
     };
     const log = function (...varArgs) {
         if (firstLog_ === true) {
             firstLog_ = false;
-            if (logger === null && SessionStorage.get('logging_enabled') === true) {
+            if (logger$1 === null && SessionStorage.get('logging_enabled') === true) {
                 enableLogging$1(true);
             }
         }
-        if (logger) {
+        if (logger$1) {
             const message = buildLogMessage_.apply(null, varArgs);
-            logger(message);
+            logger$1(message);
         }
     };
     const logWrapper = function (prefix) {
@@ -12398,6 +12474,9 @@
     function viewGetServerCache(view) {
         return view.viewCache_.serverCache.getNode();
     }
+    function viewGetCompleteNode(view) {
+        return viewCacheGetCompleteEventSnap(view.viewCache_);
+    }
     function viewGetCompleteServerCache(view, path) {
         const cache = viewCacheGetCompleteServerSnap(view.viewCache_);
         if (cache) {
@@ -13058,6 +13137,33 @@
             }
         });
         return writeTreeCalcCompleteEventCache(writeTree, path, serverCache, writeIdsToExclude, includeHiddenSets);
+    }
+    function syncTreeGetServerValue(syncTree, query) {
+        const path = query._path;
+        let serverCache = null;
+        // Any covering writes will necessarily be at the root, so really all we need to find is the server cache.
+        // Consider optimizing this once there's a better understanding of what actual behavior will be.
+        syncTree.syncPointTree_.foreachOnPath(path, (pathToSyncPoint, sp) => {
+            const relativePath = newRelativePath(pathToSyncPoint, path);
+            serverCache =
+                serverCache || syncPointGetCompleteServerCache(sp, relativePath);
+        });
+        let syncPoint = syncTree.syncPointTree_.get(path);
+        if (!syncPoint) {
+            syncPoint = new SyncPoint();
+            syncTree.syncPointTree_ = syncTree.syncPointTree_.set(path, syncPoint);
+        }
+        else {
+            serverCache =
+                serverCache || syncPointGetCompleteServerCache(syncPoint, newEmptyPath());
+        }
+        const serverCacheComplete = serverCache != null;
+        const serverCacheNode = serverCacheComplete
+            ? new CacheNode(serverCache, true, false)
+            : null;
+        const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, query._path);
+        const view = syncPointGetView(syncPoint, query, writesCache, serverCacheComplete ? serverCacheNode.getNode() : ChildrenNode.EMPTY_NODE, serverCacheComplete);
+        return viewGetCompleteNode(view);
     }
     /**
      * A helper method that visits all descendant and ancestor SyncPoints, applying the operation.
@@ -13895,7 +14001,7 @@
             if (eventData !== null) {
                 eventList.events[i] = null;
                 const eventFn = eventData.getEventRunner();
-                if (logger) {
+                if (logger$1) {
                     log('event: ' + eventData.toString());
                 }
                 exceptionGuard(eventFn);
@@ -14102,6 +14208,63 @@
     }
     function repoGetNextWriteId(repo) {
         return repo.nextWriteId_++;
+    }
+    /**
+     * The purpose of `getValue` is to return the latest known value
+     * satisfying `query`.
+     *
+     * This method will first check for in-memory cached values
+     * belonging to active listeners. If they are found, such values
+     * are considered to be the most up-to-date.
+     *
+     * If the client is not connected, this method will wait until the
+     *  repo has established a connection and then request the value for `query`.
+     * If the client is not able to retrieve the query result for another reason,
+     * it reports an error.
+     *
+     * @param query - The query to surface a value for.
+     */
+    function repoGetValue(repo, query, eventRegistration) {
+        // Only active queries are cached. There is no persisted cache.
+        const cached = syncTreeGetServerValue(repo.serverSyncTree_, query);
+        if (cached != null) {
+            return Promise.resolve(cached);
+        }
+        return repo.server_.get(query).then(payload => {
+            const node = nodeFromJSON(payload).withIndex(query._queryParams.getIndex());
+            /**
+             * Below we simulate the actions of an `onlyOnce` `onValue()` event where:
+             * Add an event registration,
+             * Update data at the path,
+             * Raise any events,
+             * Cleanup the SyncTree
+             */
+            syncTreeAddEventRegistration(repo.serverSyncTree_, query, eventRegistration, true);
+            let events;
+            if (query._queryParams.loadsAllData()) {
+                events = syncTreeApplyServerOverwrite(repo.serverSyncTree_, query._path, node);
+            }
+            else {
+                const tag = syncTreeTagForQuery(repo.serverSyncTree_, query);
+                events = syncTreeApplyTaggedQueryOverwrite(repo.serverSyncTree_, query._path, node, tag);
+            }
+            /*
+             * We need to raise events in the scenario where `get()` is called at a parent path, and
+             * while the `get()` is pending, `onValue` is called at a child location. While get() is waiting
+             * for the data, `onValue` will register a new event. Then, get() will come back, and update the syncTree
+             * and its corresponding serverCache, including the child location where `onValue` is called. Then,
+             * `onValue` will receive the event from the server, but look at the syncTree and see that the data received
+             * from the server is already at the SyncPoint, and so the `onValue` callback will never get fired.
+             * Calling `eventQueueRaiseEventsForChangedPath()` is the correct way to propagate the events and
+             * ensure the corresponding child events will get fired.
+             */
+            eventQueueRaiseEventsForChangedPath(repo.eventQueue_, query._path, events);
+            syncTreeRemoveEventRegistration(repo.serverSyncTree_, query, eventRegistration, null, true);
+            return node;
+        }, err => {
+            repoLog(repo, 'get for query ' + stringify(query) + ' failed: ' + err);
+            return Promise.reject(new Error(err));
+        });
     }
     function repoSetWithPriority(repo, path, newVal, newPriority, onComplete) {
         repoLog(repo, 'set', {
@@ -14741,6 +14904,81 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    // Modeled after base64 web-safe chars, but ordered by ASCII.
+    const PUSH_CHARS = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
+    /**
+     * Fancy ID generator that creates 20-character string identifiers with the
+     * following properties:
+     *
+     * 1. They're based on timestamp so that they sort *after* any existing ids.
+     * 2. They contain 72-bits of random data after the timestamp so that IDs won't
+     *    collide with other clients' IDs.
+     * 3. They sort *lexicographically* (so the timestamp is converted to characters
+     *    that will sort properly).
+     * 4. They're monotonically increasing. Even if you generate more than one in
+     *    the same timestamp, the latter ones will sort after the former ones. We do
+     *    this by using the previous random bits but "incrementing" them by 1 (only
+     *    in the case of a timestamp collision).
+     */
+    const nextPushId = (function () {
+        // Timestamp of last push, used to prevent local collisions if you push twice
+        // in one ms.
+        let lastPushTime = 0;
+        // We generate 72-bits of randomness which get turned into 12 characters and
+        // appended to the timestamp to prevent collisions with other clients. We
+        // store the last characters we generated because in the event of a collision,
+        // we'll use those same characters except "incremented" by one.
+        const lastRandChars = [];
+        return function (now) {
+            const duplicateTime = now === lastPushTime;
+            lastPushTime = now;
+            let i;
+            const timeStampChars = new Array(8);
+            for (i = 7; i >= 0; i--) {
+                timeStampChars[i] = PUSH_CHARS.charAt(now % 64);
+                // NOTE: Can't use << here because javascript will convert to int and lose
+                // the upper bits.
+                now = Math.floor(now / 64);
+            }
+            assert(now === 0, 'Cannot push at time == 0');
+            let id = timeStampChars.join('');
+            if (!duplicateTime) {
+                for (i = 0; i < 12; i++) {
+                    lastRandChars[i] = Math.floor(Math.random() * 64);
+                }
+            }
+            else {
+                // If the timestamp hasn't changed since last push, use the same random
+                // number, except incremented by 1.
+                for (i = 11; i >= 0 && lastRandChars[i] === 63; i--) {
+                    lastRandChars[i] = 0;
+                }
+                lastRandChars[i]++;
+            }
+            for (i = 0; i < 12; i++) {
+                id += PUSH_CHARS.charAt(lastRandChars[i]);
+            }
+            assert(id.length === 20, 'nextPushId: Length should be 20.');
+            return id;
+        };
+    })();
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     /**
      * Encapsulates the data needed to raise an event
      */
@@ -15008,7 +15246,7 @@
          */
         child(path) {
             const childPath = new Path(path);
-            const childRef = child(this.ref, path);
+            const childRef = child$1(this.ref, path);
             return new DataSnapshot(this._node.getChild(childPath), childRef, PRIORITY_INDEX);
         }
         /**
@@ -15056,7 +15294,7 @@
             const childrenNode = this._node;
             // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a weird return type...
             return !!childrenNode.forEachChild(this._index, (key, node) => {
-                return action(new DataSnapshot(node, child(this.ref, key), PRIORITY_INDEX));
+                return action(new DataSnapshot(node, child$1(this.ref, key), PRIORITY_INDEX));
             });
         }
         /**
@@ -15129,7 +15367,7 @@
     function ref(db, path) {
         db = getModularInstance(db);
         db._checkNotDeleted('ref');
-        return path !== undefined ? child(db._root, path) : db._root;
+        return path !== undefined ? child$1(db._root, path) : db._root;
     }
     /**
      * Gets a `Reference` for the location at the specified relative path.
@@ -15142,7 +15380,7 @@
      *   location.
      * @returns The specified child location.
      */
-    function child(parent, path) {
+    function child$1(parent, path) {
         parent = getModularInstance(parent);
         if (pathGetFront(parent._path) === null) {
             validateRootPathString('child', 'path', path, false);
@@ -15151,6 +15389,54 @@
             validatePathString('child', 'path', path, false);
         }
         return new ReferenceImpl(parent._repo, pathChild(parent._path, path));
+    }
+    /**
+     * Generates a new child location using a unique key and returns its
+     * `Reference`.
+     *
+     * This is the most common pattern for adding data to a collection of items.
+     *
+     * If you provide a value to `push()`, the value is written to the
+     * generated location. If you don't pass a value, nothing is written to the
+     * database and the child remains empty (but you can use the `Reference`
+     * elsewhere).
+     *
+     * The unique keys generated by `push()` are ordered by the current time, so the
+     * resulting list of items is chronologically sorted. The keys are also
+     * designed to be unguessable (they contain 72 random bits of entropy).
+     *
+     * See {@link https://firebase.google.com/docs/database/web/lists-of-data#append_to_a_list_of_data | Append to a list of data}.
+     * See {@link https://firebase.googleblog.com/2015/02/the-2120-ways-to-ensure-unique_68.html | The 2^120 Ways to Ensure Unique Identifiers}.
+     *
+     * @param parent - The parent location.
+     * @param value - Optional value to be written at the generated location.
+     * @returns Combined `Promise` and `Reference`; resolves when write is complete,
+     * but can be used immediately as the `Reference` to the child location.
+     */
+    function push(parent, value) {
+        parent = getModularInstance(parent);
+        validateWritablePath('push', parent._path);
+        validateFirebaseDataArg('push', value, parent._path, true);
+        const now = repoServerTime(parent._repo);
+        const name = nextPushId(now);
+        // push() returns a ThennableReference whose promise is fulfilled with a
+        // regular Reference. We use child() to create handles to two different
+        // references. The first is turned into a ThennableReference below by adding
+        // then() and catch() methods and is used as the return value of push(). The
+        // second remains a regular Reference and is used as the fulfilled value of
+        // the first ThennableReference.
+        const thennablePushRef = child$1(parent, name);
+        const pushRef = child$1(parent, name);
+        let promise;
+        if (value != null) {
+            promise = set$1(pushRef, value).then(() => pushRef);
+        }
+        else {
+            promise = Promise.resolve(pushRef);
+        }
+        thennablePushRef.then = promise.then.bind(promise);
+        thennablePushRef.catch = promise.then.bind(promise, undefined);
+        return thennablePushRef;
     }
     /**
      * Writes data to this Database location.
@@ -15181,7 +15467,7 @@
      *   array, or null).
      * @returns Resolves when write to server is complete.
      */
-    function set(ref, value) {
+    function set$1(ref, value) {
         ref = getModularInstance(ref);
         validateWritablePath('set', ref._path);
         validateFirebaseDataArg('set', value, ref._path, false);
@@ -15189,6 +15475,22 @@
         repoSetWithPriority(ref._repo, ref._path, value, 
         /*priority=*/ null, deferred.wrapCallback(() => { }));
         return deferred.promise;
+    }
+    /**
+     * Gets the most up-to-date result for this query.
+     *
+     * @param query - The query to run.
+     * @returns A `Promise` which resolves to the resulting DataSnapshot if a value is
+     * available, or rejects if the client is unable to return a value (e.g., if the
+     * server is unreachable and there is nothing cached).
+     */
+    function get(query) {
+        query = getModularInstance(query);
+        const callbackContext = new CallbackContext(() => { });
+        const container = new ValueEventRegistration(callbackContext);
+        return repoGetValue(query._repo, query, container).then(node => {
+            return new DataSnapshot(node, new ReferenceImpl(query._repo, query._path), query._queryParams.getIndex());
+        });
     }
     /**
      * Represents registration for 'value' events.
@@ -15260,7 +15562,7 @@
         }
         createEvent(change, query) {
             assert(change.childName != null, 'Child events should have a childName.');
-            const childRef = child(new ReferenceImpl(query._repo, query._path), change.childName);
+            const childRef = child$1(new ReferenceImpl(query._repo, query._path), change.childName);
             const index = query._queryParams.getIndex();
             return new DataEvent(change.type, this, new DataSnapshot(change.snapshotNode, childRef, index), change.prevName);
         }
@@ -15567,9 +15869,9 @@
             const appCheckProvider = container.getProvider('app-check-internal');
             return repoManagerDatabaseFromApp(app, authProvider, appCheckProvider, url);
         }, "PUBLIC" /* ComponentType.PUBLIC */).setMultipleInstances(true));
-        registerVersion(name$1, version$1, variant);
+        registerVersion(name$3, version$3, variant);
         // BUILD_TARGET will be replaced by values like esm5, esm2017, cjs5, etc during the compilation
-        registerVersion(name$1, version$1, 'esm2017');
+        registerVersion(name$3, version$3, 'esm2017');
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     PersistentConnection.prototype.simpleListen = function (pathString, onComplete) {
@@ -22315,8 +22617,8 @@
      */
     const browserPopupRedirectResolver = BrowserPopupRedirectResolver;
 
-    var name = "@firebase/auth";
-    var version = "1.5.1";
+    var name$2 = "@firebase/auth";
+    var version$2 = "1.5.1";
 
     /**
      * @license
@@ -22455,9 +22757,9 @@
             const auth = _castAuth(container.getProvider("auth" /* _ComponentName.AUTH */).getImmediate());
             return (auth => new AuthInterop(auth))(auth);
         }, "PRIVATE" /* ComponentType.PRIVATE */).setInstantiationMode("EXPLICIT" /* InstantiationMode.EXPLICIT */));
-        registerVersion(name, version, getVersionForPlatform(clientPlatform));
+        registerVersion(name$2, version$2, getVersionForPlatform(clientPlatform));
         // BUILD_TARGET will be replaced by values like esm5, esm2017, cjs5, etc during the compilation
-        registerVersion(name, version, 'esm2017');
+        registerVersion(name$2, version$2, 'esm2017');
     }
 
     /**
@@ -22674,7 +22976,7 @@
 
           // Set user data in the Realtime Database
           if (user) {
-            set(userRef, userData).then(() => {
+            set$1(userRef, userData).then(() => {
               ErrorHandle(`Signup successful:`);
               console.log('User data updated in the Realtime Database');
             }).catch(error => {
@@ -22776,8 +23078,8 @@
 
       // Sync user data with form inputs
       function syncUserData(userDBRef) {
-        const boroughDB = child(userDBRef, '/myBorough');
-        const contactsDB = child(userDBRef, '/myContacts');
+        const boroughDB = child$1(userDBRef, '/myBorough');
+        const contactsDB = child$1(userDBRef, '/myContacts');
         onValue(boroughDB, snapshot => {
           const data = snapshot.val();
           if (data) {
@@ -22839,12 +23141,12 @@
         saveUserData(currentUserDB, myBoroughVar, phoneNumber1, phoneNumber2, phoneNumber3);
       }
       function saveUserData(userDBRef, borough, phone1, phone2, phone3) {
-        const currentBoroughDB = child(userDBRef, '/myBorough/');
-        const phoneNumbersInDb = child(userDBRef, '/myContacts/');
-        set(currentBoroughDB, {
+        const currentBoroughDB = child$1(userDBRef, '/myBorough/');
+        const phoneNumbersInDb = child$1(userDBRef, '/myContacts/');
+        set$1(currentBoroughDB, {
           myBorough: borough
         }).then(() => console.log("Borough data saved")).catch(error => console.error("Error saving borough data: ", error));
-        set(phoneNumbersInDb, {
+        set$1(phoneNumbersInDb, {
           number1: phone1,
           number2: phone2,
           number3: phone3
@@ -22864,6 +23166,3841 @@
       signOutLink?.addEventListener("click", () => window.location.href = "./index.html");
     }
 
+    function AddCrisis(firebaseConfig) {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const auth = getAuth();
+      var currentUser = auth.currentUser;
+      if (currentUser) {
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/' + currentUID);
+        child$1(currentUserDB, '/addCrisis');
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+        child$1(currentUserDB, '/addCrisis');
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          child$1(currentUserDB, '/addCrisis');
+        }
+      });
+      // Declare constants for form and color buttons
+      const crisisForm = document.getElementById('crisisForm');
+      const symptomButtons = document.querySelectorAll('.symptomButton');
+      const allergenButtons = document.querySelectorAll('.allergenButton');
+      const locationButtons = document.querySelectorAll('.locationButton');
+      const resolutionButtons = document.querySelectorAll('.resolutionButton'); // Added resolution buttons
+      // Attach submit event listener to the form
+      crisisForm.addEventListener('submit', function (e) {
+        e.preventDefault(); // Prevent the default form submission
+        submitForm();
+        resetForm();
+      });
+      // Toggle state when symptom buttons are clicked
+      symptomButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          this.value;
+          const currentState = this.classList.contains('true');
+          // Toggle the selected class and update button text
+          this.classList.toggle('true', !currentState);
+          this.classList.toggle('false', currentState);
+        });
+      });
+      // Toggle state when allergen buttons are clicked
+      allergenButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          this.value;
+          const currentState = this.classList.contains('true');
+          // Toggle the selected class and update button text
+          this.classList.toggle('true', !currentState);
+          this.classList.toggle('false', currentState);
+        });
+      });
+      // Toggle state when location buttons are clicked
+      locationButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          this.value;
+          const currentState = this.classList.contains('true');
+          // Toggle the selected class and update button text
+          this.classList.toggle('true', !currentState);
+          this.classList.toggle('false', currentState);
+        });
+      });
+      // Toggle state when resolution buttons are clicked
+      resolutionButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          this.value;
+          const currentState = this.classList.contains('true');
+          // Toggle the selected class and update button text
+          this.classList.toggle('true', !currentState);
+          this.classList.toggle('false', currentState);
+        });
+      });
+      function submitForm() {
+        const dateTimeInput = document.getElementById('dateTimeInput').value;
+        const selectedSymptomButtons = document.querySelectorAll('.symptomButton.true');
+        const selectedAllergenButtons = document.querySelectorAll('.allergenButton.true');
+        const selectedLocationButtons = document.querySelectorAll('.locationButton.true');
+        const selectedResolutionButtons = document.querySelectorAll('.resolutionButton.true'); // Added selected resolution buttons
+        const resDateTimeInput = document.getElementById('resDateTimeInput').value;
+        let addCrisisDB = child$1(currentUserDB, '/addCrisis/');
+        // Sample data to be added
+        const newData = {
+          dateTimeInput: dateTimeInput,
+          resDateTimeInput: resDateTimeInput,
+          // Added resolution time
+          selected_symptoms: {},
+          selected_allergens: {},
+          selected_locations: {},
+          selected_resolutions: {}
+        };
+        // Add symptoms:
+        newData.selected_symptoms.wheezing = false;
+        newData.selected_symptoms.cough = false;
+        newData.selected_symptoms.chestCompressions = false;
+        newData.selected_symptoms.dysponea = false;
+        newData.selected_symptoms.fever = false;
+        newData.selected_symptoms.tingle = false;
+        newData.selected_symptoms.dizziness = false;
+        if (selectedSymptomButtons.length > 0) {
+          const selectedSymptoms = Array.from(selectedSymptomButtons).map(button => button.value);
+          // Add each selected symptom with a value of true to selected_symptoms
+          selectedSymptoms.forEach(symptom => {
+            newData.selected_symptoms[symptom] = true;
+          });
+        }
+        // Add allergens:
+        newData.selected_allergens.smoke = false;
+        newData.selected_allergens.animals = false;
+        newData.selected_allergens.dust = false;
+        newData.selected_allergens.airQuality = false;
+        newData.selected_allergens.greenery = false;
+        newData.selected_allergens.stress = false;
+        newData.selected_allergens.tempHumidity = false;
+        newData.selected_allergens.activities = false;
+        newData.selected_allergens.perfumes = false;
+        newData.selected_allergens.foodAllergy = false;
+        if (selectedAllergenButtons.length > 0) {
+          const selectedAllergens = Array.from(selectedAllergenButtons).map(button => button.value);
+          // Add each selected allergen with a value of true to selected_allergens
+          selectedAllergens.forEach(allergen => {
+            newData.selected_allergens[allergen] = true;
+          });
+        }
+        // Add locations:
+        newData.selected_locations.home = false;
+        newData.selected_locations.workSchool = false;
+        newData.selected_locations.outside = false;
+        newData.selected_locations.friendHouse = false;
+        newData.selected_locations.other = false;
+        if (selectedLocationButtons.length > 0) {
+          const selectedLocations = Array.from(selectedLocationButtons).map(button => button.value);
+          // Add each selected location with a value of true to selected_locations
+          selectedLocations.forEach(location => {
+            newData.selected_locations[location] = true;
+          });
+        }
+        // Add resolutions:
+        newData.selected_resolutions.inhaler = false;
+        newData.selected_resolutions.hospitalization = false;
+        newData.selected_resolutions.oxygenMask = false;
+        newData.selected_resolutions.breathingExercises = false;
+        if (selectedResolutionButtons.length > 0) {
+          const selectedResolutions = Array.from(selectedResolutionButtons).map(button => button.value);
+          // Add each selected resolution with a value of true to selected_resolutions
+          selectedResolutions.forEach(resolution => {
+            newData.selected_resolutions[resolution] = true;
+          });
+        }
+        // Adding data using push (generates a unique key)
+        push(addCrisisDB, newData);
+      }
+      function resetForm() {
+        // Clear the input values
+        document.getElementById('dateTimeInput').value = '';
+        document.getElementById('resDateTimeInput').value = '';
+        // Reset symptom buttons
+        symptomButtons.forEach(button => {
+          button.classList.remove('true');
+          button.classList.add('false');
+        });
+        // Reset allergen buttons
+        allergenButtons.forEach(button => {
+          button.classList.remove('true');
+          button.classList.add('false');
+        });
+        // Reset location buttons
+        locationButtons.forEach(button => {
+          button.classList.remove('true');
+          button.classList.add('false');
+        });
+        // Reset resolution buttons
+        resolutionButtons.forEach(button => {
+          button.classList.remove('true');
+          button.classList.add('false');
+        });
+        // Clear the display result
+        displayResult.textContent = '';
+      }
+      var popupclose = document.getElementById("close");
+      if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var popupaddCrisisBtnContainer = document.getElementById("popupaddCrisisBtnContainer");
+      if (popupaddCrisisBtnContainer) {
+        popupaddCrisisBtnContainer.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+    }
+
+    // Import the functions you need from the SDKs you need
+    function AddIntakePopup(firebaseConfig) {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      getAnalytics(app);
+      const auth = getAuth();
+      var currentUser = auth.currentUser;
+      if (currentUser) {
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/' + currentUID);
+        var inhalerDB = child$1(currentUserDB, '/inhalers');
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+        inhalerDB = child$1(currentUserDB, '/inhalers');
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          inhalerDB = child$1(currentUserDB, '/inhalers');
+        }
+      });
+      get(inhalerDB).then(snapshot => {
+        if (snapshot.exists()) {
+          var addIntakeBtn = document.getElementById("addIntakeBtn");
+          var inhalerSection = document.getElementById("selectInhalerSection");
+
+          //let newIntakeInhaler = null;
+          function createSelectInhalerBtn(inhaler) {
+            //let choiceInhaler = new Inhaler(inhaler.name, inhaler.volume, inhaler.expiryDate, inhaler.type)
+            let selectInhalerBtn;
+            selectInhalerBtn = document.createElement('button');
+            selectInhalerBtn.className = "inhaler11";
+            inhalerSection.appendChild(selectInhalerBtn);
+            selectInhalerBtn.id = 'select' + inhaler.name;
+            let divBtn = document.createElement('div');
+            divBtn.className = "intaketimevar";
+            divBtn.textContent = inhaler.name;
+            selectInhalerBtn.appendChild(divBtn);
+            selectInhalerBtn.addEventListener('click', function () {
+              var newIntakeInhaler = inhaler;
+              console.log(inhaler.name + ' is selected');
+              addIntakeBtn.addEventListener('click', function () {
+                var newIntakeTime = document.getElementById("intakeTimeVar").value;
+                var newIntakePuffs = document.getElementById("nbPuffsVar").value;
+                //newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
+                //var newIntake = new Intake(newIntakeTime,newIntakePuffs,newIntakeInhaler)
+                let selectedInhalerDB = child$1(inhalerDB, '/' + inhaler.name);
+                let intakesDB = child$1(selectedInhalerDB, '/intakes/');
+                push(intakesDB, {
+                  time: newIntakeTime,
+                  puffNum: newIntakePuffs
+                });
+                console.log('intake data pushed to firebase');
+                get(intakesDB).then(snapshot => {
+                  if (snapshot.exists()) {
+                    var intakeCount = 0;
+                    snapshot.forEach(function (childSnapshot) {
+                      intakeCount++;
+                    });
+                    let dosageDB = child$1(selectedInhalerDB, '/dosage');
+                    get(dosageDB).then(snapshot => {
+                      if (snapshot.exists) {
+                        var numOfDose = 0;
+                        snapshot.forEach(function (childSnapshot) {
+                          numOfDose++;
+                        });
+                      }
+                      if (intakeCount > numOfDose) {
+                        //NOTIFICATION
+                        alert("Warning:" + newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.");
+                      }
+                      window.reload();
+                    });
+                  }
+                });
+              });
+            });
+          }
+          snapshot.forEach(function (childSnapshot) {
+            let inhalerChoice = childSnapshot.val().inhaler;
+            createSelectInhalerBtn(inhalerChoice);
+          });
+        } else {
+          console.log("No data available");
+        }
+      }).catch(error => {
+        console.error(error);
+      });
+
+      //Navigation
+      // eventListeners.js
+      var popupclose = document.getElementById("closeBtn");
+      if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
+      if (popupaddIntakeBtn) {
+        popupaddIntakeBtn.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var topNav = document.getElementById("back");
+      if (topNav) {
+        topNav.addEventListener("click", function (e) {
+          window.location.href = "./MyInhaler.html";
+        });
+      }
+      var close = document.getElementById("closeBtn");
+      if (close) {
+        close.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
+      if (newInhalerIntake) {
+        newInhalerIntake.addEventListener("click", function () {
+          var popup = document.getElementById("addIntakePopup");
+          if (!popup) return;
+          var popupStyle = popup.style;
+          if (popupStyle) {
+            popupStyle.display = "flex";
+            popupStyle.zIndex = 100;
+            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+            popupStyle.alignItems = "center";
+            popupStyle.justifyContent = "center";
+          }
+          popup.setAttribute("closable", "");
+          var onClick = popup.onClick || function (e) {
+            if (e.target === popup && popup.hasAttribute("closable")) {
+              popupStyle.display = "none";
+            }
+          };
+          popup.addEventListener("click", onClick);
+        });
+      }
+      var home = document.getElementById("homeBtn");
+      if (home) {
+        home.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      var cloud = document.getElementById("airQualityBtn");
+      if (cloud) {
+        cloud.addEventListener("click", function (e) {
+          window.location.href = "./AirQuality01.html";
+        });
+      }
+      var hospital = document.getElementById("emergencyBtn");
+      if (hospital) {
+        hospital.addEventListener("click", function (e) {
+          window.location.href = "./Emergency1.html";
+        });
+      }
+      document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
+      document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
+    }
+
+    function AllergensChart(firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const ctx1 = document.getElementById('allergensChart');
+      const auth = getAuth(app);
+      var currentUser = auth.currentUser;
+      var currentUID, currentUserDB;
+      if (currentUser) {
+        currentUID = currentUser.uid;
+        currentUserDB = ref(database, '/users/' + currentUID);
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          boroughDB = child(currentUserDB, '/myBorough');
+        }
+      });
+
+      // const currentUID = "testDosage2";
+
+      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
+      let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery', 'Perfumes', 'Smoke', 'Stress', 'Temp & Humidity'];
+      onValue(entriesInDB, function (snapshot) {
+        let allergens = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        const entries = snapshot.val();
+
+        // Counts total number of occurences of allergens for ALL crisis log entries
+        for (var i = 0; i < Object.keys(entries).length; i++) {
+          const entry = Object.keys(entries)[i];
+          const allergensInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_allergens");
+          updateChart(allergens, allergensInDB);
+        }
+        updateChartWithSymptoms(allergens);
+      });
+
+      // Tallies number of occurences for EACH crisis log entry
+      function updateChart(allergens, allergensInDB) {
+        onValue(allergensInDB, function (snapshot) {
+          const data = snapshot.val();
+          if (data != null) {
+            if (data.activites == true) {
+              allergens[0] += 1;
+            }
+            if (data.airQuality == true) {
+              allergens[1] += 1;
+            }
+            if (data.animals == true) {
+              allergens[2] += 1;
+            }
+            if (data.dust == true) {
+              allergens[3] += 1;
+            }
+            if (data.foodAllergy == true) {
+              allergens[4] += 1;
+            }
+            if (data.greenery == true) {
+              allergens[5] += 1;
+            }
+            if (data.perfumes == true) {
+              allergens[6] += 1;
+            }
+            if (data.smoke == true) {
+              allergens[7] += 1;
+            }
+            if (data.stress == true) {
+              allergens[8] += 1;
+            }
+            if (data.tempHumidity == true) {
+              allergens[9] += 1;
+            }
+          }
+        });
+      }
+      function updateChartWithSymptoms(allergens) {
+        const chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: labels1,
+            datasets: [{
+              label: 'Occurrences',
+              data: allergens,
+              hoverOffset: 4,
+              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
+            }]
+          }
+        };
+        // Check if chart is already initialized
+        if (window.liveChart2) {
+          window.liveChart2.data = chartConfig.data;
+          window.liveChart2.update();
+        } else {
+          // Initialize the chart for the first time
+          window.liveChart2 = new Chart(ctx1, chartConfig);
+        }
+      }
+    }
+
+    // Import the functions you need from the SDKs you need
+    function Emergency1(firebaseConfig) {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      getAnalytics(app);
+      const auth = getAuth();
+      var currentUser = auth.currentUser;
+      if (currentUser) {
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/' + currentUID);
+        var contactsDB = child$1(currentUserDB, '/myContacts');
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+        contactsDB = child$1(currentUserDB, '/myContacts');
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          contactsDB = child$1(currentUserDB, '/myContacts');
+        }
+      });
+
+      // Set up phone numbers
+
+      const emergencyContactButtons = [document.getElementById("contact1Btn"), document.getElementById("contact2Btn"), document.getElementById("contact3Btn")];
+      const call999Btn = document.getElementById("call999Btn");
+      document.getElementById("displayResult");
+
+      // Attach event listeners to the emergency contact buttons
+      emergencyContactButtons.forEach((button, index) => {
+        button.addEventListener("click", () => initiateCall(index + 1));
+      });
+
+      // Event listener for initiating a call to an emergency contact
+      function initiateCall(contactNumber) {
+        onValue(contactsDB, snapshot => {
+          const data = snapshot.val();
+          const phoneNumberKey = `number${contactNumber}`;
+          if (data && data[phoneNumberKey]) {
+            const phoneNumber = data[phoneNumberKey];
+
+            // Use the tel: URI scheme to initiate a phone call
+            window.location.href = `tel:${phoneNumber}`;
+          } else {
+            alert("Emergency contact not available.");
+          }
+        });
+      }
+
+      // Event listener for calling 999
+      call999Btn.addEventListener("click", initiateEmergencyCall);
+      function initiateEmergencyCall() {
+        // Use the tel: URI scheme to initiate a call to 999
+        window.location.href = "tel:999";
+      }
+
+      //Set up elements
+      var close = document.getElementById("close");
+      var hyperlink = document.getElementById("emergencyStepsMore");
+      var crisisStatsBtn = document.getElementById("crisisStatsBtn");
+      var home = document.getElementById("homeBtn");
+      var cloud = document.getElementById("airQltyBtn");
+      var inhaler = document.getElementById("inhalerBtn");
+
+      // Add event listeners to the elements
+      if (close) {
+        close.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      if (hyperlink) {
+        hyperlink.addEventListener("click", function (e) {
+          window.location.href = "./Emergency2.html";
+        });
+      }
+      if (crisisStatsBtn) {
+        crisisStatsBtn.addEventListener("click", function (e) {
+          window.location.href = "./Emergency3.html";
+        });
+      }
+      if (home) {
+        home.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      if (cloud) {
+        cloud.addEventListener("click", function (e) {
+          window.location.href = "./AirQuality01.html";
+        });
+      }
+      if (inhaler) {
+        inhaler.addEventListener("click", function (e) {
+          window.location.href = "./MyInhaler.html";
+        });
+      }
+    }
+
+    function Home(firebaseConfig) {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      getAnalytics(app);
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          const currentUID = currentUser.uid;
+          ref(database, '/users/' + currentUID);
+          ref(database, '/users/' + currentUID + '/inhalers');
+        }
+      });
+      if (currentUser) {
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/' + currentUID);
+        var inhalerDB = child$1(currentUserDB, '/inhalers');
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+        inhalerDB = child$1(currentUserDB, '/inhalers');
+      }
+      var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
+      if (popupcancelBtnContainer) {
+        popupcancelBtnContainer.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var profilePicture = document.getElementById("settingsBtn");
+      if (profilePicture) {
+        profilePicture.addEventListener("click", function (e) {
+          window.location.href = "./Settings.html";
+        });
+      }
+
+      //window.alert("You haven't chose a favourite inhaler yet!")
+      var quickIntakeBtn = document.getElementById("quickIntakeBtn");
+      if (quickIntakeBtn) {
+        quickIntakeBtn.addEventListener("click", function () {
+          window.location.href = "./QuickIntakePopup.html";
+        });
+      }
+
+      // load inhaler widget content
+      var favInhalerName = document.getElementById("fav-inhaler-title");
+      var nextReminderTime = document.getElementById('nextReminderVar');
+      var intakeExpiresIn = document.getElementById("expiryDateFavVar");
+      get(inhalerDB).then(snapshot => {
+        if (snapshot.exists()) {
+          snapshot.forEach(function (childSnapshot) {
+            if (childSnapshot.val().inhaler.fav) {
+              childSnapshot.val().inhaler;
+              favInhalerName.textContent = "My Favourite Inhaler: " + childSnapshot.val().inhaler.name;
+              let newInhalerDB = child$1(inhalerDB, '/' + childSnapshot.val().inhaler.name);
+              let dosageDB = child$1(newInhalerDB, '/dosage');
+              get(dosageDB).then(snapshot => {
+                if (snapshot.exists()) {
+                  let allDiffTime = [];
+                  snapshot.forEach(function (childSnapshot) {
+                    if (childSnapshot.val().time - Date.now() > 0) {
+                      var diffTime = childSnapshot.val().time - Date.now();
+                      allDiffTime.push(diffTime);
+                      if (Math.min.apply(Math, allDiffTime) === diffTime) {
+                        var nextTime = new Date(childSnapshot.val().time);
+                        nextReminderTime.textContent = nextTime.toLocaleTimeString();
+                      }
+                    } else {
+                      nextReminderTime.textContent = "[add new reminder]";
+                    }
+                  });
+                }
+              });
+              let milliUntilExp = Number(childSnapshot.val().inhaler.expiryDate) - Date.now();
+              let hoursUntilExp = milliUntilExp / 86400000;
+              intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString() + " hours";
+            }
+          });
+        }
+      });
+      function setAPI(input1) {
+        let API = 0;
+        let APInumber = 0;
+        if (input1.SO2 != '0') {
+          const SO2 = parseInt(input1.SO2);
+          API = API + SO2;
+          APInumber = APInumber + 1;
+        }
+        if (input1.NO2 != '0') {
+          const NO2 = parseInt(input1.NO2);
+          API = API + NO2;
+          APInumber = APInumber + 1;
+        }
+        if (input1.PM25 != '0') {
+          const PM25 = parseInt(input1.PM25);
+          API = API + PM25;
+          APInumber = APInumber + 1;
+        }
+        if (input1.O3 != '0') {
+          const O3 = parseInt(input1.O3);
+          API = API + O3;
+          APInumber = APInumber + 1;
+        }
+        if (input1.PM10 != '0') {
+          const PM10 = parseInt(input1.PM10);
+          API = API + PM10;
+          APInumber = APInumber + 1;
+        }
+        let APIaverage = API / APInumber;
+        let APIindex = APIaverage.toFixed(1);
+        return APIindex;
+      }
+      async function getAPI(input) {
+        const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
+        const apidata = await response.json();
+        //barking
+        const barking = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        barking.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[0]["@AirQualityIndex"];
+        barking.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[1]["@AirQualityIndex"];
+        barking.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[1].Species[1]["@AirQualityIndex"];
+        barking.AQI = setAPI(barking);
+        if (input == "Barking") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = barking.AQI;
+        }
+        //barnet
+        const barnet = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        barnet.AQI = setAPI(barnet);
+        if (input == "Barnet") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = barnet.AQI;
+        }
+        //bexley
+        const bexley = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        bexley.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[0]["@AirQualityIndex"];
+        bexley.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[1]["@AirQualityIndex"];
+        bexley.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[2]["@AirQualityIndex"];
+        bexley.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[0].Species[3]["@AirQualityIndex"];
+        bexley.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[2].Site[2].Species[2]["@AirQualityIndex"];
+        bexley.AQI = setAPI(bexley);
+        if (input == "Bexley") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = bexley.AQI;
+        }
+        //brent
+        const brent = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        brent.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[1]["@AirQualityIndex"];
+        brent.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[2]["@AirQualityIndex"];
+        brent.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[0].Species[3]["@AirQualityIndex"];
+        brent.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[3].Site[1].Species[0]["@AirQualityIndex"];
+        brent.AQI = setAPI(brent);
+        if (input == "Brent") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = brent.AQI;
+        }
+        //bromley
+        const bromley = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        bromley.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[0]["@AirQualityIndex"];
+        bromley.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[1]["@AirQualityIndex"];
+        bromley.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[4].Site.Species[2]["@AirQualityIndex"];
+        bromley.AQI = setAPI(bromley);
+        if (input == "Bromley") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = bromley.AQI;
+        }
+        //camden
+        const camden = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        camden.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[0]["@AirQualityIndex"];
+        camden.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[1]["@AirQualityIndex"];
+        camden.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[2]["@AirQualityIndex"];
+        camden.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[3]["@AirQualityIndex"];
+        camden.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[5].Site[0].Species[4]["@AirQualityIndex"];
+        camden.AQI = setAPI(camden);
+        if (input == "Camden") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = camden.AQI;
+        }
+        //city
+        const city = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        city.AQI = setAPI(city);
+        if (input == "City of London") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = city.AQI;
+        }
+        //croydon
+        const croydon = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        croydon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[1].Species["@AirQualityIndex"];
+        croydon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[2].Species["@AirQualityIndex"];
+        croydon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[7].Site[3].Species[1]["@AirQualityIndex"];
+        croydon.AQI = setAPI(croydon);
+        if (input == "Croydon") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = croydon.AQI;
+        }
+        //ealing
+        const ealing = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        ealing.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[8].Site[1].Species[0]["@AirQualityIndex"];
+        ealing.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[8].Site[2].Species[1]["@AirQualityIndex"];
+        ealing.AQI = setAPI(ealing);
+        if (input == "Ealing") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = ealing.AQI;
+        }
+        //enfield
+        const enfield = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        enfield.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[9].Site[0].Species["@AirQualityIndex"];
+        enfield.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[9].Site[2].Species[1]["@AirQualityIndex"];
+        enfield.AQI = setAPI(enfield);
+        if (input == "Enfield") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = enfield.AQI;
+        }
+        //greenwich
+        const greenwich = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        greenwich.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[0]["@AirQualityIndex"];
+        greenwich.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[1]["@AirQualityIndex"];
+        greenwich.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[2].Species[2]["@AirQualityIndex"];
+        greenwich.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[7].Species[4]["@AirQualityIndex"];
+        greenwich.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[10].Site[3].Species[1]["@AirQualityIndex"];
+        greenwich.AQI = setAPI(greenwich);
+        if (input == "Greenwich") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = greenwich.AQI;
+        }
+        //hackney
+        const hackney = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        hackney.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[0]["@AirQualityIndex"];
+        hackney.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[1]["@AirQualityIndex"];
+        hackney.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[2]["@AirQualityIndex"];
+        hackney.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[11].Site.Species[3]["@AirQualityIndex"];
+        hackney.AQI = setAPI(hackney);
+        if (input == "Hackney") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = hackney.AQI;
+        }
+        //hammersmith
+        const hammersmith = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        hammersmith.AQI = setAPI(hammersmith);
+        if (input == "Hammersmith") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = hammersmith.AQI;
+        }
+
+        //haringey
+        const haringey = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        haringey.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[13].Site[1].Species[0]["@AirQualityIndex"];
+        haringey.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[13].Site[1].Species[1]["@AirQualityIndex"];
+        haringey.AQI = setAPI(haringey);
+        if (input == "Haringey") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = haringey.AQI;
+        }
+        //harrow
+        const harrow = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        harrow.AQI = setAPI(harrow);
+        if (input == "Harrow") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = harrow.AQI;
+        }
+
+        //havering
+        const havering = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        havering.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[1].Species[0]["@AirQualityIndex"];
+        havering.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[1].Species[1]["@AirQualityIndex"];
+        havering.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[15].Site[0].Species[2]["@AirQualityIndex"];
+        havering.AQI = setAPI(havering);
+        if (input == "Havering") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = havering.AQI;
+        }
+
+        //hillingdon
+        const hillingdon = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        hillingdon.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[0]["@AirQualityIndex"];
+        hillingdon.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[1]["@AirQualityIndex"];
+        hillingdon.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[2]["@AirQualityIndex"];
+        hillingdon.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[16].Site[1].Species[3]["@AirQualityIndex"];
+        hillingdon.AQI = setAPI(hillingdon);
+        if (input == "Hillingdon") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = hillingdon.AQI;
+        }
+
+        //hounslow
+        const hounslow = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        hounslow.AQI = setAPI(hounslow);
+        if (input == "Hounslow") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = hounslow.AQI;
+        }
+
+        //islington
+        const islington = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        islington.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[18].Site[0].Species[0]["@AirQualityIndex"];
+        islington.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[18].Site[0].Species[1]["@AirQualityIndex"];
+        islington.AQI = setAPI(islington);
+        if (input == "Islington") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = islington.AQI;
+        }
+
+        //kc
+        const kc = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        kc.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[0]["@AirQualityIndex"];
+        kc.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[1]["@AirQualityIndex"];
+        kc.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[0].Species[2]["@AirQualityIndex"];
+        kc.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[1].Species[0]["@AirQualityIndex"];
+        kc.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[19].Site[1].Species[1]["@AirQualityIndex"];
+        kc.AQI = setAPI(kc);
+        if (input == "Kensington and Chelsea") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = kc.AQI;
+        }
+
+        //kingston
+        const kingston = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        kingston.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[0].Species[0]["@AirQualityIndex"];
+        kingston.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[1].Species[1]["@AirQualityIndex"];
+        kingston.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[20].Site[0].Species[1]["@AirQualityIndex"];
+        kingston.AQI = setAPI(kingston);
+        if (input == "Kingston") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = kingston.AQI;
+        }
+
+        //lambeth
+        const lambeth = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        lambeth.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[0]["@AirQualityIndex"];
+        lambeth.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[1]["@AirQualityIndex"];
+        lambeth.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[0].Species[2]["@AirQualityIndex"];
+        lambeth.SO2 = apidata.HourlyAirQualityIndex.LocalAuthority[21].Site[1].Species[1]["@AirQualityIndex"];
+        lambeth.AQI = setAPI(lambeth);
+        if (input == "Lambeth") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = lambeth.AQI;
+        }
+
+        //lewisham
+        const lewisham = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        lewisham.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[0]["@AirQualityIndex"];
+        lewisham.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[1]["@AirQualityIndex"];
+        lewisham.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[2]["@AirQualityIndex"];
+        lewisham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[22].Site[0].Species[3]["@AirQualityIndex"];
+        lewisham.AQI = setAPI(lewisham);
+        if (input == "Lewisham") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = lewisham.AQI;
+        }
+
+        //merton
+        const merton = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        merton.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[23].Site[1].Species["@AirQualityIndex"];
+        merton.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[23].Site[0].Species["@AirQualityIndex"];
+        merton.AQI = setAPI(merton);
+        if (input == "Merton") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = merton.AQI;
+        }
+
+        //newham
+        const newham = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        newham.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[0]["@AirQualityIndex"];
+        newham.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[1]["@AirQualityIndex"];
+        newham.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[24].Site[0].Species[2]["@AirQualityIndex"];
+        newham.AQI = setAPI(newham);
+        if (input == "Newham") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = newham.AQI;
+        }
+        //redbridge
+        const redbridge = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        redbridge.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[0]["@AirQualityIndex"];
+        redbridge.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[1]["@AirQualityIndex"];
+        redbridge.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[2]["@AirQualityIndex"];
+        redbridge.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[25].Site[1].Species[3]["@AirQualityIndex"];
+        redbridge.AQI = setAPI(redbridge);
+        if (input == "Redbridge") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = redbridge.AQI;
+        }
+
+        //richmond
+        const richmond = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        richmond.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[0].Species[0]["@AirQualityIndex"];
+        richmond.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[1].Species[1]["@AirQualityIndex"];
+        richmond.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[0].Species[1]["@AirQualityIndex"];
+        richmond.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[26].Site[2].Species[1]["@AirQualityIndex"];
+        richmond.AQI = setAPI(richmond);
+        if (input == "Richmond") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = richmond.AQI;
+        }
+
+        //southwark
+        const southwark = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        southwark.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[0]["@AirQualityIndex"];
+        southwark.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[1]["@AirQualityIndex"];
+        southwark.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[2]["@AirQualityIndex"];
+        southwark.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[27].Site[1].Species[3]["@AirQualityIndex"];
+        southwark.AQI = setAPI(southwark);
+        if (input == "Southwark") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = southwark.AQI;
+        }
+
+        //sutton
+        const sutton = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        sutton.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[0].Species[0]["@AirQualityIndex"];
+        sutton.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[0].Species[1]["@AirQualityIndex"];
+        sutton.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[28].Site[1].Species[1]["@AirQualityIndex"];
+        sutton.AQI = setAPI(sutton);
+        if (input == "Sutton") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = sutton.AQI;
+        }
+
+        //towerhamlet
+        const towerhamlet = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        towerhamlet.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[0]["@AirQualityIndex"];
+        towerhamlet.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[1]["@AirQualityIndex"];
+        towerhamlet.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[29].Site[0].Species[2]["@AirQualityIndex"];
+        towerhamlet.AQI = setAPI(towerhamlet);
+        if (input == "Tower Hamlets") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = towerhamlet.AQI;
+        }
+
+        //waltham
+        const waltham = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        waltham.AQI = setAPI(waltham);
+        if (input == "Waltham Forest") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = waltham.AQI;
+        }
+
+        //wandsworth
+        const wandsworth = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        wandsworth.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[0].Species[0]["@AirQualityIndex"];
+        wandsworth.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[0].Species[1]["@AirQualityIndex"];
+        wandsworth.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[31].Site[1].Species[1]["@AirQualityIndex"];
+        wandsworth.AQI = setAPI(wandsworth);
+        if (input == "Wandsworth") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = wandsworth.AQI;
+        }
+
+        //westminster
+        const westminster = {
+          'SO2': '0',
+          'NO2': '0',
+          'O3': '0',
+          'PM10': '0',
+          'PM25': '0',
+          'AQI': '0'
+        };
+        westminster.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[0]["@AirQualityIndex"];
+        westminster.O3 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[1]["@AirQualityIndex"];
+        westminster.PM10 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[2]["@AirQualityIndex"];
+        westminster.PM25 = apidata.HourlyAirQualityIndex.LocalAuthority[32].Site[0].Species[3]["@AirQualityIndex"];
+        westminster.AQI = setAPI(westminster);
+        if (input == "Westminster") {
+          var areaAQI = document.getElementById('AQInumber');
+          areaAQI.innerText = westminster.AQI;
+        }
+      }
+      var areaname = document.getElementById('areaname');
+      const areatag = localStorage.getItem('userarea');
+      areaname.innerText = areatag;
+      getAPI(areatag);
+
+      //nav
+      var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
+      if (popupcancelBtnContainer) {
+        popupcancelBtnContainer.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var profilePicture = document.getElementById("settingsBtn");
+      if (profilePicture) {
+        profilePicture.addEventListener("click", function (e) {
+          window.location.href = "./Settings.html";
+        });
+      }
+      var quickIntakeBtn = document.getElementById("quickIntakeBtn");
+      if (quickIntakeBtn) {
+        quickIntakeBtn.addEventListener("click", function () {
+          var popup = document.getElementById("quickIntakePopup");
+          if (!popup) return;
+          var popupStyle = popup.style;
+          if (popupStyle) {
+            popupStyle.display = "flex";
+            popupStyle.zIndex = 100;
+            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+            popupStyle.alignItems = "center";
+            popupStyle.justifyContent = "center";
+          }
+          popup.setAttribute("closable", "");
+          var onClick = popup.onClick || function (e) {
+            if (e.target === popup && popup.hasAttribute("closable")) {
+              popupStyle.display = "none";
+            }
+          };
+          popup.addEventListener("click", onClick);
+        });
+      }
+      var home = document.getElementById("999Home");
+      if (home) {
+        home.addEventListener("click", function (e) {
+          //TODO: <a href="tel:999">
+        });
+      }
+      var crisisStepsBtn = document.getElementById("crisisStepsBtn");
+      if (crisisStepsBtn) {
+        crisisStepsBtn.addEventListener("click", function (e) {
+          window.location.href = "./Emergency2.html";
+        });
+      }
+      var cloud = document.getElementById("airQltyBar");
+      if (cloud) {
+        cloud.addEventListener("click", function (e) {
+          window.location.href = "./AirQuality2.html";
+        });
+      }
+      var inhaler = document.getElementById("inhalerBar");
+      if (inhaler) {
+        inhaler.addEventListener("click", function (e) {
+          window.location.href = "./MyInhaler.html";
+        });
+      }
+      var hospital = document.getElementById("emergencyBar");
+      if (hospital) {
+        hospital.addEventListener("click", function (e) {
+          window.location.href = "./Emergency1.html";
+        });
+      }
+    }
+
+    const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
+
+    let idbProxyableTypes;
+    let cursorAdvanceMethods;
+    // This is a function to prevent it throwing up in node environments.
+    function getIdbProxyableTypes() {
+        return (idbProxyableTypes ||
+            (idbProxyableTypes = [
+                IDBDatabase,
+                IDBObjectStore,
+                IDBIndex,
+                IDBCursor,
+                IDBTransaction,
+            ]));
+    }
+    // This is a function to prevent it throwing up in node environments.
+    function getCursorAdvanceMethods() {
+        return (cursorAdvanceMethods ||
+            (cursorAdvanceMethods = [
+                IDBCursor.prototype.advance,
+                IDBCursor.prototype.continue,
+                IDBCursor.prototype.continuePrimaryKey,
+            ]));
+    }
+    const cursorRequestMap = new WeakMap();
+    const transactionDoneMap = new WeakMap();
+    const transactionStoreNamesMap = new WeakMap();
+    const transformCache = new WeakMap();
+    const reverseTransformCache = new WeakMap();
+    function promisifyRequest(request) {
+        const promise = new Promise((resolve, reject) => {
+            const unlisten = () => {
+                request.removeEventListener('success', success);
+                request.removeEventListener('error', error);
+            };
+            const success = () => {
+                resolve(wrap(request.result));
+                unlisten();
+            };
+            const error = () => {
+                reject(request.error);
+                unlisten();
+            };
+            request.addEventListener('success', success);
+            request.addEventListener('error', error);
+        });
+        promise
+            .then((value) => {
+            // Since cursoring reuses the IDBRequest (*sigh*), we cache it for later retrieval
+            // (see wrapFunction).
+            if (value instanceof IDBCursor) {
+                cursorRequestMap.set(value, request);
+            }
+            // Catching to avoid "Uncaught Promise exceptions"
+        })
+            .catch(() => { });
+        // This mapping exists in reverseTransformCache but doesn't doesn't exist in transformCache. This
+        // is because we create many promises from a single IDBRequest.
+        reverseTransformCache.set(promise, request);
+        return promise;
+    }
+    function cacheDonePromiseForTransaction(tx) {
+        // Early bail if we've already created a done promise for this transaction.
+        if (transactionDoneMap.has(tx))
+            return;
+        const done = new Promise((resolve, reject) => {
+            const unlisten = () => {
+                tx.removeEventListener('complete', complete);
+                tx.removeEventListener('error', error);
+                tx.removeEventListener('abort', error);
+            };
+            const complete = () => {
+                resolve();
+                unlisten();
+            };
+            const error = () => {
+                reject(tx.error || new DOMException('AbortError', 'AbortError'));
+                unlisten();
+            };
+            tx.addEventListener('complete', complete);
+            tx.addEventListener('error', error);
+            tx.addEventListener('abort', error);
+        });
+        // Cache it for later retrieval.
+        transactionDoneMap.set(tx, done);
+    }
+    let idbProxyTraps = {
+        get(target, prop, receiver) {
+            if (target instanceof IDBTransaction) {
+                // Special handling for transaction.done.
+                if (prop === 'done')
+                    return transactionDoneMap.get(target);
+                // Polyfill for objectStoreNames because of Edge.
+                if (prop === 'objectStoreNames') {
+                    return target.objectStoreNames || transactionStoreNamesMap.get(target);
+                }
+                // Make tx.store return the only store in the transaction, or undefined if there are many.
+                if (prop === 'store') {
+                    return receiver.objectStoreNames[1]
+                        ? undefined
+                        : receiver.objectStore(receiver.objectStoreNames[0]);
+                }
+            }
+            // Else transform whatever we get back.
+            return wrap(target[prop]);
+        },
+        set(target, prop, value) {
+            target[prop] = value;
+            return true;
+        },
+        has(target, prop) {
+            if (target instanceof IDBTransaction &&
+                (prop === 'done' || prop === 'store')) {
+                return true;
+            }
+            return prop in target;
+        },
+    };
+    function replaceTraps(callback) {
+        idbProxyTraps = callback(idbProxyTraps);
+    }
+    function wrapFunction(func) {
+        // Due to expected object equality (which is enforced by the caching in `wrap`), we
+        // only create one new func per func.
+        // Edge doesn't support objectStoreNames (booo), so we polyfill it here.
+        if (func === IDBDatabase.prototype.transaction &&
+            !('objectStoreNames' in IDBTransaction.prototype)) {
+            return function (storeNames, ...args) {
+                const tx = func.call(unwrap(this), storeNames, ...args);
+                transactionStoreNamesMap.set(tx, storeNames.sort ? storeNames.sort() : [storeNames]);
+                return wrap(tx);
+            };
+        }
+        // Cursor methods are special, as the behaviour is a little more different to standard IDB. In
+        // IDB, you advance the cursor and wait for a new 'success' on the IDBRequest that gave you the
+        // cursor. It's kinda like a promise that can resolve with many values. That doesn't make sense
+        // with real promises, so each advance methods returns a new promise for the cursor object, or
+        // undefined if the end of the cursor has been reached.
+        if (getCursorAdvanceMethods().includes(func)) {
+            return function (...args) {
+                // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
+                // the original object.
+                func.apply(unwrap(this), args);
+                return wrap(cursorRequestMap.get(this));
+            };
+        }
+        return function (...args) {
+            // Calling the original function with the proxy as 'this' causes ILLEGAL INVOCATION, so we use
+            // the original object.
+            return wrap(func.apply(unwrap(this), args));
+        };
+    }
+    function transformCachableValue(value) {
+        if (typeof value === 'function')
+            return wrapFunction(value);
+        // This doesn't return, it just creates a 'done' promise for the transaction,
+        // which is later returned for transaction.done (see idbObjectHandler).
+        if (value instanceof IDBTransaction)
+            cacheDonePromiseForTransaction(value);
+        if (instanceOfAny(value, getIdbProxyableTypes()))
+            return new Proxy(value, idbProxyTraps);
+        // Return the same value back if we're not going to transform it.
+        return value;
+    }
+    function wrap(value) {
+        // We sometimes generate multiple promises from a single IDBRequest (eg when cursoring), because
+        // IDB is weird and a single IDBRequest can yield many responses, so these can't be cached.
+        if (value instanceof IDBRequest)
+            return promisifyRequest(value);
+        // If we've already transformed this value before, reuse the transformed value.
+        // This is faster, but it also provides object equality.
+        if (transformCache.has(value))
+            return transformCache.get(value);
+        const newValue = transformCachableValue(value);
+        // Not all types are transformed.
+        // These may be primitive types, so they can't be WeakMap keys.
+        if (newValue !== value) {
+            transformCache.set(value, newValue);
+            reverseTransformCache.set(newValue, value);
+        }
+        return newValue;
+    }
+    const unwrap = (value) => reverseTransformCache.get(value);
+
+    /**
+     * Open a database.
+     *
+     * @param name Name of the database.
+     * @param version Schema version.
+     * @param callbacks Additional callbacks.
+     */
+    function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
+        const request = indexedDB.open(name, version);
+        const openPromise = wrap(request);
+        if (upgrade) {
+            request.addEventListener('upgradeneeded', (event) => {
+                upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction));
+            });
+        }
+        if (blocked)
+            request.addEventListener('blocked', () => blocked());
+        openPromise
+            .then((db) => {
+            if (terminated)
+                db.addEventListener('close', () => terminated());
+            if (blocking)
+                db.addEventListener('versionchange', () => blocking());
+        })
+            .catch(() => { });
+        return openPromise;
+    }
+
+    const readMethods = ['get', 'getKey', 'getAll', 'getAllKeys', 'count'];
+    const writeMethods = ['put', 'add', 'delete', 'clear'];
+    const cachedMethods = new Map();
+    function getMethod(target, prop) {
+        if (!(target instanceof IDBDatabase &&
+            !(prop in target) &&
+            typeof prop === 'string')) {
+            return;
+        }
+        if (cachedMethods.get(prop))
+            return cachedMethods.get(prop);
+        const targetFuncName = prop.replace(/FromIndex$/, '');
+        const useIndex = prop !== targetFuncName;
+        const isWrite = writeMethods.includes(targetFuncName);
+        if (
+        // Bail if the target doesn't exist on the target. Eg, getAll isn't in Edge.
+        !(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) ||
+            !(isWrite || readMethods.includes(targetFuncName))) {
+            return;
+        }
+        const method = async function (storeName, ...args) {
+            // isWrite ? 'readwrite' : undefined gzipps better, but fails in Edge :(
+            const tx = this.transaction(storeName, isWrite ? 'readwrite' : 'readonly');
+            let target = tx.store;
+            if (useIndex)
+                target = target.index(args.shift());
+            // Must reject if op rejects.
+            // If it's a write operation, must reject if tx.done rejects.
+            // Must reject with op rejection first.
+            // Must resolve with op value.
+            // Must handle both promises (no unhandled rejections)
+            return (await Promise.all([
+                target[targetFuncName](...args),
+                isWrite && tx.done,
+            ]))[0];
+        };
+        cachedMethods.set(prop, method);
+        return method;
+    }
+    replaceTraps((oldTraps) => ({
+        ...oldTraps,
+        get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+        has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop),
+    }));
+
+    const name$1 = "@firebase/installations";
+    const version$1 = "0.6.4";
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const PENDING_TIMEOUT_MS = 10000;
+    const PACKAGE_VERSION = `w:${version$1}`;
+    const INTERNAL_AUTH_VERSION = 'FIS_v2';
+    const INSTALLATIONS_API_URL = 'https://firebaseinstallations.googleapis.com/v1';
+    const TOKEN_EXPIRATION_BUFFER = 60 * 60 * 1000; // One hour
+    const SERVICE = 'installations';
+    const SERVICE_NAME = 'Installations';
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const ERROR_DESCRIPTION_MAP = {
+        ["missing-app-config-values" /* ErrorCode.MISSING_APP_CONFIG_VALUES */]: 'Missing App configuration value: "{$valueName}"',
+        ["not-registered" /* ErrorCode.NOT_REGISTERED */]: 'Firebase Installation is not registered.',
+        ["installation-not-found" /* ErrorCode.INSTALLATION_NOT_FOUND */]: 'Firebase Installation not found.',
+        ["request-failed" /* ErrorCode.REQUEST_FAILED */]: '{$requestName} request failed with error "{$serverCode} {$serverStatus}: {$serverMessage}"',
+        ["app-offline" /* ErrorCode.APP_OFFLINE */]: 'Could not process request. Application offline.',
+        ["delete-pending-registration" /* ErrorCode.DELETE_PENDING_REGISTRATION */]: "Can't delete installation while there is a pending registration request."
+    };
+    const ERROR_FACTORY$1 = new ErrorFactory(SERVICE, SERVICE_NAME, ERROR_DESCRIPTION_MAP);
+    /** Returns true if error is a FirebaseError that is based on an error from the server. */
+    function isServerError(error) {
+        return (error instanceof FirebaseError &&
+            error.code.includes("request-failed" /* ErrorCode.REQUEST_FAILED */));
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    function getInstallationsEndpoint({ projectId }) {
+        return `${INSTALLATIONS_API_URL}/projects/${projectId}/installations`;
+    }
+    function extractAuthTokenInfoFromResponse(response) {
+        return {
+            token: response.token,
+            requestStatus: 2 /* RequestStatus.COMPLETED */,
+            expiresIn: getExpiresInFromResponseExpiresIn(response.expiresIn),
+            creationTime: Date.now()
+        };
+    }
+    async function getErrorFromResponse(requestName, response) {
+        const responseJson = await response.json();
+        const errorData = responseJson.error;
+        return ERROR_FACTORY$1.create("request-failed" /* ErrorCode.REQUEST_FAILED */, {
+            requestName,
+            serverCode: errorData.code,
+            serverMessage: errorData.message,
+            serverStatus: errorData.status
+        });
+    }
+    function getHeaders$1({ apiKey }) {
+        return new Headers({
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'x-goog-api-key': apiKey
+        });
+    }
+    function getHeadersWithAuth(appConfig, { refreshToken }) {
+        const headers = getHeaders$1(appConfig);
+        headers.append('Authorization', getAuthorizationHeader(refreshToken));
+        return headers;
+    }
+    /**
+     * Calls the passed in fetch wrapper and returns the response.
+     * If the returned response has a status of 5xx, re-runs the function once and
+     * returns the response.
+     */
+    async function retryIfServerError(fn) {
+        const result = await fn();
+        if (result.status >= 500 && result.status < 600) {
+            // Internal Server Error. Retry request.
+            return fn();
+        }
+        return result;
+    }
+    function getExpiresInFromResponseExpiresIn(responseExpiresIn) {
+        // This works because the server will never respond with fractions of a second.
+        return Number(responseExpiresIn.replace('s', '000'));
+    }
+    function getAuthorizationHeader(refreshToken) {
+        return `${INTERNAL_AUTH_VERSION} ${refreshToken}`;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function createInstallationRequest({ appConfig, heartbeatServiceProvider }, { fid }) {
+        const endpoint = getInstallationsEndpoint(appConfig);
+        const headers = getHeaders$1(appConfig);
+        // If heartbeat service exists, add the heartbeat string to the header.
+        const heartbeatService = heartbeatServiceProvider.getImmediate({
+            optional: true
+        });
+        if (heartbeatService) {
+            const heartbeatsHeader = await heartbeatService.getHeartbeatsHeader();
+            if (heartbeatsHeader) {
+                headers.append('x-firebase-client', heartbeatsHeader);
+            }
+        }
+        const body = {
+            fid,
+            authVersion: INTERNAL_AUTH_VERSION,
+            appId: appConfig.appId,
+            sdkVersion: PACKAGE_VERSION
+        };
+        const request = {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body)
+        };
+        const response = await retryIfServerError(() => fetch(endpoint, request));
+        if (response.ok) {
+            const responseValue = await response.json();
+            const registeredInstallationEntry = {
+                fid: responseValue.fid || fid,
+                registrationStatus: 2 /* RequestStatus.COMPLETED */,
+                refreshToken: responseValue.refreshToken,
+                authToken: extractAuthTokenInfoFromResponse(responseValue.authToken)
+            };
+            return registeredInstallationEntry;
+        }
+        else {
+            throw await getErrorFromResponse('Create Installation', response);
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /** Returns a promise that resolves after given time passes. */
+    function sleep(ms) {
+        return new Promise(resolve => {
+            setTimeout(resolve, ms);
+        });
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    function bufferToBase64UrlSafe(array) {
+        const b64 = btoa(String.fromCharCode(...array));
+        return b64.replace(/\+/g, '-').replace(/\//g, '_');
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const VALID_FID_PATTERN = /^[cdef][\w-]{21}$/;
+    const INVALID_FID = '';
+    /**
+     * Generates a new FID using random values from Web Crypto API.
+     * Returns an empty string if FID generation fails for any reason.
+     */
+    function generateFid() {
+        try {
+            // A valid FID has exactly 22 base64 characters, which is 132 bits, or 16.5
+            // bytes. our implementation generates a 17 byte array instead.
+            const fidByteArray = new Uint8Array(17);
+            const crypto = self.crypto || self.msCrypto;
+            crypto.getRandomValues(fidByteArray);
+            // Replace the first 4 random bits with the constant FID header of 0b0111.
+            fidByteArray[0] = 0b01110000 + (fidByteArray[0] % 0b00010000);
+            const fid = encode(fidByteArray);
+            return VALID_FID_PATTERN.test(fid) ? fid : INVALID_FID;
+        }
+        catch (_a) {
+            // FID generation errored
+            return INVALID_FID;
+        }
+    }
+    /** Converts a FID Uint8Array to a base64 string representation. */
+    function encode(fidByteArray) {
+        const b64String = bufferToBase64UrlSafe(fidByteArray);
+        // Remove the 23rd character that was added because of the extra 4 bits at the
+        // end of our 17 byte array, and the '=' padding.
+        return b64String.substr(0, 22);
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /** Returns a string key that can be used to identify the app. */
+    function getKey(appConfig) {
+        return `${appConfig.appName}!${appConfig.appId}`;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const fidChangeCallbacks = new Map();
+    /**
+     * Calls the onIdChange callbacks with the new FID value, and broadcasts the
+     * change to other tabs.
+     */
+    function fidChanged(appConfig, fid) {
+        const key = getKey(appConfig);
+        callFidChangeCallbacks(key, fid);
+        broadcastFidChange(key, fid);
+    }
+    function callFidChangeCallbacks(key, fid) {
+        const callbacks = fidChangeCallbacks.get(key);
+        if (!callbacks) {
+            return;
+        }
+        for (const callback of callbacks) {
+            callback(fid);
+        }
+    }
+    function broadcastFidChange(key, fid) {
+        const channel = getBroadcastChannel();
+        if (channel) {
+            channel.postMessage({ key, fid });
+        }
+        closeBroadcastChannel();
+    }
+    let broadcastChannel = null;
+    /** Opens and returns a BroadcastChannel if it is supported by the browser. */
+    function getBroadcastChannel() {
+        if (!broadcastChannel && 'BroadcastChannel' in self) {
+            broadcastChannel = new BroadcastChannel('[Firebase] FID Change');
+            broadcastChannel.onmessage = e => {
+                callFidChangeCallbacks(e.data.key, e.data.fid);
+            };
+        }
+        return broadcastChannel;
+    }
+    function closeBroadcastChannel() {
+        if (fidChangeCallbacks.size === 0 && broadcastChannel) {
+            broadcastChannel.close();
+            broadcastChannel = null;
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const DATABASE_NAME = 'firebase-installations-database';
+    const DATABASE_VERSION = 1;
+    const OBJECT_STORE_NAME = 'firebase-installations-store';
+    let dbPromise = null;
+    function getDbPromise() {
+        if (!dbPromise) {
+            dbPromise = openDB(DATABASE_NAME, DATABASE_VERSION, {
+                upgrade: (db, oldVersion) => {
+                    // We don't use 'break' in this switch statement, the fall-through
+                    // behavior is what we want, because if there are multiple versions between
+                    // the old version and the current version, we want ALL the migrations
+                    // that correspond to those versions to run, not only the last one.
+                    // eslint-disable-next-line default-case
+                    switch (oldVersion) {
+                        case 0:
+                            db.createObjectStore(OBJECT_STORE_NAME);
+                    }
+                }
+            });
+        }
+        return dbPromise;
+    }
+    /** Assigns or overwrites the record for the given key with the given value. */
+    async function set(appConfig, value) {
+        const key = getKey(appConfig);
+        const db = await getDbPromise();
+        const tx = db.transaction(OBJECT_STORE_NAME, 'readwrite');
+        const objectStore = tx.objectStore(OBJECT_STORE_NAME);
+        const oldValue = (await objectStore.get(key));
+        await objectStore.put(value, key);
+        await tx.done;
+        if (!oldValue || oldValue.fid !== value.fid) {
+            fidChanged(appConfig, value.fid);
+        }
+        return value;
+    }
+    /** Removes record(s) from the objectStore that match the given key. */
+    async function remove(appConfig) {
+        const key = getKey(appConfig);
+        const db = await getDbPromise();
+        const tx = db.transaction(OBJECT_STORE_NAME, 'readwrite');
+        await tx.objectStore(OBJECT_STORE_NAME).delete(key);
+        await tx.done;
+    }
+    /**
+     * Atomically updates a record with the result of updateFn, which gets
+     * called with the current value. If newValue is undefined, the record is
+     * deleted instead.
+     * @return Updated value
+     */
+    async function update(appConfig, updateFn) {
+        const key = getKey(appConfig);
+        const db = await getDbPromise();
+        const tx = db.transaction(OBJECT_STORE_NAME, 'readwrite');
+        const store = tx.objectStore(OBJECT_STORE_NAME);
+        const oldValue = (await store.get(key));
+        const newValue = updateFn(oldValue);
+        if (newValue === undefined) {
+            await store.delete(key);
+        }
+        else {
+            await store.put(newValue, key);
+        }
+        await tx.done;
+        if (newValue && (!oldValue || oldValue.fid !== newValue.fid)) {
+            fidChanged(appConfig, newValue.fid);
+        }
+        return newValue;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Updates and returns the InstallationEntry from the database.
+     * Also triggers a registration request if it is necessary and possible.
+     */
+    async function getInstallationEntry(installations) {
+        let registrationPromise;
+        const installationEntry = await update(installations.appConfig, oldEntry => {
+            const installationEntry = updateOrCreateInstallationEntry(oldEntry);
+            const entryWithPromise = triggerRegistrationIfNecessary(installations, installationEntry);
+            registrationPromise = entryWithPromise.registrationPromise;
+            return entryWithPromise.installationEntry;
+        });
+        if (installationEntry.fid === INVALID_FID) {
+            // FID generation failed. Waiting for the FID from the server.
+            return { installationEntry: await registrationPromise };
+        }
+        return {
+            installationEntry,
+            registrationPromise
+        };
+    }
+    /**
+     * Creates a new Installation Entry if one does not exist.
+     * Also clears timed out pending requests.
+     */
+    function updateOrCreateInstallationEntry(oldEntry) {
+        const entry = oldEntry || {
+            fid: generateFid(),
+            registrationStatus: 0 /* RequestStatus.NOT_STARTED */
+        };
+        return clearTimedOutRequest(entry);
+    }
+    /**
+     * If the Firebase Installation is not registered yet, this will trigger the
+     * registration and return an InProgressInstallationEntry.
+     *
+     * If registrationPromise does not exist, the installationEntry is guaranteed
+     * to be registered.
+     */
+    function triggerRegistrationIfNecessary(installations, installationEntry) {
+        if (installationEntry.registrationStatus === 0 /* RequestStatus.NOT_STARTED */) {
+            if (!navigator.onLine) {
+                // Registration required but app is offline.
+                const registrationPromiseWithError = Promise.reject(ERROR_FACTORY$1.create("app-offline" /* ErrorCode.APP_OFFLINE */));
+                return {
+                    installationEntry,
+                    registrationPromise: registrationPromiseWithError
+                };
+            }
+            // Try registering. Change status to IN_PROGRESS.
+            const inProgressEntry = {
+                fid: installationEntry.fid,
+                registrationStatus: 1 /* RequestStatus.IN_PROGRESS */,
+                registrationTime: Date.now()
+            };
+            const registrationPromise = registerInstallation(installations, inProgressEntry);
+            return { installationEntry: inProgressEntry, registrationPromise };
+        }
+        else if (installationEntry.registrationStatus === 1 /* RequestStatus.IN_PROGRESS */) {
+            return {
+                installationEntry,
+                registrationPromise: waitUntilFidRegistration(installations)
+            };
+        }
+        else {
+            return { installationEntry };
+        }
+    }
+    /** This will be executed only once for each new Firebase Installation. */
+    async function registerInstallation(installations, installationEntry) {
+        try {
+            const registeredInstallationEntry = await createInstallationRequest(installations, installationEntry);
+            return set(installations.appConfig, registeredInstallationEntry);
+        }
+        catch (e) {
+            if (isServerError(e) && e.customData.serverCode === 409) {
+                // Server returned a "FID can not be used" error.
+                // Generate a new ID next time.
+                await remove(installations.appConfig);
+            }
+            else {
+                // Registration failed. Set FID as not registered.
+                await set(installations.appConfig, {
+                    fid: installationEntry.fid,
+                    registrationStatus: 0 /* RequestStatus.NOT_STARTED */
+                });
+            }
+            throw e;
+        }
+    }
+    /** Call if FID registration is pending in another request. */
+    async function waitUntilFidRegistration(installations) {
+        // Unfortunately, there is no way of reliably observing when a value in
+        // IndexedDB changes (yet, see https://github.com/WICG/indexed-db-observers),
+        // so we need to poll.
+        let entry = await updateInstallationRequest(installations.appConfig);
+        while (entry.registrationStatus === 1 /* RequestStatus.IN_PROGRESS */) {
+            // createInstallation request still in progress.
+            await sleep(100);
+            entry = await updateInstallationRequest(installations.appConfig);
+        }
+        if (entry.registrationStatus === 0 /* RequestStatus.NOT_STARTED */) {
+            // The request timed out or failed in a different call. Try again.
+            const { installationEntry, registrationPromise } = await getInstallationEntry(installations);
+            if (registrationPromise) {
+                return registrationPromise;
+            }
+            else {
+                // if there is no registrationPromise, entry is registered.
+                return installationEntry;
+            }
+        }
+        return entry;
+    }
+    /**
+     * Called only if there is a CreateInstallation request in progress.
+     *
+     * Updates the InstallationEntry in the DB based on the status of the
+     * CreateInstallation request.
+     *
+     * Returns the updated InstallationEntry.
+     */
+    function updateInstallationRequest(appConfig) {
+        return update(appConfig, oldEntry => {
+            if (!oldEntry) {
+                throw ERROR_FACTORY$1.create("installation-not-found" /* ErrorCode.INSTALLATION_NOT_FOUND */);
+            }
+            return clearTimedOutRequest(oldEntry);
+        });
+    }
+    function clearTimedOutRequest(entry) {
+        if (hasInstallationRequestTimedOut(entry)) {
+            return {
+                fid: entry.fid,
+                registrationStatus: 0 /* RequestStatus.NOT_STARTED */
+            };
+        }
+        return entry;
+    }
+    function hasInstallationRequestTimedOut(installationEntry) {
+        return (installationEntry.registrationStatus === 1 /* RequestStatus.IN_PROGRESS */ &&
+            installationEntry.registrationTime + PENDING_TIMEOUT_MS < Date.now());
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function generateAuthTokenRequest({ appConfig, heartbeatServiceProvider }, installationEntry) {
+        const endpoint = getGenerateAuthTokenEndpoint(appConfig, installationEntry);
+        const headers = getHeadersWithAuth(appConfig, installationEntry);
+        // If heartbeat service exists, add the heartbeat string to the header.
+        const heartbeatService = heartbeatServiceProvider.getImmediate({
+            optional: true
+        });
+        if (heartbeatService) {
+            const heartbeatsHeader = await heartbeatService.getHeartbeatsHeader();
+            if (heartbeatsHeader) {
+                headers.append('x-firebase-client', heartbeatsHeader);
+            }
+        }
+        const body = {
+            installation: {
+                sdkVersion: PACKAGE_VERSION,
+                appId: appConfig.appId
+            }
+        };
+        const request = {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body)
+        };
+        const response = await retryIfServerError(() => fetch(endpoint, request));
+        if (response.ok) {
+            const responseValue = await response.json();
+            const completedAuthToken = extractAuthTokenInfoFromResponse(responseValue);
+            return completedAuthToken;
+        }
+        else {
+            throw await getErrorFromResponse('Generate Auth Token', response);
+        }
+    }
+    function getGenerateAuthTokenEndpoint(appConfig, { fid }) {
+        return `${getInstallationsEndpoint(appConfig)}/${fid}/authTokens:generate`;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Returns a valid authentication token for the installation. Generates a new
+     * token if one doesn't exist, is expired or about to expire.
+     *
+     * Should only be called if the Firebase Installation is registered.
+     */
+    async function refreshAuthToken(installations, forceRefresh = false) {
+        let tokenPromise;
+        const entry = await update(installations.appConfig, oldEntry => {
+            if (!isEntryRegistered(oldEntry)) {
+                throw ERROR_FACTORY$1.create("not-registered" /* ErrorCode.NOT_REGISTERED */);
+            }
+            const oldAuthToken = oldEntry.authToken;
+            if (!forceRefresh && isAuthTokenValid(oldAuthToken)) {
+                // There is a valid token in the DB.
+                return oldEntry;
+            }
+            else if (oldAuthToken.requestStatus === 1 /* RequestStatus.IN_PROGRESS */) {
+                // There already is a token request in progress.
+                tokenPromise = waitUntilAuthTokenRequest(installations, forceRefresh);
+                return oldEntry;
+            }
+            else {
+                // No token or token expired.
+                if (!navigator.onLine) {
+                    throw ERROR_FACTORY$1.create("app-offline" /* ErrorCode.APP_OFFLINE */);
+                }
+                const inProgressEntry = makeAuthTokenRequestInProgressEntry(oldEntry);
+                tokenPromise = fetchAuthTokenFromServer(installations, inProgressEntry);
+                return inProgressEntry;
+            }
+        });
+        const authToken = tokenPromise
+            ? await tokenPromise
+            : entry.authToken;
+        return authToken;
+    }
+    /**
+     * Call only if FID is registered and Auth Token request is in progress.
+     *
+     * Waits until the current pending request finishes. If the request times out,
+     * tries once in this thread as well.
+     */
+    async function waitUntilAuthTokenRequest(installations, forceRefresh) {
+        // Unfortunately, there is no way of reliably observing when a value in
+        // IndexedDB changes (yet, see https://github.com/WICG/indexed-db-observers),
+        // so we need to poll.
+        let entry = await updateAuthTokenRequest(installations.appConfig);
+        while (entry.authToken.requestStatus === 1 /* RequestStatus.IN_PROGRESS */) {
+            // generateAuthToken still in progress.
+            await sleep(100);
+            entry = await updateAuthTokenRequest(installations.appConfig);
+        }
+        const authToken = entry.authToken;
+        if (authToken.requestStatus === 0 /* RequestStatus.NOT_STARTED */) {
+            // The request timed out or failed in a different call. Try again.
+            return refreshAuthToken(installations, forceRefresh);
+        }
+        else {
+            return authToken;
+        }
+    }
+    /**
+     * Called only if there is a GenerateAuthToken request in progress.
+     *
+     * Updates the InstallationEntry in the DB based on the status of the
+     * GenerateAuthToken request.
+     *
+     * Returns the updated InstallationEntry.
+     */
+    function updateAuthTokenRequest(appConfig) {
+        return update(appConfig, oldEntry => {
+            if (!isEntryRegistered(oldEntry)) {
+                throw ERROR_FACTORY$1.create("not-registered" /* ErrorCode.NOT_REGISTERED */);
+            }
+            const oldAuthToken = oldEntry.authToken;
+            if (hasAuthTokenRequestTimedOut(oldAuthToken)) {
+                return Object.assign(Object.assign({}, oldEntry), { authToken: { requestStatus: 0 /* RequestStatus.NOT_STARTED */ } });
+            }
+            return oldEntry;
+        });
+    }
+    async function fetchAuthTokenFromServer(installations, installationEntry) {
+        try {
+            const authToken = await generateAuthTokenRequest(installations, installationEntry);
+            const updatedInstallationEntry = Object.assign(Object.assign({}, installationEntry), { authToken });
+            await set(installations.appConfig, updatedInstallationEntry);
+            return authToken;
+        }
+        catch (e) {
+            if (isServerError(e) &&
+                (e.customData.serverCode === 401 || e.customData.serverCode === 404)) {
+                // Server returned a "FID not found" or a "Invalid authentication" error.
+                // Generate a new ID next time.
+                await remove(installations.appConfig);
+            }
+            else {
+                const updatedInstallationEntry = Object.assign(Object.assign({}, installationEntry), { authToken: { requestStatus: 0 /* RequestStatus.NOT_STARTED */ } });
+                await set(installations.appConfig, updatedInstallationEntry);
+            }
+            throw e;
+        }
+    }
+    function isEntryRegistered(installationEntry) {
+        return (installationEntry !== undefined &&
+            installationEntry.registrationStatus === 2 /* RequestStatus.COMPLETED */);
+    }
+    function isAuthTokenValid(authToken) {
+        return (authToken.requestStatus === 2 /* RequestStatus.COMPLETED */ &&
+            !isAuthTokenExpired(authToken));
+    }
+    function isAuthTokenExpired(authToken) {
+        const now = Date.now();
+        return (now < authToken.creationTime ||
+            authToken.creationTime + authToken.expiresIn < now + TOKEN_EXPIRATION_BUFFER);
+    }
+    /** Returns an updated InstallationEntry with an InProgressAuthToken. */
+    function makeAuthTokenRequestInProgressEntry(oldEntry) {
+        const inProgressAuthToken = {
+            requestStatus: 1 /* RequestStatus.IN_PROGRESS */,
+            requestTime: Date.now()
+        };
+        return Object.assign(Object.assign({}, oldEntry), { authToken: inProgressAuthToken });
+    }
+    function hasAuthTokenRequestTimedOut(authToken) {
+        return (authToken.requestStatus === 1 /* RequestStatus.IN_PROGRESS */ &&
+            authToken.requestTime + PENDING_TIMEOUT_MS < Date.now());
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Creates a Firebase Installation if there isn't one for the app and
+     * returns the Installation ID.
+     * @param installations - The `Installations` instance.
+     *
+     * @public
+     */
+    async function getId(installations) {
+        const installationsImpl = installations;
+        const { installationEntry, registrationPromise } = await getInstallationEntry(installationsImpl);
+        if (registrationPromise) {
+            registrationPromise.catch(console.error);
+        }
+        else {
+            // If the installation is already registered, update the authentication
+            // token if needed.
+            refreshAuthToken(installationsImpl).catch(console.error);
+        }
+        return installationEntry.fid;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Returns a Firebase Installations auth token, identifying the current
+     * Firebase Installation.
+     * @param installations - The `Installations` instance.
+     * @param forceRefresh - Force refresh regardless of token expiration.
+     *
+     * @public
+     */
+    async function getToken(installations, forceRefresh = false) {
+        const installationsImpl = installations;
+        await completeInstallationRegistration(installationsImpl);
+        // At this point we either have a Registered Installation in the DB, or we've
+        // already thrown an error.
+        const authToken = await refreshAuthToken(installationsImpl, forceRefresh);
+        return authToken.token;
+    }
+    async function completeInstallationRegistration(installations) {
+        const { registrationPromise } = await getInstallationEntry(installations);
+        if (registrationPromise) {
+            // A createInstallation request is in progress. Wait until it finishes.
+            await registrationPromise;
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    function extractAppConfig(app) {
+        if (!app || !app.options) {
+            throw getMissingValueError('App Configuration');
+        }
+        if (!app.name) {
+            throw getMissingValueError('App Name');
+        }
+        // Required app config keys
+        const configKeys = [
+            'projectId',
+            'apiKey',
+            'appId'
+        ];
+        for (const keyName of configKeys) {
+            if (!app.options[keyName]) {
+                throw getMissingValueError(keyName);
+            }
+        }
+        return {
+            appName: app.name,
+            projectId: app.options.projectId,
+            apiKey: app.options.apiKey,
+            appId: app.options.appId
+        };
+    }
+    function getMissingValueError(valueName) {
+        return ERROR_FACTORY$1.create("missing-app-config-values" /* ErrorCode.MISSING_APP_CONFIG_VALUES */, {
+            valueName
+        });
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const INSTALLATIONS_NAME = 'installations';
+    const INSTALLATIONS_NAME_INTERNAL = 'installations-internal';
+    const publicFactory = (container) => {
+        const app = container.getProvider('app').getImmediate();
+        // Throws if app isn't configured properly.
+        const appConfig = extractAppConfig(app);
+        const heartbeatServiceProvider = _getProvider(app, 'heartbeat');
+        const installationsImpl = {
+            app,
+            appConfig,
+            heartbeatServiceProvider,
+            _delete: () => Promise.resolve()
+        };
+        return installationsImpl;
+    };
+    const internalFactory = (container) => {
+        const app = container.getProvider('app').getImmediate();
+        // Internal FIS instance relies on public FIS instance.
+        const installations = _getProvider(app, INSTALLATIONS_NAME).getImmediate();
+        const installationsInternal = {
+            getId: () => getId(installations),
+            getToken: (forceRefresh) => getToken(installations, forceRefresh)
+        };
+        return installationsInternal;
+    };
+    function registerInstallations() {
+        _registerComponent(new Component(INSTALLATIONS_NAME, publicFactory, "PUBLIC" /* ComponentType.PUBLIC */));
+        _registerComponent(new Component(INSTALLATIONS_NAME_INTERNAL, internalFactory, "PRIVATE" /* ComponentType.PRIVATE */));
+    }
+
+    /**
+     * Firebase Installations
+     *
+     * @packageDocumentation
+     */
+    registerInstallations();
+    registerVersion(name$1, version$1);
+    // BUILD_TARGET will be replaced by values like esm5, esm2017, cjs5, etc during the compilation
+    registerVersion(name$1, version$1, 'esm2017');
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Type constant for Firebase Analytics.
+     */
+    const ANALYTICS_TYPE = 'analytics';
+    // Key to attach FID to in gtag params.
+    const GA_FID_KEY = 'firebase_id';
+    const ORIGIN_KEY = 'origin';
+    const FETCH_TIMEOUT_MILLIS = 60 * 1000;
+    const DYNAMIC_CONFIG_URL = 'https://firebase.googleapis.com/v1alpha/projects/-/apps/{app-id}/webConfig';
+    const GTAG_URL = 'https://www.googletagmanager.com/gtag/js';
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const logger = new Logger('@firebase/analytics');
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    const ERRORS = {
+        ["already-exists" /* AnalyticsError.ALREADY_EXISTS */]: 'A Firebase Analytics instance with the appId {$id} ' +
+            ' already exists. ' +
+            'Only one Firebase Analytics instance can be created for each appId.',
+        ["already-initialized" /* AnalyticsError.ALREADY_INITIALIZED */]: 'initializeAnalytics() cannot be called again with different options than those ' +
+            'it was initially called with. It can be called again with the same options to ' +
+            'return the existing instance, or getAnalytics() can be used ' +
+            'to get a reference to the already-intialized instance.',
+        ["already-initialized-settings" /* AnalyticsError.ALREADY_INITIALIZED_SETTINGS */]: 'Firebase Analytics has already been initialized.' +
+            'settings() must be called before initializing any Analytics instance' +
+            'or it will have no effect.',
+        ["interop-component-reg-failed" /* AnalyticsError.INTEROP_COMPONENT_REG_FAILED */]: 'Firebase Analytics Interop Component failed to instantiate: {$reason}',
+        ["invalid-analytics-context" /* AnalyticsError.INVALID_ANALYTICS_CONTEXT */]: 'Firebase Analytics is not supported in this environment. ' +
+            'Wrap initialization of analytics in analytics.isSupported() ' +
+            'to prevent initialization in unsupported environments. Details: {$errorInfo}',
+        ["indexeddb-unavailable" /* AnalyticsError.INDEXEDDB_UNAVAILABLE */]: 'IndexedDB unavailable or restricted in this environment. ' +
+            'Wrap initialization of analytics in analytics.isSupported() ' +
+            'to prevent initialization in unsupported environments. Details: {$errorInfo}',
+        ["fetch-throttle" /* AnalyticsError.FETCH_THROTTLE */]: 'The config fetch request timed out while in an exponential backoff state.' +
+            ' Unix timestamp in milliseconds when fetch request throttling ends: {$throttleEndTimeMillis}.',
+        ["config-fetch-failed" /* AnalyticsError.CONFIG_FETCH_FAILED */]: 'Dynamic config fetch failed: [{$httpStatus}] {$responseMessage}',
+        ["no-api-key" /* AnalyticsError.NO_API_KEY */]: 'The "apiKey" field is empty in the local Firebase config. Firebase Analytics requires this field to' +
+            'contain a valid API key.',
+        ["no-app-id" /* AnalyticsError.NO_APP_ID */]: 'The "appId" field is empty in the local Firebase config. Firebase Analytics requires this field to' +
+            'contain a valid app ID.',
+        ["no-client-id" /* AnalyticsError.NO_CLIENT_ID */]: 'The "client_id" field is empty.',
+        ["invalid-gtag-resource" /* AnalyticsError.INVALID_GTAG_RESOURCE */]: 'Trusted Types detected an invalid gtag resource: {$gtagURL}.'
+    };
+    const ERROR_FACTORY = new ErrorFactory('analytics', 'Analytics', ERRORS);
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Verifies and creates a TrustedScriptURL.
+     */
+    function createGtagTrustedTypesScriptURL(url) {
+        if (!url.startsWith(GTAG_URL)) {
+            const err = ERROR_FACTORY.create("invalid-gtag-resource" /* AnalyticsError.INVALID_GTAG_RESOURCE */, {
+                gtagURL: url
+            });
+            logger.warn(err.message);
+            return '';
+        }
+        return url;
+    }
+    /**
+     * Makeshift polyfill for Promise.allSettled(). Resolves when all promises
+     * have either resolved or rejected.
+     *
+     * @param promises Array of promises to wait for.
+     */
+    function promiseAllSettled(promises) {
+        return Promise.all(promises.map(promise => promise.catch(e => e)));
+    }
+    /**
+     * Creates a TrustedTypePolicy object that implements the rules passed as policyOptions.
+     *
+     * @param policyName A string containing the name of the policy
+     * @param policyOptions Object containing implementations of instance methods for TrustedTypesPolicy, see {@link https://developer.mozilla.org/en-US/docs/Web/API/TrustedTypePolicy#instance_methods
+     * | the TrustedTypePolicy reference documentation}.
+     */
+    function createTrustedTypesPolicy(policyName, policyOptions) {
+        // Create a TrustedTypes policy that we can use for updating src
+        // properties
+        let trustedTypesPolicy;
+        if (window.trustedTypes) {
+            trustedTypesPolicy = window.trustedTypes.createPolicy(policyName, policyOptions);
+        }
+        return trustedTypesPolicy;
+    }
+    /**
+     * Inserts gtag script tag into the page to asynchronously download gtag.
+     * @param dataLayerName Name of datalayer (most often the default, "_dataLayer").
+     */
+    function insertScriptTag(dataLayerName, measurementId) {
+        const trustedTypesPolicy = createTrustedTypesPolicy('firebase-js-sdk-policy', {
+            createScriptURL: createGtagTrustedTypesScriptURL
+        });
+        const script = document.createElement('script');
+        // We are not providing an analyticsId in the URL because it would trigger a `page_view`
+        // without fid. We will initialize ga-id using gtag (config) command together with fid.
+        const gtagScriptURL = `${GTAG_URL}?l=${dataLayerName}&id=${measurementId}`;
+        script.src = trustedTypesPolicy
+            ? trustedTypesPolicy === null || trustedTypesPolicy === void 0 ? void 0 : trustedTypesPolicy.createScriptURL(gtagScriptURL)
+            : gtagScriptURL;
+        script.async = true;
+        document.head.appendChild(script);
+    }
+    /**
+     * Get reference to, or create, global datalayer.
+     * @param dataLayerName Name of datalayer (most often the default, "_dataLayer").
+     */
+    function getOrCreateDataLayer(dataLayerName) {
+        // Check for existing dataLayer and create if needed.
+        let dataLayer = [];
+        if (Array.isArray(window[dataLayerName])) {
+            dataLayer = window[dataLayerName];
+        }
+        else {
+            window[dataLayerName] = dataLayer;
+        }
+        return dataLayer;
+    }
+    /**
+     * Wrapped gtag logic when gtag is called with 'config' command.
+     *
+     * @param gtagCore Basic gtag function that just appends to dataLayer.
+     * @param initializationPromisesMap Map of appIds to their initialization promises.
+     * @param dynamicConfigPromisesList Array of dynamic config fetch promises.
+     * @param measurementIdToAppId Map of GA measurementIDs to corresponding Firebase appId.
+     * @param measurementId GA Measurement ID to set config for.
+     * @param gtagParams Gtag config params to set.
+     */
+    async function gtagOnConfig(gtagCore, initializationPromisesMap, dynamicConfigPromisesList, measurementIdToAppId, measurementId, gtagParams) {
+        // If config is already fetched, we know the appId and can use it to look up what FID promise we
+        /// are waiting for, and wait only on that one.
+        const correspondingAppId = measurementIdToAppId[measurementId];
+        try {
+            if (correspondingAppId) {
+                await initializationPromisesMap[correspondingAppId];
+            }
+            else {
+                // If config is not fetched yet, wait for all configs (we don't know which one we need) and
+                // find the appId (if any) corresponding to this measurementId. If there is one, wait on
+                // that appId's initialization promise. If there is none, promise resolves and gtag
+                // call goes through.
+                const dynamicConfigResults = await promiseAllSettled(dynamicConfigPromisesList);
+                const foundConfig = dynamicConfigResults.find(config => config.measurementId === measurementId);
+                if (foundConfig) {
+                    await initializationPromisesMap[foundConfig.appId];
+                }
+            }
+        }
+        catch (e) {
+            logger.error(e);
+        }
+        gtagCore("config" /* GtagCommand.CONFIG */, measurementId, gtagParams);
+    }
+    /**
+     * Wrapped gtag logic when gtag is called with 'event' command.
+     *
+     * @param gtagCore Basic gtag function that just appends to dataLayer.
+     * @param initializationPromisesMap Map of appIds to their initialization promises.
+     * @param dynamicConfigPromisesList Array of dynamic config fetch promises.
+     * @param measurementId GA Measurement ID to log event to.
+     * @param gtagParams Params to log with this event.
+     */
+    async function gtagOnEvent(gtagCore, initializationPromisesMap, dynamicConfigPromisesList, measurementId, gtagParams) {
+        try {
+            let initializationPromisesToWaitFor = [];
+            // If there's a 'send_to' param, check if any ID specified matches
+            // an initializeIds() promise we are waiting for.
+            if (gtagParams && gtagParams['send_to']) {
+                let gaSendToList = gtagParams['send_to'];
+                // Make it an array if is isn't, so it can be dealt with the same way.
+                if (!Array.isArray(gaSendToList)) {
+                    gaSendToList = [gaSendToList];
+                }
+                // Checking 'send_to' fields requires having all measurement ID results back from
+                // the dynamic config fetch.
+                const dynamicConfigResults = await promiseAllSettled(dynamicConfigPromisesList);
+                for (const sendToId of gaSendToList) {
+                    // Any fetched dynamic measurement ID that matches this 'send_to' ID
+                    const foundConfig = dynamicConfigResults.find(config => config.measurementId === sendToId);
+                    const initializationPromise = foundConfig && initializationPromisesMap[foundConfig.appId];
+                    if (initializationPromise) {
+                        initializationPromisesToWaitFor.push(initializationPromise);
+                    }
+                    else {
+                        // Found an item in 'send_to' that is not associated
+                        // directly with an FID, possibly a group.  Empty this array,
+                        // exit the loop early, and let it get populated below.
+                        initializationPromisesToWaitFor = [];
+                        break;
+                    }
+                }
+            }
+            // This will be unpopulated if there was no 'send_to' field , or
+            // if not all entries in the 'send_to' field could be mapped to
+            // a FID. In these cases, wait on all pending initialization promises.
+            if (initializationPromisesToWaitFor.length === 0) {
+                initializationPromisesToWaitFor = Object.values(initializationPromisesMap);
+            }
+            // Run core gtag function with args after all relevant initialization
+            // promises have been resolved.
+            await Promise.all(initializationPromisesToWaitFor);
+            // Workaround for http://b/141370449 - third argument cannot be undefined.
+            gtagCore("event" /* GtagCommand.EVENT */, measurementId, gtagParams || {});
+        }
+        catch (e) {
+            logger.error(e);
+        }
+    }
+    /**
+     * Wraps a standard gtag function with extra code to wait for completion of
+     * relevant initialization promises before sending requests.
+     *
+     * @param gtagCore Basic gtag function that just appends to dataLayer.
+     * @param initializationPromisesMap Map of appIds to their initialization promises.
+     * @param dynamicConfigPromisesList Array of dynamic config fetch promises.
+     * @param measurementIdToAppId Map of GA measurementIDs to corresponding Firebase appId.
+     */
+    function wrapGtag(gtagCore, 
+    /**
+     * Allows wrapped gtag calls to wait on whichever intialization promises are required,
+     * depending on the contents of the gtag params' `send_to` field, if any.
+     */
+    initializationPromisesMap, 
+    /**
+     * Wrapped gtag calls sometimes require all dynamic config fetches to have returned
+     * before determining what initialization promises (which include FIDs) to wait for.
+     */
+    dynamicConfigPromisesList, 
+    /**
+     * Wrapped gtag config calls can narrow down which initialization promise (with FID)
+     * to wait for if the measurementId is already fetched, by getting the corresponding appId,
+     * which is the key for the initialization promises map.
+     */
+    measurementIdToAppId) {
+        /**
+         * Wrapper around gtag that ensures FID is sent with gtag calls.
+         * @param command Gtag command type.
+         * @param idOrNameOrParams Measurement ID if command is EVENT/CONFIG, params if command is SET.
+         * @param gtagParams Params if event is EVENT/CONFIG.
+         */
+        async function gtagWrapper(command, ...args) {
+            try {
+                // If event, check that relevant initialization promises have completed.
+                if (command === "event" /* GtagCommand.EVENT */) {
+                    const [measurementId, gtagParams] = args;
+                    // If EVENT, second arg must be measurementId.
+                    await gtagOnEvent(gtagCore, initializationPromisesMap, dynamicConfigPromisesList, measurementId, gtagParams);
+                }
+                else if (command === "config" /* GtagCommand.CONFIG */) {
+                    const [measurementId, gtagParams] = args;
+                    // If CONFIG, second arg must be measurementId.
+                    await gtagOnConfig(gtagCore, initializationPromisesMap, dynamicConfigPromisesList, measurementIdToAppId, measurementId, gtagParams);
+                }
+                else if (command === "consent" /* GtagCommand.CONSENT */) {
+                    const [gtagParams] = args;
+                    gtagCore("consent" /* GtagCommand.CONSENT */, 'update', gtagParams);
+                }
+                else if (command === "get" /* GtagCommand.GET */) {
+                    const [measurementId, fieldName, callback] = args;
+                    gtagCore("get" /* GtagCommand.GET */, measurementId, fieldName, callback);
+                }
+                else if (command === "set" /* GtagCommand.SET */) {
+                    const [customParams] = args;
+                    // If SET, second arg must be params.
+                    gtagCore("set" /* GtagCommand.SET */, customParams);
+                }
+                else {
+                    gtagCore(command, ...args);
+                }
+            }
+            catch (e) {
+                logger.error(e);
+            }
+        }
+        return gtagWrapper;
+    }
+    /**
+     * Creates global gtag function or wraps existing one if found.
+     * This wrapped function attaches Firebase instance ID (FID) to gtag 'config' and
+     * 'event' calls that belong to the GAID associated with this Firebase instance.
+     *
+     * @param initializationPromisesMap Map of appIds to their initialization promises.
+     * @param dynamicConfigPromisesList Array of dynamic config fetch promises.
+     * @param measurementIdToAppId Map of GA measurementIDs to corresponding Firebase appId.
+     * @param dataLayerName Name of global GA datalayer array.
+     * @param gtagFunctionName Name of global gtag function ("gtag" if not user-specified).
+     */
+    function wrapOrCreateGtag(initializationPromisesMap, dynamicConfigPromisesList, measurementIdToAppId, dataLayerName, gtagFunctionName) {
+        // Create a basic core gtag function
+        let gtagCore = function (..._args) {
+            // Must push IArguments object, not an array.
+            window[dataLayerName].push(arguments);
+        };
+        // Replace it with existing one if found
+        if (window[gtagFunctionName] &&
+            typeof window[gtagFunctionName] === 'function') {
+            // @ts-ignore
+            gtagCore = window[gtagFunctionName];
+        }
+        window[gtagFunctionName] = wrapGtag(gtagCore, initializationPromisesMap, dynamicConfigPromisesList, measurementIdToAppId);
+        return {
+            gtagCore,
+            wrappedGtag: window[gtagFunctionName]
+        };
+    }
+    /**
+     * Returns the script tag in the DOM matching both the gtag url pattern
+     * and the provided data layer name.
+     */
+    function findGtagScriptOnPage(dataLayerName) {
+        const scriptTags = window.document.getElementsByTagName('script');
+        for (const tag of Object.values(scriptTags)) {
+            if (tag.src &&
+                tag.src.includes(GTAG_URL) &&
+                tag.src.includes(dataLayerName)) {
+                return tag;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Backoff factor for 503 errors, which we want to be conservative about
+     * to avoid overloading servers. Each retry interval will be
+     * BASE_INTERVAL_MILLIS * LONG_RETRY_FACTOR ^ retryCount, so the second one
+     * will be ~30 seconds (with fuzzing).
+     */
+    const LONG_RETRY_FACTOR = 30;
+    /**
+     * Base wait interval to multiplied by backoffFactor^backoffCount.
+     */
+    const BASE_INTERVAL_MILLIS = 1000;
+    /**
+     * Stubbable retry data storage class.
+     */
+    class RetryData {
+        constructor(throttleMetadata = {}, intervalMillis = BASE_INTERVAL_MILLIS) {
+            this.throttleMetadata = throttleMetadata;
+            this.intervalMillis = intervalMillis;
+        }
+        getThrottleMetadata(appId) {
+            return this.throttleMetadata[appId];
+        }
+        setThrottleMetadata(appId, metadata) {
+            this.throttleMetadata[appId] = metadata;
+        }
+        deleteThrottleMetadata(appId) {
+            delete this.throttleMetadata[appId];
+        }
+    }
+    const defaultRetryData = new RetryData();
+    /**
+     * Set GET request headers.
+     * @param apiKey App API key.
+     */
+    function getHeaders(apiKey) {
+        return new Headers({
+            Accept: 'application/json',
+            'x-goog-api-key': apiKey
+        });
+    }
+    /**
+     * Fetches dynamic config from backend.
+     * @param app Firebase app to fetch config for.
+     */
+    async function fetchDynamicConfig(appFields) {
+        var _a;
+        const { appId, apiKey } = appFields;
+        const request = {
+            method: 'GET',
+            headers: getHeaders(apiKey)
+        };
+        const appUrl = DYNAMIC_CONFIG_URL.replace('{app-id}', appId);
+        const response = await fetch(appUrl, request);
+        if (response.status !== 200 && response.status !== 304) {
+            let errorMessage = '';
+            try {
+                // Try to get any error message text from server response.
+                const jsonResponse = (await response.json());
+                if ((_a = jsonResponse.error) === null || _a === void 0 ? void 0 : _a.message) {
+                    errorMessage = jsonResponse.error.message;
+                }
+            }
+            catch (_ignored) { }
+            throw ERROR_FACTORY.create("config-fetch-failed" /* AnalyticsError.CONFIG_FETCH_FAILED */, {
+                httpStatus: response.status,
+                responseMessage: errorMessage
+            });
+        }
+        return response.json();
+    }
+    /**
+     * Fetches dynamic config from backend, retrying if failed.
+     * @param app Firebase app to fetch config for.
+     */
+    async function fetchDynamicConfigWithRetry(app, 
+    // retryData and timeoutMillis are parameterized to allow passing a different value for testing.
+    retryData = defaultRetryData, timeoutMillis) {
+        const { appId, apiKey, measurementId } = app.options;
+        if (!appId) {
+            throw ERROR_FACTORY.create("no-app-id" /* AnalyticsError.NO_APP_ID */);
+        }
+        if (!apiKey) {
+            if (measurementId) {
+                return {
+                    measurementId,
+                    appId
+                };
+            }
+            throw ERROR_FACTORY.create("no-api-key" /* AnalyticsError.NO_API_KEY */);
+        }
+        const throttleMetadata = retryData.getThrottleMetadata(appId) || {
+            backoffCount: 0,
+            throttleEndTimeMillis: Date.now()
+        };
+        const signal = new AnalyticsAbortSignal();
+        setTimeout(async () => {
+            // Note a very low delay, eg < 10ms, can elapse before listeners are initialized.
+            signal.abort();
+        }, timeoutMillis !== undefined ? timeoutMillis : FETCH_TIMEOUT_MILLIS);
+        return attemptFetchDynamicConfigWithRetry({ appId, apiKey, measurementId }, throttleMetadata, signal, retryData);
+    }
+    /**
+     * Runs one retry attempt.
+     * @param appFields Necessary app config fields.
+     * @param throttleMetadata Ongoing metadata to determine throttling times.
+     * @param signal Abort signal.
+     */
+    async function attemptFetchDynamicConfigWithRetry(appFields, { throttleEndTimeMillis, backoffCount }, signal, retryData = defaultRetryData // for testing
+    ) {
+        var _a;
+        const { appId, measurementId } = appFields;
+        // Starts with a (potentially zero) timeout to support resumption from stored state.
+        // Ensures the throttle end time is honored if the last attempt timed out.
+        // Note the SDK will never make a request if the fetch timeout expires at this point.
+        try {
+            await setAbortableTimeout(signal, throttleEndTimeMillis);
+        }
+        catch (e) {
+            if (measurementId) {
+                logger.warn(`Timed out fetching this Firebase app's measurement ID from the server.` +
+                    ` Falling back to the measurement ID ${measurementId}` +
+                    ` provided in the "measurementId" field in the local Firebase config. [${e === null || e === void 0 ? void 0 : e.message}]`);
+                return { appId, measurementId };
+            }
+            throw e;
+        }
+        try {
+            const response = await fetchDynamicConfig(appFields);
+            // Note the SDK only clears throttle state if response is success or non-retriable.
+            retryData.deleteThrottleMetadata(appId);
+            return response;
+        }
+        catch (e) {
+            const error = e;
+            if (!isRetriableError(error)) {
+                retryData.deleteThrottleMetadata(appId);
+                if (measurementId) {
+                    logger.warn(`Failed to fetch this Firebase app's measurement ID from the server.` +
+                        ` Falling back to the measurement ID ${measurementId}` +
+                        ` provided in the "measurementId" field in the local Firebase config. [${error === null || error === void 0 ? void 0 : error.message}]`);
+                    return { appId, measurementId };
+                }
+                else {
+                    throw e;
+                }
+            }
+            const backoffMillis = Number((_a = error === null || error === void 0 ? void 0 : error.customData) === null || _a === void 0 ? void 0 : _a.httpStatus) === 503
+                ? calculateBackoffMillis(backoffCount, retryData.intervalMillis, LONG_RETRY_FACTOR)
+                : calculateBackoffMillis(backoffCount, retryData.intervalMillis);
+            // Increments backoff state.
+            const throttleMetadata = {
+                throttleEndTimeMillis: Date.now() + backoffMillis,
+                backoffCount: backoffCount + 1
+            };
+            // Persists state.
+            retryData.setThrottleMetadata(appId, throttleMetadata);
+            logger.debug(`Calling attemptFetch again in ${backoffMillis} millis`);
+            return attemptFetchDynamicConfigWithRetry(appFields, throttleMetadata, signal, retryData);
+        }
+    }
+    /**
+     * Supports waiting on a backoff by:
+     *
+     * <ul>
+     *   <li>Promisifying setTimeout, so we can set a timeout in our Promise chain</li>
+     *   <li>Listening on a signal bus for abort events, just like the Fetch API</li>
+     *   <li>Failing in the same way the Fetch API fails, so timing out a live request and a throttled
+     *       request appear the same.</li>
+     * </ul>
+     *
+     * <p>Visible for testing.
+     */
+    function setAbortableTimeout(signal, throttleEndTimeMillis) {
+        return new Promise((resolve, reject) => {
+            // Derives backoff from given end time, normalizing negative numbers to zero.
+            const backoffMillis = Math.max(throttleEndTimeMillis - Date.now(), 0);
+            const timeout = setTimeout(resolve, backoffMillis);
+            // Adds listener, rather than sets onabort, because signal is a shared object.
+            signal.addEventListener(() => {
+                clearTimeout(timeout);
+                // If the request completes before this timeout, the rejection has no effect.
+                reject(ERROR_FACTORY.create("fetch-throttle" /* AnalyticsError.FETCH_THROTTLE */, {
+                    throttleEndTimeMillis
+                }));
+            });
+        });
+    }
+    /**
+     * Returns true if the {@link Error} indicates a fetch request may succeed later.
+     */
+    function isRetriableError(e) {
+        if (!(e instanceof FirebaseError) || !e.customData) {
+            return false;
+        }
+        // Uses string index defined by ErrorData, which FirebaseError implements.
+        const httpStatus = Number(e.customData['httpStatus']);
+        return (httpStatus === 429 ||
+            httpStatus === 500 ||
+            httpStatus === 503 ||
+            httpStatus === 504);
+    }
+    /**
+     * Shims a minimal AbortSignal (copied from Remote Config).
+     *
+     * <p>AbortController's AbortSignal conveniently decouples fetch timeout logic from other aspects
+     * of networking, such as retries. Firebase doesn't use AbortController enough to justify a
+     * polyfill recommendation, like we do with the Fetch API, but this minimal shim can easily be
+     * swapped out if/when we do.
+     */
+    class AnalyticsAbortSignal {
+        constructor() {
+            this.listeners = [];
+        }
+        addEventListener(listener) {
+            this.listeners.push(listener);
+        }
+        abort() {
+            this.listeners.forEach(listener => listener());
+        }
+    }
+    /**
+     * Logs an analytics event through the Firebase SDK.
+     *
+     * @param gtagFunction Wrapped gtag function that waits for fid to be set before sending an event
+     * @param eventName Google Analytics event name, choose from standard list or use a custom string.
+     * @param eventParams Analytics event parameters.
+     */
+    async function logEvent$1(gtagFunction, initializationPromise, eventName, eventParams, options) {
+        if (options && options.global) {
+            gtagFunction("event" /* GtagCommand.EVENT */, eventName, eventParams);
+            return;
+        }
+        else {
+            const measurementId = await initializationPromise;
+            const params = Object.assign(Object.assign({}, eventParams), { 'send_to': measurementId });
+            gtagFunction("event" /* GtagCommand.EVENT */, eventName, params);
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function validateIndexedDB() {
+        if (!isIndexedDBAvailable()) {
+            logger.warn(ERROR_FACTORY.create("indexeddb-unavailable" /* AnalyticsError.INDEXEDDB_UNAVAILABLE */, {
+                errorInfo: 'IndexedDB is not available in this environment.'
+            }).message);
+            return false;
+        }
+        else {
+            try {
+                await validateIndexedDBOpenable();
+            }
+            catch (e) {
+                logger.warn(ERROR_FACTORY.create("indexeddb-unavailable" /* AnalyticsError.INDEXEDDB_UNAVAILABLE */, {
+                    errorInfo: e === null || e === void 0 ? void 0 : e.toString()
+                }).message);
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * Initialize the analytics instance in gtag.js by calling config command with fid.
+     *
+     * NOTE: We combine analytics initialization and setting fid together because we want fid to be
+     * part of the `page_view` event that's sent during the initialization
+     * @param app Firebase app
+     * @param gtagCore The gtag function that's not wrapped.
+     * @param dynamicConfigPromisesList Array of all dynamic config promises.
+     * @param measurementIdToAppId Maps measurementID to appID.
+     * @param installations _FirebaseInstallationsInternal instance.
+     *
+     * @returns Measurement ID.
+     */
+    async function _initializeAnalytics(app, dynamicConfigPromisesList, measurementIdToAppId, installations, gtagCore, dataLayerName, options) {
+        var _a;
+        const dynamicConfigPromise = fetchDynamicConfigWithRetry(app);
+        // Once fetched, map measurementIds to appId, for ease of lookup in wrapped gtag function.
+        dynamicConfigPromise
+            .then(config => {
+            measurementIdToAppId[config.measurementId] = config.appId;
+            if (app.options.measurementId &&
+                config.measurementId !== app.options.measurementId) {
+                logger.warn(`The measurement ID in the local Firebase config (${app.options.measurementId})` +
+                    ` does not match the measurement ID fetched from the server (${config.measurementId}).` +
+                    ` To ensure analytics events are always sent to the correct Analytics property,` +
+                    ` update the` +
+                    ` measurement ID field in the local config or remove it from the local config.`);
+            }
+        })
+            .catch(e => logger.error(e));
+        // Add to list to track state of all dynamic config promises.
+        dynamicConfigPromisesList.push(dynamicConfigPromise);
+        const fidPromise = validateIndexedDB().then(envIsValid => {
+            if (envIsValid) {
+                return installations.getId();
+            }
+            else {
+                return undefined;
+            }
+        });
+        const [dynamicConfig, fid] = await Promise.all([
+            dynamicConfigPromise,
+            fidPromise
+        ]);
+        // Detect if user has already put the gtag <script> tag on this page with the passed in
+        // data layer name.
+        if (!findGtagScriptOnPage(dataLayerName)) {
+            insertScriptTag(dataLayerName, dynamicConfig.measurementId);
+        }
+        // This command initializes gtag.js and only needs to be called once for the entire web app,
+        // but since it is idempotent, we can call it multiple times.
+        // We keep it together with other initialization logic for better code structure.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        gtagCore('js', new Date());
+        // User config added first. We don't want users to accidentally overwrite
+        // base Firebase config properties.
+        const configProperties = (_a = options === null || options === void 0 ? void 0 : options.config) !== null && _a !== void 0 ? _a : {};
+        // guard against developers accidentally setting properties with prefix `firebase_`
+        configProperties[ORIGIN_KEY] = 'firebase';
+        configProperties.update = true;
+        if (fid != null) {
+            configProperties[GA_FID_KEY] = fid;
+        }
+        // It should be the first config command called on this GA-ID
+        // Initialize this GA-ID and set FID on it using the gtag config API.
+        // Note: This will trigger a page_view event unless 'send_page_view' is set to false in
+        // `configProperties`.
+        gtagCore("config" /* GtagCommand.CONFIG */, dynamicConfig.measurementId, configProperties);
+        return dynamicConfig.measurementId;
+    }
+
+    /**
+     * @license
+     * Copyright 2019 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Analytics Service class.
+     */
+    class AnalyticsService {
+        constructor(app) {
+            this.app = app;
+        }
+        _delete() {
+            delete initializationPromisesMap[this.app.options.appId];
+            return Promise.resolve();
+        }
+    }
+    /**
+     * Maps appId to full initialization promise. Wrapped gtag calls must wait on
+     * all or some of these, depending on the call's `send_to` param and the status
+     * of the dynamic config fetches (see below).
+     */
+    let initializationPromisesMap = {};
+    /**
+     * List of dynamic config fetch promises. In certain cases, wrapped gtag calls
+     * wait on all these to be complete in order to determine if it can selectively
+     * wait for only certain initialization (FID) promises or if it must wait for all.
+     */
+    let dynamicConfigPromisesList = [];
+    /**
+     * Maps fetched measurementIds to appId. Populated when the app's dynamic config
+     * fetch completes. If already populated, gtag config calls can use this to
+     * selectively wait for only this app's initialization promise (FID) instead of all
+     * initialization promises.
+     */
+    const measurementIdToAppId = {};
+    /**
+     * Name for window global data layer array used by GA: defaults to 'dataLayer'.
+     */
+    let dataLayerName = 'dataLayer';
+    /**
+     * Name for window global gtag function used by GA: defaults to 'gtag'.
+     */
+    let gtagName = 'gtag';
+    /**
+     * Reproduction of standard gtag function or reference to existing
+     * gtag function on window object.
+     */
+    let gtagCoreFunction;
+    /**
+     * Wrapper around gtag function that ensures FID is sent with all
+     * relevant event and config calls.
+     */
+    let wrappedGtagFunction;
+    /**
+     * Flag to ensure page initialization steps (creation or wrapping of
+     * dataLayer and gtag script) are only run once per page load.
+     */
+    let globalInitDone = false;
+    /**
+     * Returns true if no environment mismatch is found.
+     * If environment mismatches are found, throws an INVALID_ANALYTICS_CONTEXT
+     * error that also lists details for each mismatch found.
+     */
+    function warnOnBrowserContextMismatch() {
+        const mismatchedEnvMessages = [];
+        if (isBrowserExtension()) {
+            mismatchedEnvMessages.push('This is a browser extension environment.');
+        }
+        if (!areCookiesEnabled()) {
+            mismatchedEnvMessages.push('Cookies are not available.');
+        }
+        if (mismatchedEnvMessages.length > 0) {
+            const details = mismatchedEnvMessages
+                .map((message, index) => `(${index + 1}) ${message}`)
+                .join(' ');
+            const err = ERROR_FACTORY.create("invalid-analytics-context" /* AnalyticsError.INVALID_ANALYTICS_CONTEXT */, {
+                errorInfo: details
+            });
+            logger.warn(err.message);
+        }
+    }
+    /**
+     * Analytics instance factory.
+     * @internal
+     */
+    function factory(app, installations, options) {
+        warnOnBrowserContextMismatch();
+        const appId = app.options.appId;
+        if (!appId) {
+            throw ERROR_FACTORY.create("no-app-id" /* AnalyticsError.NO_APP_ID */);
+        }
+        if (!app.options.apiKey) {
+            if (app.options.measurementId) {
+                logger.warn(`The "apiKey" field is empty in the local Firebase config. This is needed to fetch the latest` +
+                    ` measurement ID for this Firebase app. Falling back to the measurement ID ${app.options.measurementId}` +
+                    ` provided in the "measurementId" field in the local Firebase config.`);
+            }
+            else {
+                throw ERROR_FACTORY.create("no-api-key" /* AnalyticsError.NO_API_KEY */);
+            }
+        }
+        if (initializationPromisesMap[appId] != null) {
+            throw ERROR_FACTORY.create("already-exists" /* AnalyticsError.ALREADY_EXISTS */, {
+                id: appId
+            });
+        }
+        if (!globalInitDone) {
+            // Steps here should only be done once per page: creation or wrapping
+            // of dataLayer and global gtag function.
+            getOrCreateDataLayer(dataLayerName);
+            const { wrappedGtag, gtagCore } = wrapOrCreateGtag(initializationPromisesMap, dynamicConfigPromisesList, measurementIdToAppId, dataLayerName, gtagName);
+            wrappedGtagFunction = wrappedGtag;
+            gtagCoreFunction = gtagCore;
+            globalInitDone = true;
+        }
+        // Async but non-blocking.
+        // This map reflects the completion state of all promises for each appId.
+        initializationPromisesMap[appId] = _initializeAnalytics(app, dynamicConfigPromisesList, measurementIdToAppId, installations, gtagCoreFunction, dataLayerName, options);
+        const analyticsInstance = new AnalyticsService(app);
+        return analyticsInstance;
+    }
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    /**
+     * Returns an {@link Analytics} instance for the given app.
+     *
+     * @public
+     *
+     * @param app - The {@link @firebase/app#FirebaseApp} to use.
+     */
+    function getAnalytics$1(app = getApp()) {
+        app = getModularInstance(app);
+        // Dependencies
+        const analyticsProvider = _getProvider(app, ANALYTICS_TYPE);
+        if (analyticsProvider.isInitialized()) {
+            return analyticsProvider.getImmediate();
+        }
+        return initializeAnalytics(app);
+    }
+    /**
+     * Returns an {@link Analytics} instance for the given app.
+     *
+     * @public
+     *
+     * @param app - The {@link @firebase/app#FirebaseApp} to use.
+     */
+    function initializeAnalytics(app, options = {}) {
+        // Dependencies
+        const analyticsProvider = _getProvider(app, ANALYTICS_TYPE);
+        if (analyticsProvider.isInitialized()) {
+            const existingInstance = analyticsProvider.getImmediate();
+            if (deepEqual(options, analyticsProvider.getOptions())) {
+                return existingInstance;
+            }
+            else {
+                throw ERROR_FACTORY.create("already-initialized" /* AnalyticsError.ALREADY_INITIALIZED */);
+            }
+        }
+        const analyticsInstance = analyticsProvider.initialize({ options });
+        return analyticsInstance;
+    }
+    /**
+     * Sends a Google Analytics event with given `eventParams`. This method
+     * automatically associates this logged event with this Firebase web
+     * app instance on this device.
+     * List of official event parameters can be found in the gtag.js
+     * reference documentation:
+     * {@link https://developers.google.com/gtagjs/reference/ga4-events
+     * | the GA4 reference documentation}.
+     *
+     * @public
+     */
+    function logEvent(analyticsInstance, eventName, eventParams, options) {
+        analyticsInstance = getModularInstance(analyticsInstance);
+        logEvent$1(wrappedGtagFunction, initializationPromisesMap[analyticsInstance.app.options.appId], eventName, eventParams, options).catch(e => logger.error(e));
+    }
+
+    const name = "@firebase/analytics";
+    const version = "0.10.0";
+
+    /**
+     * Firebase Analytics
+     *
+     * @packageDocumentation
+     */
+    function registerAnalytics() {
+        _registerComponent(new Component(ANALYTICS_TYPE, (container, { options: analyticsOptions }) => {
+            // getImmediate for FirebaseApp will always succeed
+            const app = container.getProvider('app').getImmediate();
+            const installations = container
+                .getProvider('installations-internal')
+                .getImmediate();
+            return factory(app, installations, analyticsOptions);
+        }, "PUBLIC" /* ComponentType.PUBLIC */));
+        _registerComponent(new Component('analytics-internal', internalFactory, "PRIVATE" /* ComponentType.PRIVATE */));
+        registerVersion(name, version);
+        // BUILD_TARGET will be replaced by values like esm5, esm2017, cjs5, etc during the compilation
+        registerVersion(name, version, 'esm2017');
+        function internalFactory(container) {
+            try {
+                const analytics = container.getProvider(ANALYTICS_TYPE).getImmediate();
+                return {
+                    logEvent: (eventName, eventParams, options) => logEvent(analytics, eventName, eventParams, options)
+                };
+            }
+            catch (e) {
+                throw ERROR_FACTORY.create("interop-component-reg-failed" /* AnalyticsError.INTEROP_COMPONENT_REG_FAILED */, {
+                    reason: e
+                });
+            }
+        }
+    }
+    registerAnalytics();
+
+    // Import the functions you need from the SDKs you need
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    function MyUsageLog(firebaseConfig) {
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      getAnalytics$1(app);
+      const auth = getAuth();
+      var currentUser = auth.currentUser;
+      if (currentUser) {
+        var currentUID = currentUser.uid;
+        var currentUserDB = ref(database, '/users/' + currentUID);
+        var inhalerDB = child$1(currentUserDB, '/inhalers');
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+        inhalerDB = child$1(currentUserDB, '/inhalers');
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          inhalerDB = child$1(currentUserDB, '/inhalers');
+        }
+      });
+
+      // eventListeners.js
+      var popupclose = document.getElementById("closeBtn");
+      if (popupclose) {
+        popupclose.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
+      if (popupaddIntakeBtn) {
+        popupaddIntakeBtn.addEventListener("click", function (e) {
+          var popup = e.currentTarget.parentNode;
+          function isOverlay(node) {
+            return !!(node && node.classList && node.classList.contains("popup-overlay"));
+          }
+          while (popup && !isOverlay(popup)) {
+            popup = popup.parentNode;
+          }
+          if (isOverlay(popup)) {
+            popup.style.display = "none";
+          }
+        });
+      }
+      var topNav = document.getElementById("back");
+      if (topNav) {
+        topNav.addEventListener("click", function (e) {
+          window.location.href = "./MyInhaler.html";
+        });
+      }
+      var close = document.getElementById("closeBtn");
+      if (close) {
+        close.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
+      if (newInhalerIntake) {
+        newInhalerIntake.addEventListener("click", function () {
+          var popup = document.getElementById("addIntakePopup");
+          if (!popup) return;
+          var popupStyle = popup.style;
+          if (popupStyle) {
+            popupStyle.display = "flex";
+            popupStyle.zIndex = 100;
+            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+            popupStyle.alignItems = "center";
+            popupStyle.justifyContent = "center";
+          }
+          popup.setAttribute("closable", "");
+          var onClick = popup.onClick || function (e) {
+            if (e.target === popup && popup.hasAttribute("closable")) {
+              popupStyle.display = "none";
+            }
+          };
+          popup.addEventListener("click", onClick);
+        });
+      }
+      var home = document.getElementById("homeBtn");
+      if (home) {
+        home.addEventListener("click", function (e) {
+          window.location.href = "./Home.html";
+        });
+      }
+      var cloud = document.getElementById("airQualityBtn");
+      if (cloud) {
+        cloud.addEventListener("click", function (e) {
+          window.location.href = "./AirQuality01.html";
+        });
+      }
+      var hospital = document.getElementById("emergencyBtn");
+      if (hospital) {
+        hospital.addEventListener("click", function (e) {
+          window.location.href = "./Emergency1.html";
+        });
+      }
+      var mainSection = document.getElementById("mainMyInhalerStats");
+      get(inhalerDB).then(snapshot => {
+        if (snapshot.exists()) {
+          snapshot.forEach(function (childSnapshot) {
+            var intakesDB = child$1(inhalerDB, childSnapshot.val().inhaler.name + '/intakes/');
+            get(intakesDB).then(intakeList => {
+              if (intakeList.exists()) {
+                intakeList.forEach(function (intake) {
+                  let intakeLogSection = document.createElement('ul');
+                  intakeLogSection.className = "intakelogsection";
+                  var intakeDateFormat = new Date(intake.val().time);
+                  let intakeTime = document.createElement('h1');
+                  intakeTime.className = "intaketime";
+                  intakeTime.textContent = intakeDateFormat.toLocaleDateString() + " at " + intakeDateFormat.toLocaleTimeString();
+                  intakeLogSection.appendChild(intakeTime);
+                  let intakeLogSection1 = document.createElement('div');
+                  intakeLogSection1.className = "intakelogsection1";
+                  let inhalerPointer = document.createElement('h2');
+                  inhalerPointer.className = "numberofpuffs";
+                  inhalerPointer.textContent = "Inhaler:";
+                  intakeLogSection1.appendChild(inhalerPointer);
+                  let inhalerNameVar = document.createElement('b');
+                  inhalerNameVar.className = "inhalernamevar";
+                  inhalerNameVar.textContent = childSnapshot.val().inhaler.name;
+                  intakeLogSection1.appendChild(inhalerNameVar);
+                  let intakeLogSection2 = document.createElement('div');
+                  intakeLogSection2.className = "intakelogsection1";
+                  let puffsPointer = document.createElement('h2');
+                  puffsPointer.className = "numberofpuffs";
+                  puffsPointer.textContent = "Number of Puffs:";
+                  intakeLogSection2.appendChild(puffsPointer);
+                  let puffsNumVar = document.createElement('b');
+                  puffsNumVar.className = "inhalernamevar";
+                  puffsNumVar.textContent = intake.val().puffNum;
+                  intakeLogSection2.appendChild(puffsNumVar);
+                  intakeLogSection.appendChild(intakeLogSection1);
+                  intakeLogSection.appendChild(intakeLogSection2);
+                  mainSection.appendChild(intakeLogSection);
+                });
+              }
+            });
+          });
+        }
+      });
+    }
+
+    function SymptomsChart(firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const ctx = document.getElementById('symptomsChart');
+      const auth = getAuth(app);
+      var currentUser = auth.currentUser;
+      var currentUID, currentUserDB;
+      if (currentUser) {
+        currentUID = currentUser.uid;
+        currentUserDB = ref(database, '/users/' + currentUID);
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          boroughDB = child(currentUserDB, '/myBorough');
+        }
+      });
+      console.log(currentUID);
+      // const currentUID = "testDosage2";
+
+      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
+      let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling', 'Wheezing'];
+      onValue(entriesInDB, function (snapshot) {
+        let symptoms = [0, 0, 0, 0, 0, 0, 0];
+        const entries = snapshot.val();
+
+        // Counts total number of occurences of symptoms for ALL crisis log entries
+        for (var i = 0; i < Object.keys(entries).length; i++) {
+          const entry = Object.keys(entries)[i];
+          const symptomsInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_symptoms");
+          updateChart(symptoms, symptomsInDB);
+        }
+        updateChartWithSymptoms(symptoms);
+      });
+
+      // Tallies number of occurences for EACH crisis log entry
+      function updateChart(symptoms, symptomsInDB) {
+        onValue(symptomsInDB, function (snapshot) {
+          const data = snapshot.val();
+          if (data != null) {
+            if (data.chestCompressions == true) {
+              symptoms[0] += 1;
+            }
+            if (data.cough == true) {
+              symptoms[1] += 1;
+            }
+            if (data.dizziness == true) {
+              symptoms[2] += 1;
+            }
+            if (data.dysponea == true) {
+              symptoms[3] += 1;
+            }
+            if (data.fever == true) {
+              symptoms[4] += 1;
+            }
+            if (data.tingle == true) {
+              symptoms[5] += 1;
+            }
+            if (data.wheezing == true) {
+              symptoms[6] += 1;
+            }
+          }
+        });
+      }
+      function updateChartWithSymptoms(symptoms) {
+        const chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Occurences',
+              data: symptoms,
+              hoverOffset: 4,
+              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
+            }]
+          }
+        };
+        // Check if chart is already initialized
+        if (window.liveChart) {
+          window.liveChart.data = chartConfig.data;
+          window.liveChart.update();
+        } else {
+          // Initialize the chart for the first time
+          window.liveChart = new Chart(ctx, chartConfig);
+        }
+      }
+    }
+
     /* == Firebase == */
     console.log('Firebase loaded:', typeof initializeApp !== 'undefined' ? 'Yes' : 'No');
 
@@ -22880,15 +27017,19 @@
       appId: "1:583573518616:web:921a17f44e5fca27b3066d",
       measurementId: "G-PLRLWFR1X7"
     };
-    //import Home from "./Home.js"
-
     Nav();
     Settings(firebaseConfig);
     SignIn(firebaseConfig);
     SignUp(firebaseConfig);
-    //Home(firebaseConfig);
+    AddCrisis(firebaseConfig);
     forgotPassword(firebaseConfig);
-    //
+    AddIntakePopup(firebaseConfig);
+    AllergensChart(firebaseConfig);
+    Emergency1(firebaseConfig);
+    Home(firebaseConfig);
+    MyUsageLog(firebaseConfig);
+    SymptomsChart(firebaseConfig);
+
     // //setting up for push notification: https://medium.com/@a7ul/beginners-guide-to-web-push-notifications-using-service-workers-cb3474a17679
     //     const check = () => {
     //         if (!('serviceWorker' in navigator)) {
