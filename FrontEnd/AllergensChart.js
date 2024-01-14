@@ -16,7 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-const ctx = document.getElementById('symptomsChart');
+const ctx1 = document.getElementById('allergensChart');
 
 const auth = getAuth(app);
 var currentUser = auth.currentUser;
@@ -38,63 +38,70 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-console.log(currentUID);
-
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
-let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling','Wheezing'];
+let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery','Perfumes','Smoke','Stress','Temp & Humidity'];
 
 onValue(entriesInDB, function(snapshot) {
-    let symptoms = [0,0,0,0,0,0,0];
+    let allergens = [0,0,0,0,0,0,0,0,0,0];
     const entries = snapshot.val();
     
-    // Counts total number of occurences of symptoms for ALL crisis log entries
+    // Counts total number of occurences of allergens for ALL crisis log entries
     for (var i=0; i<Object.keys(entries).length;i++) {
         const entry = Object.keys(entries)[i];
-        const symptomsInDB = ref(database, "users/"+currentUID+"/addCrisis/"+entry+"/selected_symptoms"); 
-        updateChart(symptoms,symptomsInDB);
+        const allergensInDB = ref(database, "users/"+currentUID+"/addCrisis/"+entry+"/selected_allergens"); 
+        updateChart(allergens,allergensInDB);
     }
-    updateChartWithSymptoms(symptoms)
+    updateChartWithSymptoms(allergens)
 })
 
 // Tallies number of occurences for EACH crisis log entry
-function updateChart(symptoms,symptomsInDB) {
-    onValue(symptomsInDB, function(snapshot) {
+function updateChart(allergens,allergensInDB) {
+    onValue(allergensInDB, function(snapshot) {
         const data = snapshot.val();
         if (data != null) {
-            if (data.chestCompressions == true) {
-                symptoms[0] += 1;
+            if (data.activites == true) {
+                allergens[0] += 1;
             } 
-            if (data.cough == true) {
-                symptoms[1] += 1;
+            if (data.airQuality == true) {
+                allergens[1] += 1;
             }
-            if (data.dizziness == true) {
-                symptoms[2] += 1;
+            if (data.animals == true) {
+                allergens[2] += 1;
             }
-            if (data.dysponea == true) {
-                symptoms[3] += 1;
+            if (data.dust == true) {
+                allergens[3] += 1;
             }
-            if (data.fever == true) {
-                symptoms[4] += 1;
+            if (data.foodAllergy == true) {
+                allergens[4] += 1;
             }
-            if (data.tingle == true) {
-                symptoms[5] += 1;
+            if (data.greenery == true) {
+                allergens[5] += 1;
             }
-            if (data.wheezing == true) {
-                symptoms[6] += 1;
+            if (data.perfumes == true) {
+                allergens[6] += 1;
+            }
+            if (data.smoke == true) {
+                allergens[7] += 1;
+            }
+            if (data.stress == true) {
+                allergens[8] += 1;
+            }
+            if (data.tempHumidity == true) {
+                allergens[9] += 1;
             }
             
         }});
 }
 
 
-function updateChartWithSymptoms(symptoms) {
+function updateChartWithSymptoms(allergens) {
     const chartConfig = {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: labels1,
           datasets: [{
             label: 'Occurances',
-            data: symptoms,
+            data: allergens,
             borderWidth: 0.3
           }]
         },
@@ -112,11 +119,11 @@ function updateChartWithSymptoms(symptoms) {
         }
       }
       // Check if chart is already initialized
-    if (window.liveChart) {
-        window.liveChart.data = chartConfig.data;
-        window.liveChart.update();
+    if (window.liveChart2) {
+        window.liveChart2.data = chartConfig.data;
+        window.liveChart2.update();
     } else {
         // Initialize the chart for the first time
-        window.liveChart = new Chart(ctx, chartConfig);
+        window.liveChart2 = new Chart(ctx1, chartConfig);
     }      
 }
