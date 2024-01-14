@@ -1,4 +1,5 @@
-// Import the functions you need from the SDKs you need
+//AddInhalerPopup.js
+// Import the functions needed from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import {child, get, getDatabase, push, ref, set} from "firebase/database";
@@ -7,47 +8,8 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-
+//Add Inhaler Page Code
 function addInhalerPopup(firebaseConfig) {
-    var popupclose = document.getElementById("closeBtn");
-    if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-            function isOverlay(node) {
-                return !!(
-                    node &&
-                    node.classList &&
-                    node.classList.contains("popup-overlay")
-                );
-            }
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
-    var popupbuttonPrimary = document.getElementById("applyBtn");
-    if (popupbuttonPrimary) {
-        popupbuttonPrimary.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-            function isOverlay(node) {
-                return !!(
-                    node &&
-                    node.classList &&
-                    node.classList.contains("popup-overlay")
-                );
-            }
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
@@ -156,45 +118,10 @@ function addInhalerPopup(firebaseConfig) {
         }
     )
 
-//Navigation
-// eventListeners.js
-    var popupclose = document.getElementById("closeBtn");
-    if (popupclose) {
-        popupclose.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-
-            function isOverlay(node) {
-                return !!(node && node.classList && node.classList.contains("popup-overlay"));
-            }
-
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
-    var popupaddIntakeBtn = document.getElementById("addIntakeBtn");
-    if (popupaddIntakeBtn) {
-        popupaddIntakeBtn.addEventListener("click", function (e) {
-            var popup = e.currentTarget.parentNode;
-
-            function isOverlay(node) {
-                return !!(node && node.classList && node.classList.contains("popup-overlay"));
-            }
-
-            while (popup && !isOverlay(popup)) {
-                popup = popup.parentNode;
-            }
-            if (isOverlay(popup)) {
-                popup.style.display = "none";
-            }
-        });
-    }
-
-    var topNav = document.getElementById("back");
+    //Navigation
+    // eventListeners.js
+    //Navigation App Header
+        var topNav = document.getElementById("back");
     if (topNav) {
         topNav.addEventListener("click", function (e) {
             window.location.href = "./MyInhaler.html";
@@ -207,7 +134,7 @@ function addInhalerPopup(firebaseConfig) {
             window.location.href = "./Home.html";
         });
     }
-
+    //Used to be for when this page was a popup-kept in case
     var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
     if (newInhalerIntake) {
         newInhalerIntake.addEventListener("click", function () {
@@ -233,7 +160,7 @@ function addInhalerPopup(firebaseConfig) {
             popup.addEventListener("click", onClick);
         });
     }
-
+    //Bottom navigation
     var home = document.getElementById("homeBtn");
     if (home) {
         home.addEventListener("click", function (e) {

@@ -1,8 +1,11 @@
+//Add Crisis.js
+
+//Import firebase functions from module bundler
 import {initializeApp} from "firebase/app";
 import {child, get, getDatabase, push, ref} from "firebase/database";
 import {getAuth, onAuthStateChanged} from "firebase/auth";
 
-
+//Add Crisis page code
 function AddCrisis(firebaseConfig) {
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
