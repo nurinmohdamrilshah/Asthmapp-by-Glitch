@@ -1,13 +1,13 @@
-import {initializeApp} from "firebase/app";
-import { getAuth, sendPasswordResetEmail } from './../node_modules/firebase/auth';
+import { initializeApp } from "firebase/app";
+import { getAuth, sendPasswordResetEmail } from './node_modules/firebase/auth';
 
 
 function forgotPassword(firebaseConfig) {
     const app = initializeApp(firebaseConfig)
 
     const auth = getAuth();
-    const forgotPasswordLink = document.getElementById("resetPasswordBtn");
-    const emailAddressInput = document.getElementById('emailInput');
+    const forgotPasswordLink = document.getElementById("ResetPswdBtn");
+    const emailAddressInput = document.getElementById('inputEmailAddress');
 
     if (forgotPasswordLink && emailAddressInput) {
         forgotPasswordLink.addEventListener('click', function(e) {

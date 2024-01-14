@@ -1,8 +1,8 @@
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {getDatabase, push, ref, onValue, child, get, set, update,orderByChild,equalTo} from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+import {getDatabase, push, ref, onValue, child, get, set, update,orderByChild,equalTo} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -87,76 +87,84 @@ if (profilePicture) {
     });
 }
 
+//window.alert("You haven't chose a favourite inhaler yet!")
 var quickIntakeBtn = document.getElementById("quickIntakeBtn");
 if (quickIntakeBtn) {
     quickIntakeBtn.addEventListener("click", function () {
-            if (Inhaler.favInhaler == null) {
-                window.alert("You haven't chose a favourite inhaler yet!")
-            } else {
-                var popup = document.getElementById("quickIntakePopup");
-                if (!popup) return;
-                var popupStyle = popup.style;
-                if (popupStyle) {
-                    popupStyle.display = "flex";
-                    popupStyle.zIndex = 100;
-                    popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-                    popupStyle.alignItems = "center";
-                    popupStyle.justifyContent = "center";
-                }
-                popup.setAttribute("closable", "");
+        get(inhalerDB).then((snapshot) => {
+            if (snapshot.exists()) {
+                snapshot.forEach(function (childSnapshot) {
+                        if (childSnapshot.val().inhaler.fav) {
+                            let favInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
+                            let intakesDB = child(favInhalerDB, '/intakes/')
+                            push(intakesDB, {
+                                time: new Date().toISOString(),
+                                puffNum: 2
+                            })
+                            var popup = document.getElementById("quickIntakePopup");
+                            if (!popup) return;
+                            var popupStyle = popup.style;
+                            if (popupStyle) {
+                                popupStyle.display = "flex";
+                                popupStyle.zIndex = 100;
+                                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
+                                popupStyle.alignItems = "center";
+                                popupStyle.justifyContent = "center";
+                            }
+                            popup.setAttribute("closable", "");
 
-                var onClick = popup.onClick || function (e) {
-                    if (e.target === popup && popup.hasAttribute("closable")) {
-                        popupStyle.display = "none";
+                            var onClick = popup.onClick || function (e) {
+                                if (e.target === popup && popup.hasAttribute("closable")) {
+                                    popupStyle.display = "none";
+                                }
+                            };
+                            popup.addEventListener("click", onClick);
+                        }
                     }
-                };
-                popup.addEventListener("click", onClick);
+                );
             }
-        }
-        );
+        })
+    })
 }
 
 // load inhaler widget content
-
-    var nextReminderTime = document.getElementById('nextReminderVar');
-    get(inhalerDB).then((snapshot) => {
-        if (snapshot.exists()) {
-            snapshot.forEach(function (childSnapshot) {
-                if (childSnapshot.val().fav) {
-                    var UserFavInhaler = childSnapshot.val().inhaler
-                    let newInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
-                    let dosageDB = child(newInhalerDB, '/dosage')
-                    get(dosageDB).then((snapshot) => {
-                        if (snapshot.exists()) {
-                            let allDiffTime = [];
-                            snapshot.forEach(function (childSnapshot) {
-                                if ((childSnapshot.val().time - Date.now()) > 0) {
-                                    var diffTime = childSnapshot.val().time - Date.now()
-                                    allDiffTime.push(diffTime)
-                                    if (Math.min.apply(Math, allDiffTime) === diffTime) {
-                                        var nextTime = new Date(childSnapshot.val().time)
-                                        nextReminderTime.textContent = nextTime.toLocaleTimeString()
-                                    }
+var favInhalerName = document.getElementById("fav-inhaler-title")
+var nextReminderTime = document.getElementById('nextReminderVar');
+var intakeExpiresIn = document.getElementById("expiryDateFavVar");
+get(inhalerDB).then((snapshot) => {
+    if (snapshot.exists()) {
+        snapshot.forEach(function (childSnapshot) {
+            if (childSnapshot.val().inhaler.fav) {
+                var UserFavInhaler = childSnapshot.val().inhaler
+                favInhalerName.textContent = "My Favourite Inhaler: "+childSnapshot.val().inhaler.name
+                let newInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
+                let dosageDB = child(newInhalerDB, '/dosage')
+                get(dosageDB).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        let allDiffTime = [];
+                        snapshot.forEach(function (childSnapshot) {
+                            if ((childSnapshot.val().time - Date.now()) > 0) {
+                                var diffTime = childSnapshot.val().time - Date.now()
+                                allDiffTime.push(diffTime)
+                                if (Math.min.apply(Math, allDiffTime) === diffTime) {
+                                    var nextTime = new Date(childSnapshot.val().time)
+                                    nextReminderTime.textContent = nextTime.toLocaleTimeString()
                                 }
-                                else{
-                                    nextReminderTime.textContent = "N/A"
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        }
-    })
-
-
-    const intakeExpiresIn = document.getElementById("expiryDateFavVar");
-    if(Inhaler.getFavInhaler()){
-        let milliUntilIntake = Inhaler.getFavInhaler().getNextDoseTime()-Date.now();
-        let hoursUntilIntake = (milliUntilIntake/86400000)
-        intakeExpiresIn.textContent = hoursUntilIntake.toString()+" hours";
+                            }
+                            else{
+                                nextReminderTime.textContent = "[add new reminder]"
+                            }
+                        })
+                    }
+                })
+                let milliUntilExp = Number(childSnapshot.val().inhaler.expiryDate)-Date.now();
+                let hoursUntilExp = (milliUntilExp/86400000)
+                intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString()+" hours";
+            }
+        })
     }
-    else{intakeExpiresIn.textContent = "N/A"}
+})
+
 
 
 var home = document.getElementById("999Home");
@@ -194,5 +202,9 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
-
-
+var areaname = document.getElementById('areaname');
+const area = localStorage.getItem('userarea');
+areaname.innerText = area;
+var areaAQI = document.getElementById('AQInumber')
+let AQInumber = localStorage.getItem('userareaAQI');
+areaAQI.innerText = AQInumber;

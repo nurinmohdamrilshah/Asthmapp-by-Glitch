@@ -1,7 +1,7 @@
 /* == Firebase == */
-import { initializeApp } from './../node_modules/firebase/app';
-import { getDatabase, ref, child, get, push , set} from './../node_modules/firebase/database';
-import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from './../node_modules/firebase/auth';
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, child, get, push , set} from 'firebase/database';
+import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 
 console.log('Firebase loaded:', typeof initializeApp !== 'undefined' ? 'Yes' : 'No');
 
@@ -23,7 +23,7 @@ import Nav from "./Nav.js";
 import SignIn from "./SignIn.js";
 import forgotPassword from "./ForgotPassword.js";
 import SignUp from "./SignUp.js";
-import Home from "./Home.js"
+//import Home from "./Home.js"
 
 Nav();
 SignIn(firebaseConfig);
