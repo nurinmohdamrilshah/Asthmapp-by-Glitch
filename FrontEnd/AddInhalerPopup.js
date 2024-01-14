@@ -8,7 +8,6 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 
-
 function addInhalerPopup(firebaseConfig) {
     var popupclose = document.getElementById("closeBtn");
     if (popupclose) {
@@ -49,13 +48,14 @@ function addInhalerPopup(firebaseConfig) {
             }
         });
     }
-// Initialize Firebase
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
 
     const auth = getAuth();
     let currentUser
+    //identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
             const currentUID = user.uid;
@@ -64,14 +64,19 @@ function addInhalerPopup(firebaseConfig) {
         }
     })
 
+    //getting HTML buttons
     const addInhalerBtn = document.getElementById("applyBtn");
     const newInhalerCrisisBtn = document.getElementById("crisisInhalerBtn");
     const newInhalerPreventionBtn = document.getElementById("preventionBtn");
 
+    //initialise inhaler type in case user does not choose any
     var newInhalerType = "Type Unknown";
+
+    //getting inhaler type button text display
     let preventionBtnText = document.getElementById("preventionText")
     let crisisBtnText = document.getElementById("crisisText")
 
+    //choosing new inhaler type
     newInhalerCrisisBtn.addEventListener('click', function () {
         newInhalerType = "Crisis";
         crisisBtnText.textContent = "Crisis (selected)"
@@ -83,6 +88,7 @@ function addInhalerPopup(firebaseConfig) {
         crisisBtnText.textContent = "Crisis"
     })
 
+    //setting up for dosage reminders added for new inhaler
     const newInhalerDoseBtn = document.getElementById("addReminderBtn");
     let reminderCount = 0;
     let reminderTimes = [];

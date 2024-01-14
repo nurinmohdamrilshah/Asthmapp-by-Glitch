@@ -90,6 +90,7 @@ function Home(firebaseConfig) {
             }
         });
     }
+    loadInhalerWidget(inhalerDB)
 
     // Set up navigation
     function setupNav(elements) {
