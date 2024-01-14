@@ -86,13 +86,35 @@ const startTime = Date.now();
 updateProgressBar();
 const countdownInterval = setInterval(() => {
     updateProgressBar();
-
     // Check if the countdown is complete
     if (elapsedMilliseconds() >= countdownTime * 1000) {
         clearInterval(countdownInterval);
         window.location.href = "./Home.html";
+        get(inhalerDB).then((snapshot) => {
+            if (snapshot.exists()) {
+                snapshot.forEach(function (childSnapshot) {
+                        if (childSnapshot.val().inhaler.fav) {
+                            let favInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
+                            let intakesDB = child(favInhalerDB, '/intakes/')
+                            push(intakesDB, {
+                                time: new Date().toISOString(),
+                                puffNum: 2
+                            })
+                        }
+                    }
+                );
+            }
+        });
     }
 }, 500);
+
+// Add event listener to cancel button
+const cancelBtnContainer = document.getElementById('popupcancelBtnContainer');
+cancelBtnContainer.addEventListener('click', () => {
+    clearInterval(countdownInterval);
+    window.location.href = "./Home.html";
+});
+
 // end of reference
 
 

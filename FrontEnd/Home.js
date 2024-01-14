@@ -91,39 +91,8 @@ if (profilePicture) {
 var quickIntakeBtn = document.getElementById("quickIntakeBtn");
 if (quickIntakeBtn) {
     quickIntakeBtn.addEventListener("click", function () {
-        get(inhalerDB).then((snapshot) => {
-            if (snapshot.exists()) {
-                snapshot.forEach(function (childSnapshot) {
-                        if (childSnapshot.val().inhaler.fav) {
-                            let favInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
-                            let intakesDB = child(favInhalerDB, '/intakes/')
-                            push(intakesDB, {
-                                time: new Date().toISOString(),
-                                puffNum: 2
-                            })
-                            var popup = document.getElementById("quickIntakePopup");
-                            if (!popup) return;
-                            var popupStyle = popup.style;
-                            if (popupStyle) {
-                                popupStyle.display = "flex";
-                                popupStyle.zIndex = 100;
-                                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-                                popupStyle.alignItems = "center";
-                                popupStyle.justifyContent = "center";
-                            }
-                            popup.setAttribute("closable", "");
+        window.location.href = "./QuickIntakePopup.html";
 
-                            var onClick = popup.onClick || function (e) {
-                                if (e.target === popup && popup.hasAttribute("closable")) {
-                                    popupStyle.display = "none";
-                                }
-                            };
-                            popup.addEventListener("click", onClick);
-                        }
-                    }
-                );
-            }
-        })
     })
 }
 
