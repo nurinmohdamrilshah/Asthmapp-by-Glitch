@@ -27,23 +27,15 @@ function MyInhaler(firebaseConfig) {
     const analytics = getAnalytics(app);
 
     const auth = getAuth();
-    const currentUser = auth.currentUser;
+    let currentUser
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUID = currentUser.uid;
-            const currentUserDB = ref(database, '/users/' + currentUID)
-            const inhalerDB = ref(database, '/users/' + currentUID + '/inhalers')
+            const currentUID = user.uid;
+            const currentUserDB = ref(database,'/users/'+currentUID)
+            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
-    if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID)
-        var inhalerDB = child(currentUserDB, '/inhalers')
-    } else {
-        currentUID = 'testDosage2'
-        currentUserDB = ref(database, '/users/' + currentUID)
-        inhalerDB = child(currentUserDB, '/inhalers')
-    }
+
     get(inhalerDB).then((snapshot) => {
         if (snapshot.exists()) {
             snapshot.forEach(function (childSnapshot) {
