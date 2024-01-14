@@ -537,7 +537,16 @@
   object-fit: cover;
 }
 .my-usage-log{
+  position: relative;
   background-color: #7a8aa1;
+  width: 100%;
+  min-height: 100dvh;
+  overflow: auto;
+  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.63rem;
 }
 .navbarmyinhaler {
   display: flex;
