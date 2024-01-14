@@ -7,19 +7,6 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
-    authDomain: "asthmapp-121a8.firebaseapp.com",
-    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "asthmapp-121a8",
-    storageBucket: "asthmapp-121a8.appspot.com",
-    messagingSenderId: "583573518616",
-    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
-    measurementId: "G-PLRLWFR1X7"
-};
-
 function MyInhaler(firebaseConfig) {
 // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -28,28 +15,36 @@ function MyInhaler(firebaseConfig) {
 
     const auth = getAuth();
     let currentUser
+    let currentUID
+    let currentUserDB
+    let inhalerDB
+    //identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUID = user.uid;
-            const currentUserDB = ref(database,'/users/'+currentUID)
-            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+            currentUser = user
+            currentUID = user.uid;
+            currentUserDB = ref(database,'/users/'+currentUID)
+            inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
 
+    // reading and iterating over inhalers in user's database
     get(inhalerDB).then((snapshot) => {
         if (snapshot.exists()) {
             snapshot.forEach(function (childSnapshot) {
                 let inhaler = childSnapshot.val().inhaler;
+
+                // displaying inhaler type
                 let inhalerList = document.getElementById("mainMyInhaler")
                 let inhalerType = document.createElement('h1');
                 inhalerType.className = "reminders"
                 inhalerType.textContent = childSnapshot.val().inhaler.type;
                 inhalerList.appendChild(inhalerType)
 
+                // displaying inhaler image depending on its type
                 let inhalerField = document.createElement('ul')
                 inhalerField.className = "inhalerfield"
                 inhalerList.appendChild(inhalerField)
-
                 let inhalerImage = document.createElement('button')
                 inhalerImage.id = "editInhalerBtn"
                 if (inhalerType.textContent === "Prevention") {
@@ -59,6 +54,8 @@ function MyInhaler(firebaseConfig) {
                 }
                 inhalerField.appendChild(inhalerImage)
 
+                // adding favourite button to set inhaler as favourite
+                // selected inhaler is set as fav and overwrite other inhalers to be non-favourite
                 let favBtn = document.createElement('button');
                 favBtn.className = "love"
                 let favImg = document.createElement('img');
@@ -68,6 +65,7 @@ function MyInhaler(firebaseConfig) {
                 favImg.addEventListener('click', () => {
                     var favInhalerRef = childSnapshot.ref
                     var favField = child(favInhalerRef, '/inhaler/fav')
+                    // iterating over all inhalers' favourite field to be set as false
                     get(inhalerDB).then((snapshot) => {
                         if (snapshot.exists()) {
                             snapshot.forEach(function (childSnapshot) {
@@ -77,11 +75,13 @@ function MyInhaler(firebaseConfig) {
                             })
                         }
                     })
+                    // set concerned inhaler as favourite
                     set(favField, true)
                 })
                 favBtn.appendChild(favImg)
                 inhalerField.appendChild(favBtn)
 
+                // displaying inhaler's name
                 let inhalerSection = document.createElement('section')
                 inhalerSection.className = "inhalertext"
                 inhalerField.appendChild(inhalerSection)
@@ -90,6 +90,7 @@ function MyInhaler(firebaseConfig) {
                 inhalerName.textContent = childSnapshot.val().inhaler.name
                 inhalerSection.appendChild(inhalerName)
 
+                // displaying inhaler's last intake time
                 let inhalerStats = document.createElement('section')
                 inhalerStats.className = "statsinhaler"
                 inhalerSection.appendChild(inhalerStats)
@@ -104,6 +105,8 @@ function MyInhaler(firebaseConfig) {
                 lastUsageVar.className = "lastusagevar"
                 var lastUsageTime = "N/A (no intake yet)"
                 var intakesDB = child(inhalerDB, childSnapshot.val().inhaler.name + '/intakes/')
+
+                //determining which child is the last intake in database
                 var now = Date.now();
                 var diff = [];
                 get(intakesDB).then((snapshot) => {
@@ -123,6 +126,7 @@ function MyInhaler(firebaseConfig) {
                 lastUsageDiv.appendChild(lastUsage)
                 lastUsageDiv.appendChild(lastUsageVar)
 
+                // display expiry date of inhaler
                 let expDateDiv = document.createElement('div')
                 expDateDiv.className = "lastusagediv"
                 inhalerSection.appendChild(expDateDiv)
@@ -136,6 +140,7 @@ function MyInhaler(firebaseConfig) {
                 expDateDiv.appendChild(expDate)
                 expDateDiv.appendChild(expDateVar)
 
+                // display usages left for the inhaler
                 let usagesLeftDiv = document.createElement('div')
                 usagesLeftDiv.className = "lastusagediv"
                 inhalerSection.appendChild(usagesLeftDiv)
@@ -150,11 +155,13 @@ function MyInhaler(firebaseConfig) {
                     if (snapshot.exists()) {
                         var dosageNum = 0;
                         var intakesNum = 0;
+                        // counting number of dosages set for the inhaler
                         snapshot.forEach(function (childSnapshot) {
                             dosageNum++
                         })
                         get(intakesDB).then((snapshot) => {
                             if (snapshot.exists()) {
+                                // counting number of intakes for the inhaler
                                 snapshot.forEach(function (childSnapshot) {
                                     intakesNum++
                                 })
@@ -177,6 +184,7 @@ function MyInhaler(firebaseConfig) {
                 inhalerStats.appendChild(expDateDiv)
                 inhalerStats.appendChild(usagesLeftDiv)
 
+                // displaying dosage reminder times set for the inhaler
                 let reminderSection = document.createElement('section')
                 reminderSection.className = "reminderssection"
                 inhalerStats.appendChild(reminderSection)
@@ -188,12 +196,14 @@ function MyInhaler(firebaseConfig) {
                 remindersList.className = "reminderul1"
                 reminderSection.appendChild(remindersList)
 
-                //let reminderDB = child(inhalerDB, '/dosage/reminder')
+                // iterating over dosages set for the inhaler
                 get(dosageDB).then((snapshot) => {
                     if (snapshot.exists()) {
                         snapshot.forEach(function (childSnapshot) {
                             let reminderVar = document.createElement('i')
                             reminderVar.className = "remindervar"
+
+                            // converting dosage reminder time stored as epoch milliseconds
                             let reminder = new Date(Number(childSnapshot.val().time))
                             reminderVar.textContent = reminder.toLocaleTimeString() + " || "
                             remindersList.append(reminderVar)
