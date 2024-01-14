@@ -22689,11 +22689,11 @@
     }
 
     function SignIn(firebaseConfig) {
-      const signInButton = document.getElementById("signInBtn");
-      if (signInButton) {
-        signInButton.addEventListener("click", function (event) {
-          console.log("Forgot password btn");
-          Nav();
+      const signUpButton = document.getElementById("signUpPageBtn");
+      if (signUpButton) {
+        signUpButton.addEventListener("click", function (event) {
+          console.log("Sign Up Button Clicked");
+          window.location.href = "./SignUp.html";
         });
       }
       initializeApp(firebaseConfig);
@@ -22709,7 +22709,12 @@
             console.log('SignIn successful', user);
             window.location.href = "./Home.html";
           }).catch(error => {
-            // Handle errors here
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+              alert('Incorrect email or password. Please try again.');
+            } else {
+              // Handle other types of errors
+              alert('An error occurred during sign-in. Please try again.');
+            }
             console.error('Error during sign-in:', error.message);
           });
         });
@@ -22749,24 +22754,28 @@
           ErrorHandle("Username must be at least 3 characters long.");
           console.error("Username must be at least 3 characters long.");
           var msg = "Username must be at least 3 characters long.";
+          alert(msg);
           return msg;
         }
         if (!emailAddress || !emailAddress.includes('@')) {
           ErrorHandle("Invalid email format.");
           console.error("Invalid email format.");
           var msg = "Invalid email format.";
+          alert(msg);
           return;
         }
         if (!newPassword || newPassword.length < 6) {
           ErrorHandle("Password must be at least 6 characters long.");
           console.error("Password must be at least 6 characters long.");
           var msg = "Password must be at least 6 characters long.";
+          alert(msg);
           return;
         }
         if (newPassword !== confirmPassword) {
           ErrorHandle("Passwords do not match.");
           console.error("Passwords do not match.");
           var msg = "Passwords do not match.";
+          alert(msg);
           return;
         }
         var msg = 'SignUp Validated';
@@ -22794,9 +22803,9 @@
           // Set user data in the Realtime Database
           if (user) {
             set$1(userRef, userData).then(() => {
-              Nav();
               ErrorHandle(`Signup successful:`);
               console.log('User data updated in the Realtime Database');
+              window.location.href = "./Home.html";
             }).catch(error => {
               ErrorHandle(`Signup failed:`);
               console.error('Error updating user data in the Realtime Database:', error);
@@ -22866,7 +22875,6 @@
               }
             }
             signUpWithCheckEmail(emailAddressToPost).then(() => {
-              window.location.href = "./Home.html";
               ErrorHandle('You have successfully sign-up. Please login now.');
             }).catch(error => {
               ErrorHandle(`Error during signup: ${error}`);

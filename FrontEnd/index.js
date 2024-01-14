@@ -28,7 +28,7 @@ import AddCrisis from "./AddCrisis.js";
 import AddIntakePopup from "./AddIntakePopup.js";
 import AllergensChart from "./AllergensChart.js";
 import Emergency1 from "./Emergency1.js";
-//import Home from "./Home.js"
+import Home from "./Home.js"
 import MyUsageLog from "./MyUsageLog.js";
 import SymptomsChart from "./SymptomsChart.js";
 import log from "./log.js"
@@ -42,7 +42,7 @@ forgotPassword(firebaseConfig);
 // AddIntakePopup(firebaseConfig);
 // AllergensChart(firebaseConfig);
 // Emergency1(firebaseConfig)
-// //Home(firebaseConfig);
+Home(firebaseConfig);
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
 // log(firebaseConfig)
