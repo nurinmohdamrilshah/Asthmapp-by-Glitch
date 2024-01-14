@@ -7,33 +7,29 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 function QuickIntakePopup(firebaseConfig) {
-// Initialize Firebase
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const analytics = getAnalytics(app);
-
     const auth = getAuth();
-    const currentUser = auth.currentUser;
+    let currentUser
+    let currentUID
+    let currentUserDB
+    let inhalerDB
+
+    // identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUID = currentUser.uid;
-            const currentUserDB = ref(database, '/users/' + currentUID)
-            const inhalerDB = ref(database, '/users/' + currentUID + '/inhalers')
+            currentUser = user
+            currentUID = user.uid;
+            currentUserDB = ref(database,'/users/'+currentUID)
+            inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
-    if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID)
-        var inhalerDB = child(currentUserDB, '/inhalers')
-    } else {
-        currentUID = 'testDosage2'
-        currentUserDB = ref(database, '/users/' + currentUID)
-        inhalerDB = child(currentUserDB, '/inhalers')
-    }
 
+    //display favourite inhaler's name
     var favInhalerName = document.getElementById("favInhalerVar");
-
-
+    // reading and iterating over users' database to find which inhaler is the favourite
     get(inhalerDB).then((snapshot) => {
         if (snapshot.exists()) {
             snapshot.forEach(function (childSnapshot) {
@@ -241,5 +237,6 @@ function QuickIntakePopup(firebaseConfig) {
         });
     }
     document.getElementById("cancelBtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-
 }
+
+export default QuickIntakePopup
