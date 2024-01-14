@@ -14,11 +14,16 @@ function AddIntakePopup(firebaseConfig) {
 
     const auth = getAuth();
     let currentUser
+    let currentUID
+    let currentUserDB
+    let inhalerDB
+    //identifying current logged in user
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            var currentUID = user.uid;
-            var currentUserDB = ref(database,'/users/'+currentUID)
-            var inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+            currentUser = user
+            currentUID = user.uid;
+            currentUserDB = ref(database,'/users/'+currentUID)
+            inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
 
@@ -27,15 +32,16 @@ function AddIntakePopup(firebaseConfig) {
             var addIntakeBtn = document.getElementById("addIntakeBtn");
             var inhalerSection = document.getElementById("selectInhalerSection");
 
-            //let newIntakeInhaler = null;
+            //create buttons to specify which inhaler in the user database is the new intake for
             function createSelectInhalerBtn(inhaler) {
-                //let choiceInhaler = new Inhaler(inhaler.name, inhaler.volume, inhaler.expiryDate, inhaler.type)
+                //create HTML element with appropriate CSS class
                 let selectInhalerBtn;
                 selectInhalerBtn = document.createElement('button');
                 selectInhalerBtn.className = "inhaler11";
                 inhalerSection.appendChild(selectInhalerBtn)
                 selectInhalerBtn.id = 'select' + inhaler.name
 
+                //adding inhaler name as button label
                 let divBtn = document.createElement('div')
                 divBtn.className = "intaketimevar"
                 divBtn.textContent = inhaler.name;
@@ -44,11 +50,13 @@ function AddIntakePopup(firebaseConfig) {
                 selectInhalerBtn.addEventListener('click', function () {
                     var newIntakeInhaler = inhaler;
                     console.log(inhaler.name + ' is selected')
+
+                    //add intake button will depend on the latest inhaler button that was clicked
                     addIntakeBtn.addEventListener('click', function () {
                         var newIntakeTime = document.getElementById("intakeTimeVar").value;
                         var newIntakePuffs = document.getElementById("nbPuffsVar").value;
-                        //newIntakeInhaler.addIntake(newIntakeTime, newIntakePuffs);
-                        //var newIntake = new Intake(newIntakeTime,newIntakePuffs,newIntakeInhaler)
+
+                        //direct data writing in firebase depending on selected inhaler
                         let selectedInhalerDB = child(inhalerDB, '/' + inhaler.name)
                         let intakesDB = child(selectedInhalerDB, '/intakes/')
                         push(intakesDB, {
@@ -56,9 +64,12 @@ function AddIntakePopup(firebaseConfig) {
                             puffNum: newIntakePuffs
                         })
                         console.log('intake data pushed to firebase')
+
+                        //analysing if selected inhaler is overused
                         get(intakesDB).then((snapshot) => {
                             if (snapshot.exists()) {
                                 var intakeCount = 0;
+                                //counting the number of intakes for the inhaler so far
                                 snapshot.forEach(function (childSnapshot) {
                                     intakeCount++
                                 })
@@ -66,11 +77,12 @@ function AddIntakePopup(firebaseConfig) {
                                 get(dosageDB).then((snapshot) => {
                                     if (snapshot.exists) {
                                         var numOfDose = 0;
+                                        //counting the number of dosages set for the inhaler so far
                                         snapshot.forEach(function (childSnapshot) {
                                             numOfDose++
                                         })
                                     }
-                                    if (intakeCount > numOfDose) { //NOTIFICATION
+                                    if (intakeCount > numOfDose) { // triggering notification or alert to warn overusage
                                         if (Notification.permission === "granted") {
                                             new Notification("Warning: Too Frequent Usage of " + newIntakeInhaler.getName() + "!", {
                                                 body: "It is recommended to space out this inhaler intake according to your registered dose."
@@ -86,6 +98,7 @@ function AddIntakePopup(firebaseConfig) {
                     })
                 })
             }
+            //create select button for every inhaler in user's database
             snapshot.forEach(function (childSnapshot) {
                 let inhalerChoice = childSnapshot.val().inhaler
                 createSelectInhalerBtn(inhalerChoice)
