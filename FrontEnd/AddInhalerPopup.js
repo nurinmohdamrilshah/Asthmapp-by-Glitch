@@ -93,6 +93,7 @@ function addInhalerPopup(firebaseConfig) {
     let reminderCount = 0;
     let reminderTimes = [];
 
+    //confirming dosage reminder time to be added for inhaler
     newInhalerDoseBtn.addEventListener('click', function () {
         const newReminder = document.getElementById("newDose");
         let newInhalerDoseReminder = new Date(newReminder.value);
@@ -112,16 +113,20 @@ function addInhalerPopup(firebaseConfig) {
 
     })
 
-
+    //set button to write inhaler, its fields, and reminders to user's database on click
     addInhalerBtn.addEventListener('click', function () {
             const newInhalerName = document.getElementById("newInhalerName").value;
             const newInhalerVol = document.getElementById("newInhalerVolume").value;
             const newInhalerExpDate = document.getElementById("newInhalerExpDate").value;
+
+            //create new instance of inhaler to access methods
             let newInhaler = new Inhaler(newInhalerName, newInhalerVol, newInhalerExpDate, newInhalerType);
             if (newInhaler.isExpired()) {
                 alert("Inhaler " + newInhaler.getName() + " is expired, add a different one!")
-            } else {
+            }
+            else {
                 if (inhalerDB) {
+                    //create new child in list of inhalers with default as non-favourite
                     let newInhalerDB = child(inhalerDB, '/' + newInhaler.getName())
                     set(newInhalerDB, {
                         inhaler: newInhaler,
