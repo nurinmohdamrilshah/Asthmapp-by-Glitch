@@ -56,62 +56,14 @@
         <button class="newcrisislog" id="newCrisisLogBtn">
           <h1 class="newcrisislogtext">New Crisis Log</h1>
         </button>
-        <h1 class="my-last-crisis">My last crisis</h1>
-        <img
-          class="stats-graph-icon"
-          alt=""
-          src="./public/stats-graph@2x.png"
-        />
-
-        <h1 class="my-last-crisis">What to look out for</h1>
-        <section class="allergenssymptoms" id="symptomsAndAllergens">
-          <h1 class="my-last-crisis">My Most Common Symptoms</h1>
-          <section class="frame-parent" id="symptomsSection">
-            <div class="sneeze-container">
-              <img class="exercise-icon" alt="" src="./public/sneeze-blue@2x.png" />
-
-              <div class="cough1">Cough</div>
-            </div>
-            <div class="torso-group">
-              <img class="exercise-icon" alt="" src="./public/torso1@2x.png" />
-
-              <div class="pollen">
-                <p class="chest1">Chest</p>
-                <p class="chest1">compressions</p>
-              </div>
-            </div>
-            <div class="sneeze-container">
-              <img class="exercise-icon" alt="" src="./public/lungs1@2x.png" />
-
-              <div class="pollen">Dysponea</div>
-            </div>
-          </section>
-          <h1 class="my-last-crisis">My Most Common Allergens</h1>
-          <section class="frame-parent" id="allergensSection">
-            <div class="exercise-parent">
-              <img
-                class="exercise-icon"
-                alt=""
-                src="./public/exercise@2x.png"
-              />
-
-              <div class="pollen">Activities</div>
-            </div>
-            <div class="sneeze-container">
-              <img class="exercise-icon" alt="" src="./public/broom1@2x.png" />
-
-              <div class="pollen">Dust</div>
-            </div>
-            <div class="sneeze-container">
-              <img
-                class="exercise-icon"
-                alt=""
-                src="./public/particle@2x.png"
-              />
-
-              <div class="pollen">Pollen</div>
-            </div>
-          </section>
+        <h1 class="my-last-crisis">Symptoms Chart</h1>
+        <section class="allergenssymptoms">
+          <div class="chart"><canvas id="symptomsChart"></canvas></div>
+        </section>
+        
+        <h1 class="my-last-crisis">Allergens Chart</h1>
+        <section class="allergenssymptoms">
+          <div class="chart"><canvas id="allergensChart"></canvas></div>
         </section>
       </main>
       <nav class="navbaremergency" id="navBarEmergency">
@@ -134,5 +86,8 @@
 
     <script src="./Emergency3.js" type="module"></script>
     <script src="./AddCrisis.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./SymptomsChart.js" type="module"></script>
+    <script src="./AllergensChart.js" type="module"></script>
   </body>
 </html>
