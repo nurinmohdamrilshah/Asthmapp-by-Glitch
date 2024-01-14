@@ -129,8 +129,10 @@ function setAPI(input1){
     return APIindex
 }
 async function setlocation(input){
+    // reference 1 from https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch//
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
+    //end of reference 1//
     //barking
     const barking = {'SO2':'0','NO2':'0','O3':'0','PM10':'0','PM25':'0','AQI':'0'};
     barking.NO2 = apidata.HourlyAirQualityIndex.LocalAuthority[0].Site[0].Species[0]["@AirQualityIndex"];
