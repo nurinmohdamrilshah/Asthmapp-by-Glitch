@@ -14,32 +14,31 @@ const firebaseConfig = {
     measurementId: "G-PLRLWFR1X7"
 };
 
+// const auth = getAuth();
+// var currentUser = auth.currentUser;
+// var currentUID, currentUserDB;
+
+// if (currentUser) {
+//     currentUID = currentUser.uid;
+//     currentUserDB = ref(database, '/users/' + currentUID);
+// } else {
+//     currentUID = 'testDosage2';
+//     currentUserDB = ref(database, '/users/' + currentUID);
+// }
+
+// onAuthStateChanged(auth, (user) => {
+//     if (user) {
+//         currentUser = auth.currentUser;
+//         currentUID = user.uid;
+//         currentUserDB = ref(database, '/users/' + currentUID);
+//         boroughDB = child(currentUserDB, '/myBorough');
+//     }
+// });
+
+const currentUID = "testDosage2";
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const ctx = document.getElementById('symptomsChart');
-
-const auth = getAuth(app);
-var currentUser = auth.currentUser;
-var currentUID, currentUserDB;
-
-if (currentUser) {
-    currentUID = currentUser.uid;
-    currentUserDB = ref(database, '/users/' + currentUID);
-} else {
-    currentUID = 'testDosage2';
-    currentUserDB = ref(database, '/users/' + currentUID);
-}
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUser = auth.currentUser;
-        currentUID = user.uid;
-        currentUserDB = ref(database, '/users/' + currentUID);
-    }
-});
-
-console.log(currentUID);
-
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
 let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling','Wheezing'];
 
