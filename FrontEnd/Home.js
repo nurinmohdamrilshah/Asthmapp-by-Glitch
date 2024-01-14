@@ -27,7 +27,6 @@ let currentUser
 onAuthStateChanged(auth, (user) => {
     if (user) {
         const currentUID = user.uid;
-        console.log(currentUID)
         const currentUserDB = ref(database,'/users/'+currentUID)
         const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
     }
