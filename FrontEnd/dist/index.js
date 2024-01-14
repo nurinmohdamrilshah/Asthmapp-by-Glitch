@@ -15084,7 +15084,7 @@
          */
         child(path) {
             const childPath = new Path(path);
-            const childRef = child(this.ref, path);
+            const childRef = child$1(this.ref, path);
             return new DataSnapshot(this._node.getChild(childPath), childRef, PRIORITY_INDEX);
         }
         /**
@@ -15132,7 +15132,7 @@
             const childrenNode = this._node;
             // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a weird return type...
             return !!childrenNode.forEachChild(this._index, (key, node) => {
-                return action(new DataSnapshot(node, child(this.ref, key), PRIORITY_INDEX));
+                return action(new DataSnapshot(node, child$1(this.ref, key), PRIORITY_INDEX));
             });
         }
         /**
@@ -15205,7 +15205,7 @@
     function ref(db, path) {
         db = getModularInstance(db);
         db._checkNotDeleted('ref');
-        return path !== undefined ? child(db._root, path) : db._root;
+        return path !== undefined ? child$1(db._root, path) : db._root;
     }
     /**
      * Gets a `Reference` for the location at the specified relative path.
@@ -15218,7 +15218,7 @@
      *   location.
      * @returns The specified child location.
      */
-    function child(parent, path) {
+    function child$1(parent, path) {
         parent = getModularInstance(parent);
         if (pathGetFront(parent._path) === null) {
             validateRootPathString('child', 'path', path, false);
@@ -15336,7 +15336,7 @@
         }
         createEvent(change, query) {
             assert(change.childName != null, 'Child events should have a childName.');
-            const childRef = child(new ReferenceImpl(query._repo, query._path), change.childName);
+            const childRef = child$1(new ReferenceImpl(query._repo, query._path), change.childName);
             const index = query._queryParams.getIndex();
             return new DataEvent(change.type, this, new DataSnapshot(change.snapshotNode, childRef, index), change.prevName);
         }
@@ -22912,8 +22912,8 @@
 
       // Sync user data with form inputs
       function syncUserData(userDBRef) {
-        const boroughDB = child(userDBRef, '/myBorough');
-        const contactsDB = child(userDBRef, '/myContacts');
+        const boroughDB = child$1(userDBRef, '/myBorough');
+        const contactsDB = child$1(userDBRef, '/myContacts');
         onValue(boroughDB, snapshot => {
           const data = snapshot.val();
           if (data) {
@@ -22975,8 +22975,8 @@
         saveUserData(currentUserDB, myBoroughVar, phoneNumber1, phoneNumber2, phoneNumber3);
       }
       function saveUserData(userDBRef, borough, phone1, phone2, phone3) {
-        const currentBoroughDB = child(userDBRef, '/myBorough/');
-        const phoneNumbersInDb = child(userDBRef, '/myContacts/');
+        const currentBoroughDB = child$1(userDBRef, '/myBorough/');
+        const phoneNumbersInDb = child$1(userDBRef, '/myContacts/');
         set$1(currentBoroughDB, {
           myBorough: borough
         }).then(() => console.log("Borough data saved")).catch(error => console.error("Error saving borough data: ", error));
@@ -23084,6 +23084,108 @@
           });
         } else {
           alert("User is not authenticated.");
+        }
+      }
+    }
+
+    function AllergensChart(firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const ctx1 = document.getElementById('allergensChart');
+      const auth = getAuth(app);
+      var currentUser = auth.currentUser;
+      var currentUID, currentUserDB;
+      if (currentUser) {
+        currentUID = currentUser.uid;
+        currentUserDB = ref(database, '/users/' + currentUID);
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          child(currentUserDB, '/myBorough');
+        }
+      });
+
+      // const currentUID = "testDosage2";
+
+      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
+      let labels1 = ['Activities', 'Air Quality', 'Animals', 'Dust', 'Food Allergy', 'Greenery', 'Perfumes', 'Smoke', 'Stress', 'Temp & Humidity'];
+      onValue(entriesInDB, function (snapshot) {
+        let allergens = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        const entries = snapshot.val();
+
+        // Counts total number of occurences of allergens for ALL crisis log entries
+        for (var i = 0; i < Object.keys(entries).length; i++) {
+          const entry = Object.keys(entries)[i];
+          const allergensInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_allergens");
+          updateChart(allergens, allergensInDB);
+        }
+        updateChartWithSymptoms(allergens);
+      });
+
+      // Tallies number of occurences for EACH crisis log entry
+      function updateChart(allergens, allergensInDB) {
+        onValue(allergensInDB, function (snapshot) {
+          const data = snapshot.val();
+          if (data != null) {
+            if (data.activites == true) {
+              allergens[0] += 1;
+            }
+            if (data.airQuality == true) {
+              allergens[1] += 1;
+            }
+            if (data.animals == true) {
+              allergens[2] += 1;
+            }
+            if (data.dust == true) {
+              allergens[3] += 1;
+            }
+            if (data.foodAllergy == true) {
+              allergens[4] += 1;
+            }
+            if (data.greenery == true) {
+              allergens[5] += 1;
+            }
+            if (data.perfumes == true) {
+              allergens[6] += 1;
+            }
+            if (data.smoke == true) {
+              allergens[7] += 1;
+            }
+            if (data.stress == true) {
+              allergens[8] += 1;
+            }
+            if (data.tempHumidity == true) {
+              allergens[9] += 1;
+            }
+          }
+        });
+      }
+      function updateChartWithSymptoms(allergens) {
+        const chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: labels1,
+            datasets: [{
+              label: 'Occurrences',
+              data: allergens,
+              hoverOffset: 4,
+              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
+            }]
+          }
+        };
+        // Check if chart is already initialized
+        if (window.liveChart2) {
+          window.liveChart2.data = chartConfig.data;
+          window.liveChart2.update();
+        } else {
+          // Initialize the chart for the first time
+          window.liveChart2 = new Chart(ctx1, chartConfig);
         }
       }
     }
@@ -25255,6 +25357,99 @@
     }
     registerAnalytics();
 
+    function SymptomsChart(firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const ctx = document.getElementById('symptomsChart');
+      const auth = getAuth(app);
+      var currentUser = auth.currentUser;
+      var currentUID, currentUserDB;
+      if (currentUser) {
+        currentUID = currentUser.uid;
+        currentUserDB = ref(database, '/users/' + currentUID);
+      } else {
+        currentUID = 'testDosage2';
+        currentUserDB = ref(database, '/users/' + currentUID);
+      }
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUser = auth.currentUser;
+          currentUID = user.uid;
+          currentUserDB = ref(database, '/users/' + currentUID);
+          child(currentUserDB, '/myBorough');
+        }
+      });
+      console.log(currentUID);
+      // const currentUID = "testDosage2";
+
+      const entriesInDB = ref(database, "users/" + currentUID + "/addCrisis");
+      let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling', 'Wheezing'];
+      onValue(entriesInDB, function (snapshot) {
+        let symptoms = [0, 0, 0, 0, 0, 0, 0];
+        const entries = snapshot.val();
+
+        // Counts total number of occurences of symptoms for ALL crisis log entries
+        for (var i = 0; i < Object.keys(entries).length; i++) {
+          const entry = Object.keys(entries)[i];
+          const symptomsInDB = ref(database, "users/" + currentUID + "/addCrisis/" + entry + "/selected_symptoms");
+          updateChart(symptoms, symptomsInDB);
+        }
+        updateChartWithSymptoms(symptoms);
+      });
+
+      // Tallies number of occurences for EACH crisis log entry
+      function updateChart(symptoms, symptomsInDB) {
+        onValue(symptomsInDB, function (snapshot) {
+          const data = snapshot.val();
+          if (data != null) {
+            if (data.chestCompressions == true) {
+              symptoms[0] += 1;
+            }
+            if (data.cough == true) {
+              symptoms[1] += 1;
+            }
+            if (data.dizziness == true) {
+              symptoms[2] += 1;
+            }
+            if (data.dysponea == true) {
+              symptoms[3] += 1;
+            }
+            if (data.fever == true) {
+              symptoms[4] += 1;
+            }
+            if (data.tingle == true) {
+              symptoms[5] += 1;
+            }
+            if (data.wheezing == true) {
+              symptoms[6] += 1;
+            }
+          }
+        });
+      }
+      function updateChartWithSymptoms(symptoms) {
+        const chartConfig = {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Occurences',
+              data: symptoms,
+              hoverOffset: 4,
+              backgroundColor: ['#FEBB60', '#DACC8A', '#B6DDB4', '#B4DFCE', '#B2E1E7', '#8DB7C5', '#688DA3', '#4D6E8A', '#365375', '#1E385F']
+            }]
+          }
+        };
+        // Check if chart is already initialized
+        if (window.liveChart) {
+          window.liveChart.data = chartConfig.data;
+          window.liveChart.update();
+        } else {
+          // Initialize the chart for the first time
+          window.liveChart = new Chart(ctx, chartConfig);
+        }
+      }
+    }
+
     /* == Firebase == */
     console.log('Firebase loaded:', typeof initializeApp !== 'undefined' ? 'Yes' : 'No');
 
@@ -25278,7 +25473,8 @@
     forgotPassword(firebaseConfig);
 
     // AddIntakePopup(firebaseConfig);
-    // AllergensChart(firebaseConfig);
+    AllergensChart(firebaseConfig);
+    SymptomsChart(firebaseConfig);
     // Home(firebaseConfig);
     // MyUsageLog(firebaseConfig);
     // SymptomsChart(firebaseConfig);

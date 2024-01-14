@@ -1,5 +1,3 @@
-
-
 // Top navigation event
 var topNav = document.getElementById("back");
 if (topNav) {

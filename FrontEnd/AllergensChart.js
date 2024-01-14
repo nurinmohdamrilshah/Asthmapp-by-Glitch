@@ -10,7 +10,7 @@ function AllergensChart(firebaseConfig) {
 
     const auth = getAuth(app);
     var currentUser = auth.currentUser;
-    var currentUID, currentUserDB;
+    var currentUID, boroughDB, currentUserDB;
 
     if (currentUser) {
         currentUID = currentUser.uid;

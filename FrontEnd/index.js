@@ -41,7 +41,8 @@ Emergency1(firebaseConfig)
 forgotPassword(firebaseConfig);
 
 // AddIntakePopup(firebaseConfig);
-// AllergensChart(firebaseConfig);
+AllergensChart(firebaseConfig);
+SymptomsChart(firebaseConfig)
 // Home(firebaseConfig);
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
