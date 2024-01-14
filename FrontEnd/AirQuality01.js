@@ -1,4 +1,6 @@
-
+//AirQuality01.js
+//Calculate averages for each pollutant per borough
+//NO2 Average
 function avrgNO2(borough){
     let i = 0;
     let len = borough.length;
@@ -15,6 +17,7 @@ function avrgNO2(borough){
     let NO2index = NO2average.toFixed(1);
     return NO2index
 }
+//SO2 average
 function avrgSO2(borough){
     let i = 0;
     let len = borough.length;
@@ -31,6 +34,7 @@ function avrgSO2(borough){
     let SO2index = SO2average.toFixed(1);
     return SO2index
 }
+//O3 average
 function avrgO3(borough){
     let i = 0;
     let len = borough.length;
@@ -47,6 +51,7 @@ function avrgO3(borough){
     let O3index = O3average.toFixed(1);
     return O3index
 }
+//PM10 average
 function avrgPM10(borough){
     let i = 0;
     let len = borough.length;
@@ -63,6 +68,7 @@ function avrgPM10(borough){
     let PM10index = PM10average.toFixed(1);
     return PM10index
 }
+//PM25 average
 function avrgPM25(borough){
     let i = 0;
     let len = borough.length;
@@ -79,6 +85,7 @@ function avrgPM25(borough){
     let PM25index = PM25average.toFixed(1);
     return PM25index
 }
+//Highest AQI of the area for the overall score per borough
 function highestAQI(borough){
     let i = 0;
     let len = borough.length;
@@ -128,6 +135,7 @@ function setAPI(input1){
     let APIindex = APIaverage.toFixed(1);
     return APIindex
 }
+//Set locations for each borough
 async function setlocation(input){
     // reference 1 from https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch//
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
