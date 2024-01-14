@@ -1,71 +1,117 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, set, onValue } from 'firebase/database';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import ErrorHandle from "./ErrorHandle.js";
 
 function Settings(firebaseConfig) {
-    console.log("Entered settings")
+    console.log("Entered settings");
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth();
-    let currentUser = auth.currentUser;
     let currentUserDB;
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // User is signed in, handle the display of user data
             currentUserDB = ref(database, '/users/' + user.uid);
-            console.log(currentUserDB)
+            console.log("User DB Reference:", currentUserDB);
+
+            // Synchronize borough and contacts data
+            syncUserData(currentUserDB);
         } else {
-            // No user is signed in
             console.log("No user is currently signed in.");
-            // Handle scenarios where there is no user signed in
         }
     });
 
-    // Form and input elements
+
+    // Sync user data with form inputs
+    function syncUserData(userDBRef) {
+        const boroughDB = child(userDBRef, '/myBorough');
+        const contactsDB = child(userDBRef, '/myContacts');
+
+        onValue(boroughDB, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("myBoroughVar").value = data.myBorough || "";
+            }
+        });
+
+        onValue(contactsDB, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("phonenb1").value = data.number1 || "";
+                document.getElementById("phonenb2").value = data.number2 || "";
+                document.getElementById("phonenb3").value = data.number3 || "";
+            }
+        });
+
+        onValue(userDBRef, (snapshot) => {
+            const data = snapshot.val();
+            console.log(data)
+            console.
+            if (data) {
+                document.getElementById("usernamevar").value = data.username || "";
+                document.getElementById("emailvar").value = data.username || "";
+
+            }
+        });
+    }
+
+    // Form submission event listener
     const updateSettings = document.getElementById('update-button');
-    const inputMyBorough = document.getElementById("myBoroughVar");
-    const inputContact1 = document.getElementById("phonenb1");
-    const inputContact2 = document.getElementById("phonenb2");
-    const inputContact3 = document.getElementById("phonenb3");
+    if (updateSettings) {
+        updateSettings.addEventListener('click', function (e) {
+            e.preventDefault();
+            settingsForm();
+        });
+    } else {
+        console.error("Settings form not found.");
+    }
 
+    // Handle settings form submission
     function settingsForm() {
-        console.log("Entered settings func")
-
         if (!currentUserDB) {
             console.error("User database reference is not set.");
             return;
         }
-``
+
+        const inputMyBorough = document.getElementById("myBoroughVar");
+        const inputContact1 = document.getElementById("phonenb1");
+        const inputContact2 = document.getElementById("phonenb2");
+        const inputContact3 = document.getElementById("phonenb3");
+
         const myBoroughVar = inputMyBorough ? inputMyBorough.value : "";
         const phoneNumber1 = inputContact1 ? inputContact1.value : "";
         const phoneNumber2 = inputContact2 ? inputContact2.value : "";
         const phoneNumber3 = inputContact3 ? inputContact3.value : "";
 
-        // Paths in the database
-        const currentBoroughDB = child(currentUserDB, '/myBorough/');
-        const phoneNumbersInDb = child(currentUserDB, '/myContacts/');
+        if (!isValidPhoneNumber(phoneNumber1) || !isValidPhoneNumber(phoneNumber2) || !isValidPhoneNumber(phoneNumber3)) {
+            console.log("Invalid Phone Number");
+            ErrorHandle("Invalid Phone Number");
+            return;
+        }
 
-        // Saving data to Firebase
-        set(currentBoroughDB, {myBorough: myBoroughVar})
+        // Save data to Firebase
+        saveUserData(currentUserDB, myBoroughVar, phoneNumber1, phoneNumber2, phoneNumber3);
+    }
+
+    function saveUserData(userDBRef, borough, phone1, phone2, phone3) {
+        const currentBoroughDB = child(userDBRef, '/myBorough/');
+        const phoneNumbersInDb = child(userDBRef, '/myContacts/');
+
+        set(currentBoroughDB, { myBorough: borough })
             .then(() => console.log("Borough data saved"))
             .catch(error => console.error("Error saving borough data: ", error));
-        set(phoneNumbersInDb, {number1: phoneNumber1, number2: phoneNumber2, number3: phoneNumber3})
+
+        set(phoneNumbersInDb, { number1: phone1, number2: phone2, number3: phone3 })
             .then(() => console.log("Contact data saved"))
             .catch(error => console.error("Error saving contact data: ", error));
     }
 
-
-    // Add submit event listener
-    if (updateSettings) {
-        updateSettings.addEventListener('click', function(e) {
-            e.preventDefault();
-            settingsForm();
-            console.log("clicked")
-        });
-    } else {
-        console.error("Settings form not found.");
+    // Phone number validation
+    function isValidPhoneNumber(number) {
+        const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+        return phoneRegex.test(number);
     }
 
     // Navigation Links
@@ -76,5 +122,4 @@ function Settings(firebaseConfig) {
     signOutLink?.addEventListener("click", () => window.location.href = "./index.html");
 }
 
-
-export default Settings
+export default Settings;
