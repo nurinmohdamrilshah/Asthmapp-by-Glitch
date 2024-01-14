@@ -3,6 +3,7 @@ import {initializeApp} from "firebase/app";
 import {child, get, getDatabase, push, ref} from "firebase/database";
 import {getAuth, onAuthStateChanged} from "firebase/auth";
 import {Inhaler, Dosage, Intake} from "./Inhaler.js";
+import Nav from "./Nav.js"
 
 
 function AddIntakePopup(firebaseConfig) {
@@ -138,16 +139,12 @@ function AddIntakePopup(firebaseConfig) {
 
     var topNav = document.getElementById("back");
     if (topNav) {
-        topNav.addEventListener("click", function (e) {
-            window.location.href = "./MyInhaler.html";
-        });
+        Nav();
     }
 
     var close = document.getElementById("closeBtn");
     if (close) {
-        close.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
-        });
+        Nav();
     }
 
     var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
@@ -178,24 +175,19 @@ function AddIntakePopup(firebaseConfig) {
 
     var home = document.getElementById("homeBtn");
     if (home) {
-        home.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
-        });
+        Nav();
     }
 
     var cloud = document.getElementById("airQualityBtn");
     if (cloud) {
-        cloud.addEventListener("click", function (e) {
-            window.location.href = "./AirQuality01.html";
-        });
+        Nav();
     }
 
     var hospital = document.getElementById("emergencyBtn");
     if (hospital) {
-        hospital.addEventListener("click", function (e) {
-            window.location.href = "./Emergency1.html";
-        });
+        Nav();
     }
+
     document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
     document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
 }

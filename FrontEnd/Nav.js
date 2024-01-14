@@ -13,7 +13,13 @@ function Nav() {
         "emergencyBar": "Emergency1.html",
         "signUpBtn" : "Home.html",
         "sighOut" : "Index.html",
-        "signInBtn" : "Home.html"
+        "signInBtn" : "Home.html",
+        "closeBtn1" : "MyInhaler.html",
+        "addIntakeBtn": "MyInhaler.html",
+        "homeBtn": "Home.html",
+        "airQualityBtn": "AirQuality01.html",
+        "emergencyBtn" : "Emergency1.html",
+
     };
 
     const navigationButtons = [
@@ -29,7 +35,13 @@ function Nav() {
         document.getElementById("emergencyBar"),
         document.getElementById("signUpBtn"),
         document.getElementById("sighOut"),
-        document.getElementById("signInBtn")
+        document.getElementById("signInBtn"),
+        document.getElementById("back"),
+        document.getElementById("homeBtn"),
+        document.getElementById("airQualityBtn"),
+        document.getElementById("emergencyBtn"),
+        document.getElementById("closeBtn1"),
+        document.getElementById("addIntakeBtn")
     ];
 
     const backPageBtn = document.getElementById("backBtn")

@@ -22853,9 +22853,14 @@
         "emergencyBar": "Emergency1.html",
         "signUpBtn": "Home.html",
         "sighOut": "Index.html",
-        "signInBtn": "Home.html"
+        "signInBtn": "Home.html",
+        "closeBtn1": "MyInhaler.html",
+        "addIntakeBtn": "MyInhaler.html",
+        "homeBtn": "Home.html",
+        "airQualityBtn": "AirQuality01.html",
+        "emergencyBtn": "Emergency1.html"
       };
-      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById("emergencyBar"), document.getElementById("signUpBtn"), document.getElementById("sighOut"), document.getElementById("signInBtn")];
+      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById("emergencyBar"), document.getElementById("signUpBtn"), document.getElementById("sighOut"), document.getElementById("signInBtn"), document.getElementById("back"), document.getElementById("homeBtn"), document.getElementById("airQualityBtn"), document.getElementById("emergencyBtn"), document.getElementById("closeBtn1"), document.getElementById("addIntakeBtn")];
       const backPageBtn = document.getElementById("backBtn");
       if (backPageBtn) {
         backPageBtn.addEventListener("click", function (e) {
@@ -23519,15 +23524,11 @@
       }
       var topNav = document.getElementById("back");
       if (topNav) {
-        topNav.addEventListener("click", function (e) {
-          window.location.href = "./MyInhaler.html";
-        });
+        Nav();
       }
       var close = document.getElementById("closeBtn");
       if (close) {
-        close.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
+        Nav();
       }
       var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
       if (newInhalerIntake) {
@@ -23553,21 +23554,15 @@
       }
       var home = document.getElementById("homeBtn");
       if (home) {
-        home.addEventListener("click", function (e) {
-          window.location.href = "./Home.html";
-        });
+        Nav();
       }
       var cloud = document.getElementById("airQualityBtn");
       if (cloud) {
-        cloud.addEventListener("click", function (e) {
-          window.location.href = "./AirQuality01.html";
-        });
+        Nav();
       }
       var hospital = document.getElementById("emergencyBtn");
       if (hospital) {
-        hospital.addEventListener("click", function (e) {
-          window.location.href = "./Emergency1.html";
-        });
+        Nav();
       }
       document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
       document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
