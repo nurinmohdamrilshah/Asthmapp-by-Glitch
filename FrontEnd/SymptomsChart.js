@@ -35,10 +35,12 @@ onAuthStateChanged(auth, (user) => {
         currentUser = auth.currentUser;
         currentUID = user.uid;
         currentUserDB = ref(database, '/users/' + currentUID);
+        boroughDB = child(currentUserDB, '/myBorough');
     }
 });
 
 console.log(currentUID);
+// const currentUID = "testDosage2";
 
 const entriesInDB = ref(database, "users/"+currentUID+"/addCrisis");
 let labels = ['Chest Compressions', 'Cough', 'Dizziness', 'Dysponea', 'Fever', 'Tingling','Wheezing'];
@@ -89,26 +91,25 @@ function updateChart(symptoms,symptomsInDB) {
 
 function updateChartWithSymptoms(symptoms) {
     const chartConfig = {
-        type: 'bar',
+        type: 'doughnut',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Occurances',
+            label: 'Occurences',
             data: symptoms,
-            borderWidth: 0.3
+            hoverOffset: 4,
+            backgroundColor: [
+                '#FEBB60', 
+                '#DACC8A',
+                '#B6DDB4',
+                '#B4DFCE',
+                '#B2E1E7',
+                '#8DB7C5',
+                '#688DA3',
+                '#4D6E8A',
+                '#365375',
+                '#1E385F']
           }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          },
-          plugins: {
-            legend: {
-                display: false
-              }
-          }
         }
       }
       // Check if chart is already initialized
