@@ -12,22 +12,12 @@ function AddIntakePopup(firebaseConfig) {
     const analytics = getAnalytics(app);
 
     const auth = getAuth();
-    var currentUser = auth.currentUser;
-    if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID)
-        var inhalerDB = child(currentUserDB, '/inhalers')
-    } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-        inhalerDB = child(currentUserDB, '/inhalers');
-    }
+    let currentUser
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            currentUser = auth.currentUser;
-            currentUID = user.uid;
-            currentUserDB = ref(database, '/users/' + currentUID);
-            inhalerDB = child(currentUserDB, '/inhalers');
+            const currentUID = user.uid;
+            const currentUserDB = ref(database,'/users/'+currentUID)
+            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
 
