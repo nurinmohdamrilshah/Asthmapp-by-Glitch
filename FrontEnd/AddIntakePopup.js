@@ -15,9 +15,9 @@ function AddIntakePopup(firebaseConfig) {
     let currentUser
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            const currentUID = user.uid;
-            const currentUserDB = ref(database,'/users/'+currentUID)
-            const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+            var currentUID = user.uid;
+            var currentUserDB = ref(database,'/users/'+currentUID)
+            var inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
         }
     })
 
@@ -70,27 +70,33 @@ function AddIntakePopup(firebaseConfig) {
                                         })
                                     }
                                     if (intakeCount > numOfDose) { //NOTIFICATION
-                                        alert("Warning:" + newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.")
+                                        if (Notification.permission === "granted") {
+                                            new Notification("Warning: Too Frequent Usage of " + newIntakeInhaler.getName() + "!", {
+                                                body: "It is recommended to space out this inhaler intake according to your registered dose."
+                                            })
+                                        } else {
+                                            alert("Warning:" + newIntakeInhaler.getName() + " is OverUsed!")
+                                        }
                                     }
-                                    window.reload()
                                 })
-
+                                window.reload()
                             }
                         })
                     })
                 })
             }
-
             snapshot.forEach(function (childSnapshot) {
                 let inhalerChoice = childSnapshot.val().inhaler
                 createSelectInhalerBtn(inhalerChoice)
             })
-        } else {
+        }
+        else {
             console.log("No data available");
         }
     }).catch((error) => {
-        console.error(error);
-    });
+    console.error(error);
+});
+
 
     //Navigation
     // eventListeners.js
