@@ -1,3 +1,62 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
+import {getDatabase, push, ref, onValue, child, get, set, update,orderByChild,equalTo} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+import {Inhaler,Intake,Dosage} from "./Inhaler.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: "AIzaSyBy1dB-bUbRIQPsvMiO3nujknwP6ntdMes",
+    authDomain: "asthmapp-121a8.firebaseapp.com",
+    databaseURL: "https://asthmapp-121a8-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "asthmapp-121a8",
+    storageBucket: "asthmapp-121a8.appspot.com",
+    messagingSenderId: "583573518616",
+    appId: "1:583573518616:web:921a17f44e5fca27b3066d",
+    measurementId: "G-PLRLWFR1X7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const analytics = getAnalytics(app);
+
+const auth = getAuth();
+const currentUser = auth.currentUser;
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const currentUID = currentUser.uid;
+        const currentUserDB = ref(database,'/users/'+currentUID)
+        const inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+    }
+})
+if (currentUser){
+    var currentUID = currentUser.uid;
+    var currentUserDB = ref(database,'/users/'+currentUID)
+    var inhalerDB = child(currentUserDB, '/inhalers')
+}
+else {
+    currentUID = 'testDosage2'
+    currentUserDB = ref(database, '/users/' + currentUID)
+    inhalerDB = child(currentUserDB, '/inhalers')
+}
+
+var favInhalerName = document.getElementById("favInhalerVar");
+
+
+get(inhalerDB).then((snapshot) => {
+    if (snapshot.exists()) {
+        snapshot.forEach(function (childSnapshot) {
+            if(childSnapshot.val().inhaler.fav){
+                favInhalerName.textContent = "Favourite Inhaler: "+childSnapshot.val().inhaler.name
+            }
+        })
+    }
+})
+
 //Timer bar
 //Reference - taken from https://chat.openai.com/share/3759b693-44fe-4ed6-b6d3-a44a338071c3
 // Set the countdown time in seconds
@@ -40,8 +99,6 @@ const countdownInterval = setInterval(() => {
 
 
 // popupHandler.js
-import {Inhaler} from "./Inhaler.js";
-
 var popupclose = document.getElementById("closeBtn");
 if (popupclose) {
     popupclose.addEventListener("click", function (e) {
@@ -74,14 +131,6 @@ if (popupcancelBtnContainer) {
         }
     });
 }
-
-    let favInhalerName = document.getElementById("favInhalerVar");
-    favInhalerName.textContent = "Favourite Inhaler: "+Inhaler.favInhaler.getName();
-    const cancelBtn = document.getElementById("cancelBtn");
-
-    cancelBtn.addEventListener('click', function () {
-        Inhaler.favInhaler.removeLastIntake();
-    })
 //Navigation
 // eventListeners.js
 var popupclose = document.getElementById("closeBtn");
