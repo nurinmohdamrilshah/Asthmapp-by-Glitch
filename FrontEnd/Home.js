@@ -2,7 +2,6 @@ import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, child } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getAPI, setAPI } from "./HomeAPI.js";
 
 function Home(firebaseConfig) {
     //Initializing Firebase and Database Structure

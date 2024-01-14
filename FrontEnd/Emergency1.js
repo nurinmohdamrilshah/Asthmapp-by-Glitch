@@ -1,121 +1,89 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { child, get, getDatabase, set, ref, onValue } from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getDatabase, ref, onValue} from "firebase/database"
+import {getAuth, onAuthStateChanged } from "firebase/auth";
 
 function Emergency1(firebaseConfig) {
-    // Initialize Firebase
+    console.log('Running Emergency1')
+    //Initialize Firebase only once
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-    const analytics = getAnalytics(app);
-
     const auth = getAuth();
-    var currentUser = auth.currentUser;
 
-    if (currentUser) {
-        var currentUID = currentUser.uid;
-        var currentUserDB = ref(database, '/users/' + currentUID);
-        var contactsDB = child(currentUserDB, '/myContacts');
-    } else {
-        currentUID = 'testDosage2';
-        currentUserDB = ref(database, '/users/' + currentUID);
-        contactsDB = child(currentUserDB, '/myContacts');
+    // Setup listeners for UI elements
+    setupCall999Button();
+    setupContactButtons();
+    subscribeToAuthChanges();
+
+    function setupCall999Button() {
+        const call999btn = document.getElementById("call999Btn");
+        if (call999btn) {
+            console.log("Calling 999")
+            call999btn.addEventListener("click", () => window.location.href = "tel:999");
+        }
     }
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = auth.currentUser;
-            currentUID = user.uid;
-            currentUserDB = ref(database, '/users/' + currentUID);
-            contactsDB = child(currentUserDB, '/myContacts');
-        }
-    });
+    function setupContactButtons() {
+        const emergencyContactButtons = [
+            document.getElementById("contact1Btn"),
+            document.getElementById("contact2Btn"),
+            document.getElementById("contact3Btn")
+        ];
 
-
-    // Set up phone numbers
-
-    const emergencyContactButtons = [
-        document.getElementById("contact1Btn"),
-        document.getElementById("contact2Btn"),
-        document.getElementById("contact3Btn")
-    ];
-    const call999Btn = document.getElementById("call999Btn");
-    const displayResult = document.getElementById("displayResult");
-
-    // Attach event listeners to the emergency contact buttons
-    emergencyContactButtons.forEach((button, index) => {
-        button.addEventListener("click", () => initiateCall(index + 1));
-    });
-
-    // Event listener for initiating a call to an emergency contact
-    function initiateCall(contactNumber) {
-        onValue(contactsDB, (snapshot) => {
-            const data = snapshot.val();
-            const phoneNumberKey = `number${contactNumber}`;
-
-            if (data && data[phoneNumberKey]) {
-                const phoneNumber = data[phoneNumberKey];
-
-                // Use the tel: URI scheme to initiate a phone call
-                window.location.href = `tel:${phoneNumber}`;
-            } else {
-                alert("Emergency contact not available.");
+        emergencyContactButtons.forEach((button, index) => {
+            if (button) {
+                console.log("Calling Emergency Contacts")
+                button.addEventListener("click", () => initiateCall(index + 1));
             }
         });
     }
 
-    // Event listener for calling 999
-    call999Btn.addEventListener("click", initiateEmergencyCall);
-
-    function initiateEmergencyCall() {
-        // Use the tel: URI scheme to initiate a call to 999
-        window.location.href = "tel:999";
-    }
-
-
-    //Set up elements
-    var close = document.getElementById("close");
-    var hyperlink = document.getElementById("emergencyStepsMore");
-    var crisisStatsBtn = document.getElementById("crisisStatsBtn");
-    var home = document.getElementById("homeBtn");
-    var cloud = document.getElementById("airQltyBtn");
-    var inhaler = document.getElementById("inhalerBtn");
-
-    // Add event listeners to the elements
-    if (close) {
-        close.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
+    function subscribeToAuthChanges() {
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                console.log("userDBRef")
+                const userDBRef = ref(database, '/users/' + user.uid);
+                syncUserData(userDBRef);
+            } else {
+                console.log("No user is currently signed in");
+            }
         });
     }
 
-    if (hyperlink) {
-        hyperlink.addEventListener("click", function (e) {
-            window.location.href = "./Emergency2.html";
+    function syncUserData(userDBRef) {
+        const contactsDBRef = ref(userDBRef, '/myContacts');
+        console.log("Sync User Data")
+        onValue(contactsDBRef, snapshot => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("phonenb1").value = data.number1 || "";
+                document.getElementById("phonenb2").value = data.number2 || "";
+                document.getElementById("phonenb3").value = data.number3 || "";
+            }
         });
     }
 
-    if (crisisStatsBtn) {
-        crisisStatsBtn.addEventListener("click", function (e) {
-            window.location.href = "./Emergency3.html";
-        });
-    }
-
-    if (home) {
-        home.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
-        });
-    }
-
-    if (cloud) {
-        cloud.addEventListener("click", function (e) {
-            window.location.href = "./AirQuality01.html";
-        });
-    }
-
-    if (inhaler) {
-        inhaler.addEventListener("click", function (e) {
-            window.location.href = "./MyInhaler.html";
-        });
+    function initiateCall(contactNumber) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            const userDBRef = ref(database, '/users/' + currentUser.uid);
+            const contactsDBRef = ref(userDBRef, '/myContacts');
+            onValue(contactsDBRef, snapshot => {
+                const data = snapshot.val();
+                const phoneNumberKey = number$
+                {
+                    contactNumber
+                }
+                ;
+                if (data && data[phoneNumberKey]) {
+                    const phoneNumber = data[phoneNumberKey];
+                    window.location.href = `tel:${phoneNumber}`;
+                } else {
+                    alert("Emergency contact not available.");
+                }
+            });
+        } else {
+            alert("User is not authenticated.");
+        }
     }
 }
 

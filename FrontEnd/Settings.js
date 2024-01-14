@@ -94,7 +94,7 @@ function Settings(firebaseConfig) {
 
         if (!isValidPhoneNumber(phoneNumber1) || !isValidPhoneNumber(phoneNumber2) || !isValidPhoneNumber(phoneNumber3)) {
             console.log("Invalid Phone Number");
-            ErrorHandle("Invalid Phone Number");
+            alert("Invalid Phone Number");
             return;
         }
 

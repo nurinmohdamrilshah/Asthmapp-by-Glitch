@@ -1,6 +1,6 @@
 /* == Firebase == */
 import { initializeApp } from 'firebase/app';
-import './generatedImports.js'
+// import './generatedImports.js'
 import { getDatabase, ref, child, get, push , set} from 'firebase/database';
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 
@@ -24,10 +24,11 @@ import SignIn from "./SignIn.js";
 import forgotPassword from "./ForgotPassword.js";
 import SignUp from "./SignUp.js";
 import Settings from "./Settings.js";
+import Emergency1 from "./Emergency1.js";
+
 import AddCrisis from "./AddCrisis.js";
 import AddIntakePopup from "./AddIntakePopup.js";
 import AllergensChart from "./AllergensChart.js";
-import Emergency1 from "./Emergency1.js";
 import Home from "./Home.js"
 import MyUsageLog from "./MyUsageLog.js";
 import SymptomsChart from "./SymptomsChart.js";
@@ -36,14 +37,15 @@ import log from "./log.js"
 Settings(firebaseConfig);
 SignIn(firebaseConfig);
 SignUp(firebaseConfig);
-// AddCrisis(firebaseConfig)
+Emergency1(firebaseConfig)
 forgotPassword(firebaseConfig);
+
 // AddIntakePopup(firebaseConfig);
 // AllergensChart(firebaseConfig);
-// Emergency1(firebaseConfig)
 // Home(firebaseConfig);
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
 // log(firebaseConfig)
+// AddCrisis(firebaseConfig)
 
 

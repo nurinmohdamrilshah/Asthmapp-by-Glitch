@@ -22967,7 +22967,7 @@
         const phoneNumber3 = inputContact3 ? inputContact3.value : "";
         if (!isValidPhoneNumber(phoneNumber1) || !isValidPhoneNumber(phoneNumber2) || !isValidPhoneNumber(phoneNumber3)) {
           console.log("Invalid Phone Number");
-          ErrorHandle("Invalid Phone Number");
+          alert("Invalid Phone Number");
           return;
         }
 
@@ -23017,146 +23017,75 @@
       }
     }
 
-    function Home(firebaseConfig) {
-      console.log("Home");
-      // Set up navigation
-      // function setupNav(elements) {
-      //     elements.forEach(id => {
-      //         const element = document.getElementById(id);
-      //         if (element) {
-      //             element.addEventListener("click", Nav);
-      //         }
-      //     });
-      // }
-      //
-      // const elementsWithNav = ["settingsBtn", "quickIntakeBtn", "crisisStepsBtn", "airQltyBar", "inhalerBar", "emergencyBar"];
-      // setupNav(elementsWithNav);
+    function Emergency1(firebaseConfig) {
+      console.log('Running Emergency1');
+      //Initialize Firebase only once
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const auth = getAuth();
 
-      // //Initializing Firebase and Database Structure
-      // const app = initializeApp(firebaseConfig);
-      // const database = getDatabase(app);
-      // const auth = getAuth();
-      // let inhalerDB;
-      // let currentUserDB;
-      // console.log("The current user is" + currentUserDB)
-      //
-      // onAuthStateChanged(auth, (user) => {
-      //     console.log("onauthstatechanged")
-      //     if (user) {
-      //         const currentUID = user.uid;
-      //         currentUserDB = ref(database, '/users/' + user.uid);
-      //         inhalerDB = ref(database, '/users/' + user.uid + '/inhalers');
-      //         //loadInhalerWidget(inhalerDB);
-      //         console.log(currentUID)
-      //     } else {
-      //         console.log("No user is currently signed in")
-      //     }
-      // });
-
-      // Load Add Crisis Content
-      // function loadAddCrisisContent() {
-      //     fetch('./QuickIntake.html')
-      //         .then(response => response.text())
-      //         .then(data => {
-      //             document.getElementById('quickIntakePopup').innerHTML = data;
-      //             var overlay = document.getElementById('overlay');
-      //             if (overlay) {
-      //                 overlay.style.backgroundColor = 'rgba(30, 56, 95, 0.8)';
-      //                 overlay.style.display = 'block';
-      //             }
-      //             document.getElementById('quickIntakePopup').style.display = 'block';
-      //         })
-      //         .catch(error => console.error('Error loading content:', error));
-      // }
-
-      // Load Inhaler Widget Content
-      // var favInhalerName = document.getElementById("fav-inhaler-title")
-      // var nextReminderTime = document.getElementById('nextReminderVar');
-      // var intakeExpiresIn = document.getElementById("expiryDateFavVar");
-      // function loadInhalerWidget(inhalerDBRef) {
-      //     console.log("Loading Inhaler Widget...");
-      //     get(inhalerDBRef).then((snapshot) => {
-      //         if (snapshot.exists()) {
-      //             console.log("Snapshot exists:", snapshot.val());
-      //             snapshot.forEach(function (childSnapshot) {
-      //                 console.log("Child snapshot:", childSnapshot.val());
-      //                 if (childSnapshot.val().inhaler.fav) {
-      //                     var UserFavInhaler = childSnapshot.val().inhaler;
-      //                     console.log("Favorite Inhaler:", UserFavInhaler);
-      //                     favInhalerName.textContent = "My Favourite Inhaler: " + UserFavInhaler.name;
-      //                     let newInhalerDB = child(inhalerDB, '/' + UserFavInhaler.name);
-      //                     let dosageDB = child(newInhalerDB, '/dosage');
-      //                     get(dosageDB).then((snapshot) => {
-      //                         if (snapshot.exists()) {
-      //                             console.log("Dosage snapshot:", snapshot.val());
-      //                             let allDiffTime = [];
-      //                             snapshot.forEach(function (childSnapshot) {
-      //                                 var diffTime = childSnapshot.val().time - Date.now();
-      //                                 console.log("Diff time for reminder:", diffTime);
-      //                                 if (diffTime > 0) {
-      //                                     allDiffTime.push(diffTime);
-      //                                     if (Math.min.apply(Math, allDiffTime) === diffTime) {
-      //                                         var nextTime = new Date(childSnapshot.val().time);
-      //                                         console.log("Next reminder time:", nextTime);
-      //                                         nextReminderTime.textContent = nextTime.toLocaleTimeString();
-      //                                     }
-      //                                 } else {
-      //                                     nextReminderTime.textContent = "[add new reminder]";
-      //                                     console.log("Time for a new reminder.");
-      //                                 }
-      //                             });
-      //                         }
-      //                         else {
-      //                             nextReminderTime.textContent = "[add reminder]";
-      //                             console.log("No reminders found, needs to add reminder.");
-      //                         }
-      //                     });
-      //                     let milliUntilExp = Number(UserFavInhaler.expiryDate) - Date.now();
-      //                     let hoursUntilExp = (milliUntilExp / 86400000);
-      //                     console.log("Hours until expiration:", hoursUntilExp);
-      //                     intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString() + " hours";
-      //                 }
-      //             });
-      //         }
-      //         else {
-      //             nextReminderTime.textContent = "[no inhaler added]";
-      //             intakeExpiresIn.textContent = "[no inhaler added]";
-      //             console.log("No inhaler data found.");
-      //         }
-      //     }).catch((error) => {
-      //         console.error("Error fetching data:", error);
-      //     });
-      // }
-      //
-      // loadInhalerWidget(inhalerDB);
-
-      // Popup cancel button logic
-      // var popupcancelBtnContainer = document.getElementById("popupcancelBtnContainer");
-      // if (popupcancelBtnContainer) {
-      //     popupcancelBtnContainer.addEventListener("click", function (e) {
-      //         var popup = e.currentTarget.parentNode;
-      //         while (popup && !popup.classList.contains("popup-overlay")) {
-      //             popup = popup.parentNode;
-      //         }
-      //         if (popup) {
-      //             popup.style.display = "none";
-      //         }
-      //     });
-      // }
-
-      // // Update area name and AQI
-      // var areaname = document.getElementById('areaname');
-      // const areatag = localStorage.getItem('userarea');
-      // areaname.innerText = areatag;
-      // console.log(getAPI(areatag));
-      //
-      //
-      // Notification.requestPermission().then((permission)=>{
-      //     if(permission !== "granted"){
-      //         alert("You need to allow permissions to receive warnings and dosage reminders!")
-      //     }
-      //     }
-      // )
+      // Setup listeners for UI elements
+      setupCall999Button();
+      setupContactButtons();
+      subscribeToAuthChanges();
+      function setupCall999Button() {
+        const call999btn = document.getElementById("call999Btn");
+        if (call999btn) {
+          console.log("Calling 999");
+          call999btn.addEventListener("click", () => window.location.href = "tel:999");
+        }
+      }
+      function setupContactButtons() {
+        const emergencyContactButtons = [document.getElementById("contact1Btn"), document.getElementById("contact2Btn"), document.getElementById("contact3Btn")];
+        emergencyContactButtons.forEach((button, index) => {
+          if (button) {
+            console.log("Calling Emergency Contacts");
+            button.addEventListener("click", () => initiateCall());
+          }
+        });
+      }
+      function subscribeToAuthChanges() {
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            console.log("userDBRef");
+            const userDBRef = ref(database, '/users/' + user.uid);
+            syncUserData(userDBRef);
+          } else {
+            console.log("No user is currently signed in");
+          }
+        });
+      }
+      function syncUserData(userDBRef) {
+        const contactsDBRef = ref(userDBRef, '/myContacts');
+        console.log("Sync User Data");
+        onValue(contactsDBRef, snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById("phonenb1").value = data.number1 || "";
+            document.getElementById("phonenb2").value = data.number2 || "";
+            document.getElementById("phonenb3").value = data.number3 || "";
+          }
+        });
+      }
+      function initiateCall(contactNumber) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userDBRef = ref(database, '/users/' + currentUser.uid);
+          const contactsDBRef = ref(userDBRef, '/myContacts');
+          onValue(contactsDBRef, snapshot => {
+            const data = snapshot.val();
+            const phoneNumberKey = number$;
+            if (data && data[phoneNumberKey]) {
+              const phoneNumber = data[phoneNumberKey];
+              window.location.href = `tel:${phoneNumber}`;
+            } else {
+              alert("Emergency contact not available.");
+            }
+          });
+        } else {
+          alert("User is not authenticated.");
+        }
+      }
     }
 
     const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -25345,14 +25274,15 @@
     Settings(firebaseConfig);
     SignIn(firebaseConfig);
     SignUp(firebaseConfig);
-    // AddCrisis(firebaseConfig)
+    Emergency1(firebaseConfig);
     forgotPassword(firebaseConfig);
+
     // AddIntakePopup(firebaseConfig);
     // AllergensChart(firebaseConfig);
-    // Emergency1(firebaseConfig)
-    Home();
+    // Home(firebaseConfig);
     // MyUsageLog(firebaseConfig);
     // SymptomsChart(firebaseConfig);
     // log(firebaseConfig)
+    // AddCrisis(firebaseConfig)
 
 })();
