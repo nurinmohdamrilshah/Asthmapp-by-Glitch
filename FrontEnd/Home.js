@@ -1,6 +1,6 @@
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get } from "firebase/database";
+import { getDatabase, ref, get, child } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getAPI } from "./utils.js";
 import Nav from "./Nav.js";
@@ -44,10 +44,49 @@ function Home(firebaseConfig) {
     }
 
     // Load Inhaler Widget Content
+    var favInhalerName = document.getElementById("fav-inhaler-title")
+    var nextReminderTime = document.getElementById('nextReminderVar');
+    var intakeExpiresIn = document.getElementById("expiryDateFavVar");
     function loadInhalerWidget(inhalerDBRef) {
         get(inhalerDBRef).then((snapshot) => {
             if (snapshot.exists()) {
                 // Process and display favorite inhaler details
+                snapshot.forEach(function (childSnapshot) {
+                    if (childSnapshot.val().inhaler.fav) {
+                        var UserFavInhaler = childSnapshot.val().inhaler
+                        favInhalerName.textContent = "My Favourite Inhaler: "+childSnapshot.val().inhaler.name
+                        let newInhalerDB = child(inhalerDB, '/' + childSnapshot.val().inhaler.name)
+                        let dosageDB = child(newInhalerDB, '/dosage')
+                        get(dosageDB).then((snapshot) => {
+                            if (snapshot.exists()) {
+                                let allDiffTime = [];
+                                snapshot.forEach(function (childSnapshot) {
+                                    if ((childSnapshot.val().time - Date.now()) > 0) {
+                                        var diffTime = childSnapshot.val().time - Date.now()
+                                        allDiffTime.push(diffTime)
+                                        if (Math.min.apply(Math, allDiffTime) === diffTime) {
+                                            var nextTime = new Date(childSnapshot.val().time)
+                                            nextReminderTime.textContent = nextTime.toLocaleTimeString()
+                                        }
+                                    }
+                                    else{
+                                        nextReminderTime.textContent = "[add new reminder]"
+                                    }
+                                })
+                            }
+                            else{
+                                nextReminderTime.textContent = "[add reminder]"
+                            }
+                        })
+                        let milliUntilExp = Number(childSnapshot.val().inhaler.expiryDate)-Date.now();
+                        let hoursUntilExp = (milliUntilExp/86400000)
+                        intakeExpiresIn.textContent = Math.round(hoursUntilExp).toString()+" hours";
+                    }
+                })
+            }
+            else{
+                nextReminderTime.textContent = "[no inhaler added]"
+                intakeExpiresIn.textContent = "[no inhaler added]"
             }
         });
     }
@@ -86,6 +125,13 @@ function Home(firebaseConfig) {
         areaname.innerText = areatag;
         getAPI(areatag);
     }
+
+    Notification.requestPermission().then((permission)=>{
+        if(permission !== "granted"){
+            alert("You need to allow permissions to receive warnings and dosage reminders!")
+        }
+        }
+    )
 }
 
 export default Home;
