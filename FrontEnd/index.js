@@ -1,5 +1,6 @@
 /* == Firebase == */
 import { initializeApp } from 'firebase/app';
+import './generatedImports.js'
 import { getDatabase, ref, child, get, push , set} from 'firebase/database';
 import { getAuth, fetchSignInMethodsForEmail, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 

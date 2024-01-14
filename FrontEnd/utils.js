@@ -1,4 +1,4 @@
-async function setAPI(input1) {
+export async function setAPI(input1) {
     let API = 0;
     let APInumber = 0;
     if (input1.SO2 != '0') {
@@ -31,7 +31,7 @@ async function setAPI(input1) {
     return APIindex
 }
 
-async function getAPI(input) {
+export async function getAPI(input) {
     const response = await fetch("https://api.erg.ic.ac.uk/AirQuality/Hourly/MonitoringIndex/GroupName=London/Json");
     const apidata = await response.json();
     //barking

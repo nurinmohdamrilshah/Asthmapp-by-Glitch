@@ -5,13 +5,16 @@
   "description": "",
   "scripts": {
     "start": "parcel ./*.html ",
-    "build": "parcel build ./*.html  --dist-dir ./build"
+    "generate-imports": "node importImages.js",
+    "build": "npm run generate-imports && parcel build ./*.html  --dist-dir ./build && npm run rollup-build",
+    "rollup-build": "rollup -c"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-image": "^3.0.3",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/pluginutils": "^5.1.0",
     "eslint": "^8.56.0",
@@ -20,6 +23,7 @@
     "process": "^0.11.10"
   },
   "dependencies": {
+    "bash": "^0.0.1",
     "firebase": "^10.7.1",
     "rollup": "^4.9.5",
     "run": "^1.5.0"
