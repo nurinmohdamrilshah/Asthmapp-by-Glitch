@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, set, onValue } from 'firebase/database';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
+import Nav from "./Nav.js";
 
 function Settings(firebaseConfig) {
     console.log("Entered settings");
@@ -116,10 +117,13 @@ function Settings(firebaseConfig) {
 
     // Navigation Links
     const backPageLink = document.getElementById("backBtn");
-    const signOutLink = document.getElementById("signOutLink");
+    const signOutLink = document.getElementById("sighOut");
 
-    backPageLink?.addEventListener("click", () => window.location.href = "./Home.html");
-    signOutLink?.addEventListener("click", () => window.location.href = "./index.html");
+    backPageLink.addEventListener("click", () => Nav());
+    signOutLink.addEventListener("click", () => {
+        console.log("Clicked nav button")
+        Nav()
+    });
 }
 
 export default Settings;

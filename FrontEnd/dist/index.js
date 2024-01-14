@@ -22844,7 +22844,6 @@
         "signUpPageBtn": "SignUp.html",
         "forgotPasswordBtn": "ForgotPassword.html",
         "signInPageBtn": "index.html",
-        "backPageBtn": "index.html",
         "homePageBtn": "home.html",
         "settingsBtn": "Settings.html",
         "quickIntakeBtn": "QuickIntakePopup.html",
@@ -22852,9 +22851,17 @@
         "airQltyBar": "AirQuality2.html",
         "inhalerBar": "MyInhaler.html",
         "emergencyBar": "Emergency1.html",
-        "signUpBtn": "Home.html"
+        "signUpBtn": "Home.html",
+        "sighOut": "Index.html",
+        "signInBtn": "Home.html"
       };
-      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("backPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById('emergencyBar'), document.getElementById('signUpBtn')];
+      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById("emergencyBar"), document.getElementById("signUpBtn"), document.getElementById("sighOut"), document.getElementById("signInBtn")];
+      const backPageBtn = document.getElementById("backBtn");
+      if (backPageBtn) {
+        backPageBtn.addEventListener("click", function (e) {
+          history.back();
+        });
+      }
       navigationButtons.forEach(btn => {
         if (btn) {
           btn.addEventListener("click", function (e) {
@@ -22897,7 +22904,7 @@
           signInWithEmailAndPassword(auth, email, password).then(userCredential => {
             const user = userCredential.user;
             console.log('SignIn successful', user);
-            window.location.href = 'Home.html';
+            Nav();
           }).catch(error => {
             // Handle errors here
             console.error('Error during sign-in:', error.message);
@@ -23169,9 +23176,12 @@
 
       // Navigation Links
       const backPageLink = document.getElementById("backBtn");
-      const signOutLink = document.getElementById("signOutLink");
-      backPageLink?.addEventListener("click", () => window.location.href = "./Home.html");
-      signOutLink?.addEventListener("click", () => window.location.href = "./index.html");
+      const signOutLink = document.getElementById("sighOut");
+      backPageLink.addEventListener("click", () => Nav());
+      signOutLink.addEventListener("click", () => {
+        console.log("Clicked nav button");
+        Nav();
+      });
     }
 
     function AddCrisis(firebaseConfig) {
@@ -23396,7 +23406,7 @@
       const auth = getAuth();
       onAuthStateChanged(auth, user => {
         if (user) {
-          const currentUID = user.uid;
+          var currentUID = user.uid;
           ref(database, '/users/' + currentUID);
           ref(database, '/users/' + currentUID + '/inhalers');
         }
@@ -23449,10 +23459,16 @@
                       }
                       if (intakeCount > numOfDose) {
                         //NOTIFICATION
-                        alert("Warning:" + newIntakeInhaler.getName() + " is Overused!\nIt is recommended to space out this inhaler intake according to your registered dose.");
+                        if (Notification.permission === "granted") {
+                          new Notification("Warning: Too Frequent Usage of " + newIntakeInhaler.getName() + "!", {
+                            body: "It is recommended to space out this inhaler intake according to your registered dose."
+                          });
+                        } else {
+                          alert("Warning:" + newIntakeInhaler.getName() + " is OverUsed!");
+                        }
                       }
-                      window.reload();
                     });
+                    window.reload();
                   }
                 });
               });
