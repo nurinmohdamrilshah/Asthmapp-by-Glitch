@@ -120,6 +120,7 @@ function updateChartWithSymptoms(allergens) {
           }]
         }
       }
+    /* Reference 1 - taken from https://chat.openai.com/share/dd362d0f-6808-4c03-a680-65f28af3aaae */
       // Check if chart is already initialized
     if (window.liveChart2) {
         window.liveChart2.data = chartConfig.data;
@@ -128,4 +129,5 @@ function updateChartWithSymptoms(allergens) {
         // Initialize the chart for the first time
         window.liveChart2 = new Chart(ctx1, chartConfig);
     }      
+    /* end of reference 1 */
 }
