@@ -1,3 +1,5 @@
+//Reference - taken from https://chat.openai.com
+
 import {initializeApp} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
 import {getAnalytics} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js";
 import {child, get, getDatabase, push, ref} from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
