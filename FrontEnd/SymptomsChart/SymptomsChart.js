@@ -110,6 +110,7 @@ function updateChartWithSymptoms(symptoms) {
           }
         }
       }
+    /* Reference 1 - taken from https://chat.openai.com/share/dd362d0f-6808-4c03-a680-65f28af3aaae */
       // Check if chart is already initialized
     if (window.liveChart) {
         window.liveChart.data = chartConfig.data;
@@ -118,4 +119,5 @@ function updateChartWithSymptoms(symptoms) {
         // Initialize the chart for the first time
         window.liveChart = new Chart(ctx, chartConfig);
     }      
+    /* end of reference 1 */
 }
