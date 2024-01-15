@@ -1159,6 +1159,32 @@
         }
         return params.length ? '&' + params.join('&') : '';
     }
+    /**
+     * Decodes a querystring (e.g. ?arg=val&arg2=val2) into a params object
+     * (e.g. {arg: 'val', arg2: 'val2'})
+     */
+    function querystringDecode(querystring) {
+        const obj = {};
+        const tokens = querystring.replace(/^\?/, '').split('&');
+        tokens.forEach(token => {
+            if (token) {
+                const [key, value] = token.split('=');
+                obj[decodeURIComponent(key)] = decodeURIComponent(value);
+            }
+        });
+        return obj;
+    }
+    /**
+     * Extract the query string part of a URL, including the leading question mark (if present).
+     */
+    function extractQuerystring(url) {
+        const queryStart = url.indexOf('?');
+        if (!queryStart) {
+            return '';
+        }
+        const fragmentStart = url.indexOf('#', queryStart);
+        return url.substring(queryStart, fragmentStart > 0 ? fragmentStart : undefined);
+    }
 
     /**
      * @license
@@ -4069,6 +4095,27 @@
         // Check for the presence of a couple WinRT globals
         return typeof Windows === 'object' && typeof Windows.UI === 'object';
     };
+    /**
+     * Converts a server error code to a Javascript Error
+     */
+    function errorForServerCode(code, query) {
+        let reason = 'Unknown Error';
+        if (code === 'too_big') {
+            reason =
+                'The data requested exceeds the maximum size ' +
+                    'that can be accessed with a single request.';
+        }
+        else if (code === 'permission_denied') {
+            reason = "Client doesn't have permission to access the desired data.";
+        }
+        else if (code === 'unavailable') {
+            reason = 'The service is unavailable';
+        }
+        const error = new Error(code + ' at ' + query._path.toString() + ': ' + reason);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error.code = code.toUpperCase();
+        return error;
+    }
     /**
      * Used to test for integer-looking strings
      */
@@ -9421,6 +9468,421 @@
      * limitations under the License.
      */
     /**
+     * Doesn't really filter nodes but applies an index to the node and keeps track of any changes
+     */
+    class IndexedFilter {
+        constructor(index_) {
+            this.index_ = index_;
+        }
+        updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+            assert(snap.isIndexed(this.index_), 'A node must be indexed if only a child is updated');
+            const oldChild = snap.getImmediateChild(key);
+            // Check if anything actually changed.
+            if (oldChild.getChild(affectedPath).equals(newChild.getChild(affectedPath))) {
+                // There's an edge case where a child can enter or leave the view because affectedPath was set to null.
+                // In this case, affectedPath will appear null in both the old and new snapshots.  So we need
+                // to avoid treating these cases as "nothing changed."
+                if (oldChild.isEmpty() === newChild.isEmpty()) {
+                    // Nothing changed.
+                    // This assert should be valid, but it's expensive (can dominate perf testing) so don't actually do it.
+                    //assert(oldChild.equals(newChild), 'Old and new snapshots should be equal.');
+                    return snap;
+                }
+            }
+            if (optChangeAccumulator != null) {
+                if (newChild.isEmpty()) {
+                    if (snap.hasChild(key)) {
+                        optChangeAccumulator.trackChildChange(changeChildRemoved(key, oldChild));
+                    }
+                    else {
+                        assert(snap.isLeafNode(), 'A child remove without an old child only makes sense on a leaf node');
+                    }
+                }
+                else if (oldChild.isEmpty()) {
+                    optChangeAccumulator.trackChildChange(changeChildAdded(key, newChild));
+                }
+                else {
+                    optChangeAccumulator.trackChildChange(changeChildChanged(key, newChild, oldChild));
+                }
+            }
+            if (snap.isLeafNode() && newChild.isEmpty()) {
+                return snap;
+            }
+            else {
+                // Make sure the node is indexed
+                return snap.updateImmediateChild(key, newChild).withIndex(this.index_);
+            }
+        }
+        updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+            if (optChangeAccumulator != null) {
+                if (!oldSnap.isLeafNode()) {
+                    oldSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+                        if (!newSnap.hasChild(key)) {
+                            optChangeAccumulator.trackChildChange(changeChildRemoved(key, childNode));
+                        }
+                    });
+                }
+                if (!newSnap.isLeafNode()) {
+                    newSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+                        if (oldSnap.hasChild(key)) {
+                            const oldChild = oldSnap.getImmediateChild(key);
+                            if (!oldChild.equals(childNode)) {
+                                optChangeAccumulator.trackChildChange(changeChildChanged(key, childNode, oldChild));
+                            }
+                        }
+                        else {
+                            optChangeAccumulator.trackChildChange(changeChildAdded(key, childNode));
+                        }
+                    });
+                }
+            }
+            return newSnap.withIndex(this.index_);
+        }
+        updatePriority(oldSnap, newPriority) {
+            if (oldSnap.isEmpty()) {
+                return ChildrenNode.EMPTY_NODE;
+            }
+            else {
+                return oldSnap.updatePriority(newPriority);
+            }
+        }
+        filtersNodes() {
+            return false;
+        }
+        getIndexedFilter() {
+            return this;
+        }
+        getIndex() {
+            return this.index_;
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Filters nodes by range and uses an IndexFilter to track any changes after filtering the node
+     */
+    class RangedFilter {
+        constructor(params) {
+            this.indexedFilter_ = new IndexedFilter(params.getIndex());
+            this.index_ = params.getIndex();
+            this.startPost_ = RangedFilter.getStartPost_(params);
+            this.endPost_ = RangedFilter.getEndPost_(params);
+            this.startIsInclusive_ = !params.startAfterSet_;
+            this.endIsInclusive_ = !params.endBeforeSet_;
+        }
+        getStartPost() {
+            return this.startPost_;
+        }
+        getEndPost() {
+            return this.endPost_;
+        }
+        matches(node) {
+            const isWithinStart = this.startIsInclusive_
+                ? this.index_.compare(this.getStartPost(), node) <= 0
+                : this.index_.compare(this.getStartPost(), node) < 0;
+            const isWithinEnd = this.endIsInclusive_
+                ? this.index_.compare(node, this.getEndPost()) <= 0
+                : this.index_.compare(node, this.getEndPost()) < 0;
+            return isWithinStart && isWithinEnd;
+        }
+        updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+            if (!this.matches(new NamedNode(key, newChild))) {
+                newChild = ChildrenNode.EMPTY_NODE;
+            }
+            return this.indexedFilter_.updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator);
+        }
+        updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+            if (newSnap.isLeafNode()) {
+                // Make sure we have a children node with the correct index, not a leaf node;
+                newSnap = ChildrenNode.EMPTY_NODE;
+            }
+            let filtered = newSnap.withIndex(this.index_);
+            // Don't support priorities on queries
+            filtered = filtered.updatePriority(ChildrenNode.EMPTY_NODE);
+            const self = this;
+            newSnap.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+                if (!self.matches(new NamedNode(key, childNode))) {
+                    filtered = filtered.updateImmediateChild(key, ChildrenNode.EMPTY_NODE);
+                }
+            });
+            return this.indexedFilter_.updateFullNode(oldSnap, filtered, optChangeAccumulator);
+        }
+        updatePriority(oldSnap, newPriority) {
+            // Don't support priorities on queries
+            return oldSnap;
+        }
+        filtersNodes() {
+            return true;
+        }
+        getIndexedFilter() {
+            return this.indexedFilter_;
+        }
+        getIndex() {
+            return this.index_;
+        }
+        static getStartPost_(params) {
+            if (params.hasStart()) {
+                const startName = params.getIndexStartName();
+                return params.getIndex().makePost(params.getIndexStartValue(), startName);
+            }
+            else {
+                return params.getIndex().minPost();
+            }
+        }
+        static getEndPost_(params) {
+            if (params.hasEnd()) {
+                const endName = params.getIndexEndName();
+                return params.getIndex().makePost(params.getIndexEndValue(), endName);
+            }
+            else {
+                return params.getIndex().maxPost();
+            }
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Applies a limit and a range to a node and uses RangedFilter to do the heavy lifting where possible
+     */
+    class LimitedFilter {
+        constructor(params) {
+            this.withinDirectionalStart = (node) => this.reverse_ ? this.withinEndPost(node) : this.withinStartPost(node);
+            this.withinDirectionalEnd = (node) => this.reverse_ ? this.withinStartPost(node) : this.withinEndPost(node);
+            this.withinStartPost = (node) => {
+                const compareRes = this.index_.compare(this.rangedFilter_.getStartPost(), node);
+                return this.startIsInclusive_ ? compareRes <= 0 : compareRes < 0;
+            };
+            this.withinEndPost = (node) => {
+                const compareRes = this.index_.compare(node, this.rangedFilter_.getEndPost());
+                return this.endIsInclusive_ ? compareRes <= 0 : compareRes < 0;
+            };
+            this.rangedFilter_ = new RangedFilter(params);
+            this.index_ = params.getIndex();
+            this.limit_ = params.getLimit();
+            this.reverse_ = !params.isViewFromLeft();
+            this.startIsInclusive_ = !params.startAfterSet_;
+            this.endIsInclusive_ = !params.endBeforeSet_;
+        }
+        updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator) {
+            if (!this.rangedFilter_.matches(new NamedNode(key, newChild))) {
+                newChild = ChildrenNode.EMPTY_NODE;
+            }
+            if (snap.getImmediateChild(key).equals(newChild)) {
+                // No change
+                return snap;
+            }
+            else if (snap.numChildren() < this.limit_) {
+                return this.rangedFilter_
+                    .getIndexedFilter()
+                    .updateChild(snap, key, newChild, affectedPath, source, optChangeAccumulator);
+            }
+            else {
+                return this.fullLimitUpdateChild_(snap, key, newChild, source, optChangeAccumulator);
+            }
+        }
+        updateFullNode(oldSnap, newSnap, optChangeAccumulator) {
+            let filtered;
+            if (newSnap.isLeafNode() || newSnap.isEmpty()) {
+                // Make sure we have a children node with the correct index, not a leaf node;
+                filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
+            }
+            else {
+                if (this.limit_ * 2 < newSnap.numChildren() &&
+                    newSnap.isIndexed(this.index_)) {
+                    // Easier to build up a snapshot, since what we're given has more than twice the elements we want
+                    filtered = ChildrenNode.EMPTY_NODE.withIndex(this.index_);
+                    // anchor to the startPost, endPost, or last element as appropriate
+                    let iterator;
+                    if (this.reverse_) {
+                        iterator = newSnap.getReverseIteratorFrom(this.rangedFilter_.getEndPost(), this.index_);
+                    }
+                    else {
+                        iterator = newSnap.getIteratorFrom(this.rangedFilter_.getStartPost(), this.index_);
+                    }
+                    let count = 0;
+                    while (iterator.hasNext() && count < this.limit_) {
+                        const next = iterator.getNext();
+                        if (!this.withinDirectionalStart(next)) {
+                            // if we have not reached the start, skip to the next element
+                            continue;
+                        }
+                        else if (!this.withinDirectionalEnd(next)) {
+                            // if we have reached the end, stop adding elements
+                            break;
+                        }
+                        else {
+                            filtered = filtered.updateImmediateChild(next.name, next.node);
+                            count++;
+                        }
+                    }
+                }
+                else {
+                    // The snap contains less than twice the limit. Faster to delete from the snap than build up a new one
+                    filtered = newSnap.withIndex(this.index_);
+                    // Don't support priorities on queries
+                    filtered = filtered.updatePriority(ChildrenNode.EMPTY_NODE);
+                    let iterator;
+                    if (this.reverse_) {
+                        iterator = filtered.getReverseIterator(this.index_);
+                    }
+                    else {
+                        iterator = filtered.getIterator(this.index_);
+                    }
+                    let count = 0;
+                    while (iterator.hasNext()) {
+                        const next = iterator.getNext();
+                        const inRange = count < this.limit_ &&
+                            this.withinDirectionalStart(next) &&
+                            this.withinDirectionalEnd(next);
+                        if (inRange) {
+                            count++;
+                        }
+                        else {
+                            filtered = filtered.updateImmediateChild(next.name, ChildrenNode.EMPTY_NODE);
+                        }
+                    }
+                }
+            }
+            return this.rangedFilter_
+                .getIndexedFilter()
+                .updateFullNode(oldSnap, filtered, optChangeAccumulator);
+        }
+        updatePriority(oldSnap, newPriority) {
+            // Don't support priorities on queries
+            return oldSnap;
+        }
+        filtersNodes() {
+            return true;
+        }
+        getIndexedFilter() {
+            return this.rangedFilter_.getIndexedFilter();
+        }
+        getIndex() {
+            return this.index_;
+        }
+        fullLimitUpdateChild_(snap, childKey, childSnap, source, changeAccumulator) {
+            // TODO: rename all cache stuff etc to general snap terminology
+            let cmp;
+            if (this.reverse_) {
+                const indexCmp = this.index_.getCompare();
+                cmp = (a, b) => indexCmp(b, a);
+            }
+            else {
+                cmp = this.index_.getCompare();
+            }
+            const oldEventCache = snap;
+            assert(oldEventCache.numChildren() === this.limit_, '');
+            const newChildNamedNode = new NamedNode(childKey, childSnap);
+            const windowBoundary = this.reverse_
+                ? oldEventCache.getFirstChild(this.index_)
+                : oldEventCache.getLastChild(this.index_);
+            const inRange = this.rangedFilter_.matches(newChildNamedNode);
+            if (oldEventCache.hasChild(childKey)) {
+                const oldChildSnap = oldEventCache.getImmediateChild(childKey);
+                let nextChild = source.getChildAfterChild(this.index_, windowBoundary, this.reverse_);
+                while (nextChild != null &&
+                    (nextChild.name === childKey || oldEventCache.hasChild(nextChild.name))) {
+                    // There is a weird edge case where a node is updated as part of a merge in the write tree, but hasn't
+                    // been applied to the limited filter yet. Ignore this next child which will be updated later in
+                    // the limited filter...
+                    nextChild = source.getChildAfterChild(this.index_, nextChild, this.reverse_);
+                }
+                const compareNext = nextChild == null ? 1 : cmp(nextChild, newChildNamedNode);
+                const remainsInWindow = inRange && !childSnap.isEmpty() && compareNext >= 0;
+                if (remainsInWindow) {
+                    if (changeAccumulator != null) {
+                        changeAccumulator.trackChildChange(changeChildChanged(childKey, childSnap, oldChildSnap));
+                    }
+                    return oldEventCache.updateImmediateChild(childKey, childSnap);
+                }
+                else {
+                    if (changeAccumulator != null) {
+                        changeAccumulator.trackChildChange(changeChildRemoved(childKey, oldChildSnap));
+                    }
+                    const newEventCache = oldEventCache.updateImmediateChild(childKey, ChildrenNode.EMPTY_NODE);
+                    const nextChildInRange = nextChild != null && this.rangedFilter_.matches(nextChild);
+                    if (nextChildInRange) {
+                        if (changeAccumulator != null) {
+                            changeAccumulator.trackChildChange(changeChildAdded(nextChild.name, nextChild.node));
+                        }
+                        return newEventCache.updateImmediateChild(nextChild.name, nextChild.node);
+                    }
+                    else {
+                        return newEventCache;
+                    }
+                }
+            }
+            else if (childSnap.isEmpty()) {
+                // we're deleting a node, but it was not in the window, so ignore it
+                return snap;
+            }
+            else if (inRange) {
+                if (cmp(windowBoundary, newChildNamedNode) >= 0) {
+                    if (changeAccumulator != null) {
+                        changeAccumulator.trackChildChange(changeChildRemoved(windowBoundary.name, windowBoundary.node));
+                        changeAccumulator.trackChildChange(changeChildAdded(childKey, childSnap));
+                    }
+                    return oldEventCache
+                        .updateImmediateChild(childKey, childSnap)
+                        .updateImmediateChild(windowBoundary.name, ChildrenNode.EMPTY_NODE);
+                }
+                else {
+                    return snap;
+                }
+            }
+            else {
+                return snap;
+            }
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
      * This class is an immutable-from-the-public-api struct containing a set of query parameters defining a
      * range to be returned for a particular location. It is assumed that validation of parameters is done at the
      * user-facing API level, so it is not done here.
@@ -9547,6 +10009,17 @@
             copy.index_ = this.index_;
             copy.viewFrom_ = this.viewFrom_;
             return copy;
+        }
+    }
+    function queryParamsGetNodeFilter(queryParams) {
+        if (queryParams.loadsAllData()) {
+            return new IndexedFilter(queryParams.getIndex());
+        }
+        else if (queryParams.hasLimit()) {
+            return new LimitedFilter(queryParams);
+        }
+        else {
+            return new RangedFilter(queryParams);
         }
     }
     /**
@@ -10132,6 +10605,39 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    class ListenComplete {
+        constructor(source, path) {
+            this.source = source;
+            this.path = path;
+            /** @inheritDoc */
+            this.type = OperationType.LISTEN_COMPLETE;
+        }
+        operationForChild(childName) {
+            if (pathIsEmpty(this.path)) {
+                return new ListenComplete(this.source, newEmptyPath());
+            }
+            else {
+                return new ListenComplete(this.source, pathPopFront(this.path));
+            }
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     class Overwrite {
         constructor(source, path, snap) {
             this.source = source;
@@ -10261,6 +10767,35 @@
         }
         getNode() {
             return this.node_;
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * An EventGenerator is used to convert "raw" changes (Change) as computed by the
+     * CacheDiffer into actual events (Event) that can be raised.  See generateEventsForChanges()
+     * for details.
+     *
+     */
+    class EventGenerator {
+        constructor(query_) {
+            this.query_ = query_;
+            this.index_ = this.query_._queryParams.getIndex();
         }
     }
     /**
@@ -11462,6 +11997,26 @@
             }
         }
     }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    function newViewProcessor(filter) {
+        return { filter };
+    }
     function viewProcessorAssertIndexed(viewProcessor, viewCache) {
         assert(viewCache.eventCache.getNode().isIndexed(viewProcessor.filter.getIndex()), 'Event snap not indexed');
         assert(viewCache.serverCache.getNode().isIndexed(viewProcessor.filter.getIndex()), 'Server snap not indexed');
@@ -11868,6 +12423,57 @@
             return viewCacheUpdateEventSnap(viewCache, newEventCache, complete, viewProcessor.filter.filtersNodes());
         }
     }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * A view represents a specific location and query that has 1 or more event registrations.
+     *
+     * It does several things:
+     *  - Maintains the list of event registrations for this location/query.
+     *  - Maintains a cache of the data visible for this location/query.
+     *  - Applies new operations (via applyOperation), updates the cache, and based on the event
+     *    registrations returns the set of events to be raised.
+     */
+    class View {
+        constructor(query_, initialViewCache) {
+            this.query_ = query_;
+            this.eventRegistrations_ = [];
+            const params = this.query_._queryParams;
+            const indexFilter = new IndexedFilter(params.getIndex());
+            const filter = queryParamsGetNodeFilter(params);
+            this.processor_ = newViewProcessor(filter);
+            const initialServerCache = initialViewCache.serverCache;
+            const initialEventCache = initialViewCache.eventCache;
+            // Don't filter server node with other filter than index, wait for tagged listen
+            const serverSnap = indexFilter.updateFullNode(ChildrenNode.EMPTY_NODE, initialServerCache.getNode(), null);
+            const eventSnap = filter.updateFullNode(ChildrenNode.EMPTY_NODE, initialEventCache.getNode(), null);
+            const newServerCache = new CacheNode(serverSnap, initialServerCache.isFullyInitialized(), indexFilter.filtersNodes());
+            const newEventCache = new CacheNode(eventSnap, initialEventCache.isFullyInitialized(), filter.filtersNodes());
+            this.viewCache_ = newViewCache(newEventCache, newServerCache);
+            this.eventGenerator_ = new EventGenerator(this.query_);
+        }
+        get query() {
+            return this.query_;
+        }
+    }
+    function viewGetServerCache(view) {
+        return view.viewCache_.serverCache.getNode();
+    }
     function viewGetCompleteServerCache(view, path) {
         const cache = viewCacheGetCompleteServerSnap(view.viewCache_);
         if (cache) {
@@ -11880,6 +12486,49 @@
             }
         }
         return null;
+    }
+    function viewIsEmpty(view) {
+        return view.eventRegistrations_.length === 0;
+    }
+    function viewAddEventRegistration(view, eventRegistration) {
+        view.eventRegistrations_.push(eventRegistration);
+    }
+    /**
+     * @param eventRegistration - If null, remove all callbacks.
+     * @param cancelError - If a cancelError is provided, appropriate cancel events will be returned.
+     * @returns Cancel events, if cancelError was provided.
+     */
+    function viewRemoveEventRegistration(view, eventRegistration, cancelError) {
+        const cancelEvents = [];
+        if (cancelError) {
+            assert(eventRegistration == null, 'A cancel should cancel all event registrations.');
+            const path = view.query._path;
+            view.eventRegistrations_.forEach(registration => {
+                const maybeEvent = registration.createCancelEvent(cancelError, path);
+                if (maybeEvent) {
+                    cancelEvents.push(maybeEvent);
+                }
+            });
+        }
+        if (eventRegistration) {
+            let remaining = [];
+            for (let i = 0; i < view.eventRegistrations_.length; ++i) {
+                const existing = view.eventRegistrations_[i];
+                if (!existing.matches(eventRegistration)) {
+                    remaining.push(existing);
+                }
+                else if (eventRegistration.hasAnyCallback()) {
+                    // We're removing just this one
+                    remaining = remaining.concat(view.eventRegistrations_.slice(i + 1));
+                    break;
+                }
+            }
+            view.eventRegistrations_ = remaining;
+        }
+        else {
+            view.eventRegistrations_ = [];
+        }
+        return cancelEvents;
     }
     /**
      * Applies the given Operation, updates our cache, and returns the appropriate events.
@@ -11897,6 +12546,20 @@
             !oldViewCache.serverCache.isFullyInitialized(), 'Once a server snap is complete, it should never go back');
         view.viewCache_ = result.viewCache;
         return viewGenerateEventsForChanges_(view, result.changes, result.viewCache.eventCache.getNode(), null);
+    }
+    function viewGetInitialEvents(view, registration) {
+        const eventSnap = view.viewCache_.eventCache;
+        const initialChanges = [];
+        if (!eventSnap.getNode().isLeafNode()) {
+            const eventNode = eventSnap.getNode();
+            eventNode.forEachChild(PRIORITY_INDEX, (key, childNode) => {
+                initialChanges.push(changeChildAdded(key, childNode));
+            });
+        }
+        if (eventSnap.isFullyInitialized()) {
+            initialChanges.push(changeValue(eventSnap.getNode()));
+        }
+        return viewGenerateEventsForChanges_(view, initialChanges, eventSnap.getNode(), registration);
     }
     function viewGenerateEventsForChanges_(view, changes, eventCache, eventRegistration) {
         const registrations = eventRegistration
@@ -11922,9 +12585,37 @@
      * limitations under the License.
      */
     let referenceConstructor$1;
+    /**
+     * SyncPoint represents a single location in a SyncTree with 1 or more event registrations, meaning we need to
+     * maintain 1 or more Views at this location to cache server data and raise appropriate events for server changes
+     * and user writes (set, transaction, update).
+     *
+     * It's responsible for:
+     *  - Maintaining the set of 1 or more views necessary at this location (a SyncPoint with 0 views should be removed).
+     *  - Proxying user / server operations to the views as appropriate (i.e. applyServerOverwrite,
+     *    applyUserOverwrite, etc.)
+     */
+    class SyncPoint {
+        constructor() {
+            /**
+             * The Views being tracked at this location in the tree, stored as a map where the key is a
+             * queryId and the value is the View for that query.
+             *
+             * NOTE: This list will be quite small (usually 1, but perhaps 2 or 3; any more is an odd use case).
+             */
+            this.views = new Map();
+        }
+    }
     function syncPointSetReferenceConstructor(val) {
         assert(!referenceConstructor$1, '__referenceConstructor has already been defined');
         referenceConstructor$1 = val;
+    }
+    function syncPointGetReferenceConstructor() {
+        assert(referenceConstructor$1, 'Reference.ts has not been loaded');
+        return referenceConstructor$1;
+    }
+    function syncPointIsEmpty(syncPoint) {
+        return syncPoint.views.size === 0;
     }
     function syncPointApplyOperation(syncPoint, operation, writesCache, optCompleteServerCache) {
         const queryId = operation.source.queryId;
@@ -11942,6 +12633,114 @@
         }
     }
     /**
+     * Get a view for the specified query.
+     *
+     * @param query - The query to return a view for
+     * @param writesCache
+     * @param serverCache
+     * @param serverCacheComplete
+     * @returns Events to raise.
+     */
+    function syncPointGetView(syncPoint, query, writesCache, serverCache, serverCacheComplete) {
+        const queryId = query._queryIdentifier;
+        const view = syncPoint.views.get(queryId);
+        if (!view) {
+            // TODO: make writesCache take flag for complete server node
+            let eventCache = writeTreeRefCalcCompleteEventCache(writesCache, serverCacheComplete ? serverCache : null);
+            let eventCacheComplete = false;
+            if (eventCache) {
+                eventCacheComplete = true;
+            }
+            else if (serverCache instanceof ChildrenNode) {
+                eventCache = writeTreeRefCalcCompleteEventChildren(writesCache, serverCache);
+                eventCacheComplete = false;
+            }
+            else {
+                eventCache = ChildrenNode.EMPTY_NODE;
+                eventCacheComplete = false;
+            }
+            const viewCache = newViewCache(new CacheNode(eventCache, eventCacheComplete, false), new CacheNode(serverCache, serverCacheComplete, false));
+            return new View(query, viewCache);
+        }
+        return view;
+    }
+    /**
+     * Add an event callback for the specified query.
+     *
+     * @param query
+     * @param eventRegistration
+     * @param writesCache
+     * @param serverCache - Complete server cache, if we have it.
+     * @param serverCacheComplete
+     * @returns Events to raise.
+     */
+    function syncPointAddEventRegistration(syncPoint, query, eventRegistration, writesCache, serverCache, serverCacheComplete) {
+        const view = syncPointGetView(syncPoint, query, writesCache, serverCache, serverCacheComplete);
+        if (!syncPoint.views.has(query._queryIdentifier)) {
+            syncPoint.views.set(query._queryIdentifier, view);
+        }
+        // This is guaranteed to exist now, we just created anything that was missing
+        viewAddEventRegistration(view, eventRegistration);
+        return viewGetInitialEvents(view, eventRegistration);
+    }
+    /**
+     * Remove event callback(s).  Return cancelEvents if a cancelError is specified.
+     *
+     * If query is the default query, we'll check all views for the specified eventRegistration.
+     * If eventRegistration is null, we'll remove all callbacks for the specified view(s).
+     *
+     * @param eventRegistration - If null, remove all callbacks.
+     * @param cancelError - If a cancelError is provided, appropriate cancel events will be returned.
+     * @returns removed queries and any cancel events
+     */
+    function syncPointRemoveEventRegistration(syncPoint, query, eventRegistration, cancelError) {
+        const queryId = query._queryIdentifier;
+        const removed = [];
+        let cancelEvents = [];
+        const hadCompleteView = syncPointHasCompleteView(syncPoint);
+        if (queryId === 'default') {
+            // When you do ref.off(...), we search all views for the registration to remove.
+            for (const [viewQueryId, view] of syncPoint.views.entries()) {
+                cancelEvents = cancelEvents.concat(viewRemoveEventRegistration(view, eventRegistration, cancelError));
+                if (viewIsEmpty(view)) {
+                    syncPoint.views.delete(viewQueryId);
+                    // We'll deal with complete views later.
+                    if (!view.query._queryParams.loadsAllData()) {
+                        removed.push(view.query);
+                    }
+                }
+            }
+        }
+        else {
+            // remove the callback from the specific view.
+            const view = syncPoint.views.get(queryId);
+            if (view) {
+                cancelEvents = cancelEvents.concat(viewRemoveEventRegistration(view, eventRegistration, cancelError));
+                if (viewIsEmpty(view)) {
+                    syncPoint.views.delete(queryId);
+                    // We'll deal with complete views later.
+                    if (!view.query._queryParams.loadsAllData()) {
+                        removed.push(view.query);
+                    }
+                }
+            }
+        }
+        if (hadCompleteView && !syncPointHasCompleteView(syncPoint)) {
+            // We removed our last complete view.
+            removed.push(new (syncPointGetReferenceConstructor())(query._repo, query._path));
+        }
+        return { removed, events: cancelEvents };
+    }
+    function syncPointGetQueryViews(syncPoint) {
+        const result = [];
+        for (const view of syncPoint.views.values()) {
+            if (!view.query._queryParams.loadsAllData()) {
+                result.push(view);
+            }
+        }
+        return result;
+    }
+    /**
      * @param path - The path to the desired complete snapshot
      * @returns A complete cache, if it exists
      */
@@ -11951,6 +12750,30 @@
             serverCache = serverCache || viewGetCompleteServerCache(view, path);
         }
         return serverCache;
+    }
+    function syncPointViewForQuery(syncPoint, query) {
+        const params = query._queryParams;
+        if (params.loadsAllData()) {
+            return syncPointGetCompleteView(syncPoint);
+        }
+        else {
+            const queryId = query._queryIdentifier;
+            return syncPoint.views.get(queryId);
+        }
+    }
+    function syncPointViewExistsForQuery(syncPoint, query) {
+        return syncPointViewForQuery(syncPoint, query) != null;
+    }
+    function syncPointHasCompleteView(syncPoint) {
+        return syncPointGetCompleteView(syncPoint) != null;
+    }
+    function syncPointGetCompleteView(syncPoint) {
+        for (const view of syncPoint.views.values()) {
+            if (view.query._queryParams.loadsAllData()) {
+                return view;
+            }
+        }
+        return null;
     }
 
     /**
@@ -11974,6 +12797,14 @@
         assert(!referenceConstructor, '__referenceConstructor has already been defined');
         referenceConstructor = val;
     }
+    function syncTreeGetReferenceConstructor() {
+        assert(referenceConstructor, 'Reference.ts has not been loaded');
+        return referenceConstructor;
+    }
+    /**
+     * Static tracker for next query tag.
+     */
+    let syncTreeNextQueryTag_ = 1;
     /**
      * SyncTree is the central class for managing event callback registration, data caching, views
      * (query processing), and event generation.  There are typically two SyncTree instances for
@@ -12073,6 +12904,115 @@
         return syncTreeApplyOperationToSyncPoints_(syncTree, new Merge(newOperationSourceServer(), path, changeTree));
     }
     /**
+     * Apply a listen complete for a query
+     *
+     * @returns Events to raise.
+     */
+    function syncTreeApplyListenComplete(syncTree, path) {
+        return syncTreeApplyOperationToSyncPoints_(syncTree, new ListenComplete(newOperationSourceServer(), path));
+    }
+    /**
+     * Apply a listen complete for a tagged query
+     *
+     * @returns Events to raise.
+     */
+    function syncTreeApplyTaggedListenComplete(syncTree, path, tag) {
+        const queryKey = syncTreeQueryKeyForTag_(syncTree, tag);
+        if (queryKey) {
+            const r = syncTreeParseQueryKey_(queryKey);
+            const queryPath = r.path, queryId = r.queryId;
+            const relativePath = newRelativePath(queryPath, path);
+            const op = new ListenComplete(newOperationSourceServerTaggedQuery(queryId), relativePath);
+            return syncTreeApplyTaggedOperation_(syncTree, queryPath, op);
+        }
+        else {
+            // We've already removed the query. No big deal, ignore the update
+            return [];
+        }
+    }
+    /**
+     * Remove event callback(s).
+     *
+     * If query is the default query, we'll check all queries for the specified eventRegistration.
+     * If eventRegistration is null, we'll remove all callbacks for the specified query/queries.
+     *
+     * @param eventRegistration - If null, all callbacks are removed.
+     * @param cancelError - If a cancelError is provided, appropriate cancel events will be returned.
+     * @param skipListenerDedup - When performing a `get()`, we don't add any new listeners, so no
+     *  deduping needs to take place. This flag allows toggling of that behavior
+     * @returns Cancel events, if cancelError was provided.
+     */
+    function syncTreeRemoveEventRegistration(syncTree, query, eventRegistration, cancelError, skipListenerDedup = false) {
+        // Find the syncPoint first. Then deal with whether or not it has matching listeners
+        const path = query._path;
+        const maybeSyncPoint = syncTree.syncPointTree_.get(path);
+        let cancelEvents = [];
+        // A removal on a default query affects all queries at that location. A removal on an indexed query, even one without
+        // other query constraints, does *not* affect all queries at that location. So this check must be for 'default', and
+        // not loadsAllData().
+        if (maybeSyncPoint &&
+            (query._queryIdentifier === 'default' ||
+                syncPointViewExistsForQuery(maybeSyncPoint, query))) {
+            const removedAndEvents = syncPointRemoveEventRegistration(maybeSyncPoint, query, eventRegistration, cancelError);
+            if (syncPointIsEmpty(maybeSyncPoint)) {
+                syncTree.syncPointTree_ = syncTree.syncPointTree_.remove(path);
+            }
+            const removed = removedAndEvents.removed;
+            cancelEvents = removedAndEvents.events;
+            if (!skipListenerDedup) {
+                /**
+                 * We may have just removed one of many listeners and can short-circuit this whole process
+                 * We may also not have removed a default listener, in which case all of the descendant listeners should already be
+                 * properly set up.
+                 */
+                // Since indexed queries can shadow if they don't have other query constraints, check for loadsAllData(), instead of
+                // queryId === 'default'
+                const removingDefault = -1 !==
+                    removed.findIndex(query => {
+                        return query._queryParams.loadsAllData();
+                    });
+                const covered = syncTree.syncPointTree_.findOnPath(path, (relativePath, parentSyncPoint) => syncPointHasCompleteView(parentSyncPoint));
+                if (removingDefault && !covered) {
+                    const subtree = syncTree.syncPointTree_.subtree(path);
+                    // There are potentially child listeners. Determine what if any listens we need to send before executing the
+                    // removal
+                    if (!subtree.isEmpty()) {
+                        // We need to fold over our subtree and collect the listeners to send
+                        const newViews = syncTreeCollectDistinctViewsForSubTree_(subtree);
+                        // Ok, we've collected all the listens we need. Set them up.
+                        for (let i = 0; i < newViews.length; ++i) {
+                            const view = newViews[i], newQuery = view.query;
+                            const listener = syncTreeCreateListenerForView_(syncTree, view);
+                            syncTree.listenProvider_.startListening(syncTreeQueryForListening_(newQuery), syncTreeTagForQuery(syncTree, newQuery), listener.hashFn, listener.onComplete);
+                        }
+                    }
+                    // Otherwise there's nothing below us, so nothing we need to start listening on
+                }
+                // If we removed anything and we're not covered by a higher up listen, we need to stop listening on this query
+                // The above block has us covered in terms of making sure we're set up on listens lower in the tree.
+                // Also, note that if we have a cancelError, it's already been removed at the provider level.
+                if (!covered && removed.length > 0 && !cancelError) {
+                    // If we removed a default, then we weren't listening on any of the other queries here. Just cancel the one
+                    // default. Otherwise, we need to iterate through and cancel each individual query
+                    if (removingDefault) {
+                        // We don't tag default listeners
+                        const defaultTag = null;
+                        syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(query), defaultTag);
+                    }
+                    else {
+                        removed.forEach((queryToRemove) => {
+                            const tagToRemove = syncTree.queryToTagMap.get(syncTreeMakeQueryKey_(queryToRemove));
+                            syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(queryToRemove), tagToRemove);
+                        });
+                    }
+                }
+            }
+            // Now, clear all of the tags we're tracking for the removed listens
+            syncTreeRemoveTags_(syncTree, removed);
+        }
+        return cancelEvents;
+    }
+    /**
      * Apply new server data for the specified tagged query.
      *
      * @returns Events to raise.
@@ -12110,6 +13050,67 @@
             // We've already removed the query. No big deal, ignore the update
             return [];
         }
+    }
+    /**
+     * Add an event callback for the specified query.
+     *
+     * @returns Events to raise.
+     */
+    function syncTreeAddEventRegistration(syncTree, query, eventRegistration, skipSetupListener = false) {
+        const path = query._path;
+        let serverCache = null;
+        let foundAncestorDefaultView = false;
+        // Any covering writes will necessarily be at the root, so really all we need to find is the server cache.
+        // Consider optimizing this once there's a better understanding of what actual behavior will be.
+        syncTree.syncPointTree_.foreachOnPath(path, (pathToSyncPoint, sp) => {
+            const relativePath = newRelativePath(pathToSyncPoint, path);
+            serverCache =
+                serverCache || syncPointGetCompleteServerCache(sp, relativePath);
+            foundAncestorDefaultView =
+                foundAncestorDefaultView || syncPointHasCompleteView(sp);
+        });
+        let syncPoint = syncTree.syncPointTree_.get(path);
+        if (!syncPoint) {
+            syncPoint = new SyncPoint();
+            syncTree.syncPointTree_ = syncTree.syncPointTree_.set(path, syncPoint);
+        }
+        else {
+            foundAncestorDefaultView =
+                foundAncestorDefaultView || syncPointHasCompleteView(syncPoint);
+            serverCache =
+                serverCache || syncPointGetCompleteServerCache(syncPoint, newEmptyPath());
+        }
+        let serverCacheComplete;
+        if (serverCache != null) {
+            serverCacheComplete = true;
+        }
+        else {
+            serverCacheComplete = false;
+            serverCache = ChildrenNode.EMPTY_NODE;
+            const subtree = syncTree.syncPointTree_.subtree(path);
+            subtree.foreachChild((childName, childSyncPoint) => {
+                const completeCache = syncPointGetCompleteServerCache(childSyncPoint, newEmptyPath());
+                if (completeCache) {
+                    serverCache = serverCache.updateImmediateChild(childName, completeCache);
+                }
+            });
+        }
+        const viewAlreadyExists = syncPointViewExistsForQuery(syncPoint, query);
+        if (!viewAlreadyExists && !query._queryParams.loadsAllData()) {
+            // We need to track a tag for this query
+            const queryKey = syncTreeMakeQueryKey_(query);
+            assert(!syncTree.queryToTagMap.has(queryKey), 'View does not exist, but we have a tag');
+            const tag = syncTreeGetNextQueryTag_();
+            syncTree.queryToTagMap.set(queryKey, tag);
+            syncTree.tagToQueryMap.set(tag, queryKey);
+        }
+        const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, path);
+        let events = syncPointAddEventRegistration(syncPoint, query, eventRegistration, writesCache, serverCache, serverCacheComplete);
+        if (!viewAlreadyExists && !foundAncestorDefaultView && !skipSetupListener) {
+            const view = syncPointViewForQuery(syncPoint, query);
+            events = events.concat(syncTreeSetupListener_(syncTree, query, view));
+        }
+        return events;
     }
     /**
      * Returns a complete cache, if we have one, of the data at a particular path. If the location does not have a
@@ -12206,6 +13207,46 @@
         }
         return events;
     }
+    function syncTreeCreateListenerForView_(syncTree, view) {
+        const query = view.query;
+        const tag = syncTreeTagForQuery(syncTree, query);
+        return {
+            hashFn: () => {
+                const cache = viewGetServerCache(view) || ChildrenNode.EMPTY_NODE;
+                return cache.hash();
+            },
+            onComplete: (status) => {
+                if (status === 'ok') {
+                    if (tag) {
+                        return syncTreeApplyTaggedListenComplete(syncTree, query._path, tag);
+                    }
+                    else {
+                        return syncTreeApplyListenComplete(syncTree, query._path);
+                    }
+                }
+                else {
+                    // If a listen failed, kill all of the listeners here, not just the one that triggered the error.
+                    // Note that this may need to be scoped to just this listener if we change permissions on filtered children
+                    const error = errorForServerCode(status, query);
+                    return syncTreeRemoveEventRegistration(syncTree, query, 
+                    /*eventRegistration*/ null, error);
+                }
+            }
+        };
+    }
+    /**
+     * Return the tag associated with the given query.
+     */
+    function syncTreeTagForQuery(syncTree, query) {
+        const queryKey = syncTreeMakeQueryKey_(query);
+        return syncTree.queryToTagMap.get(queryKey);
+    }
+    /**
+     * Given a query, computes a "queryKey" suitable for use in our queryToTagMap_.
+     */
+    function syncTreeMakeQueryKey_(query) {
+        return query._path.toString() + '$' + query._queryIdentifier;
+    }
     /**
      * Return the query associated with the given tag, if we have one
      */
@@ -12231,6 +13272,106 @@
         assert(syncPoint, "Missing sync point for query tag that we're tracking");
         const writesCache = writeTreeChildWrites(syncTree.pendingWriteTree_, queryPath);
         return syncPointApplyOperation(syncPoint, operation, writesCache, null);
+    }
+    /**
+     * This collapses multiple unfiltered views into a single view, since we only need a single
+     * listener for them.
+     */
+    function syncTreeCollectDistinctViewsForSubTree_(subtree) {
+        return subtree.fold((relativePath, maybeChildSyncPoint, childMap) => {
+            if (maybeChildSyncPoint && syncPointHasCompleteView(maybeChildSyncPoint)) {
+                const completeView = syncPointGetCompleteView(maybeChildSyncPoint);
+                return [completeView];
+            }
+            else {
+                // No complete view here, flatten any deeper listens into an array
+                let views = [];
+                if (maybeChildSyncPoint) {
+                    views = syncPointGetQueryViews(maybeChildSyncPoint);
+                }
+                each(childMap, (_key, childViews) => {
+                    views = views.concat(childViews);
+                });
+                return views;
+            }
+        });
+    }
+    /**
+     * Normalizes a query to a query we send the server for listening
+     *
+     * @returns The normalized query
+     */
+    function syncTreeQueryForListening_(query) {
+        if (query._queryParams.loadsAllData() && !query._queryParams.isDefault()) {
+            // We treat queries that load all data as default queries
+            // Cast is necessary because ref() technically returns Firebase which is actually fb.api.Firebase which inherits
+            // from Query
+            return new (syncTreeGetReferenceConstructor())(query._repo, query._path);
+        }
+        else {
+            return query;
+        }
+    }
+    function syncTreeRemoveTags_(syncTree, queries) {
+        for (let j = 0; j < queries.length; ++j) {
+            const removedQuery = queries[j];
+            if (!removedQuery._queryParams.loadsAllData()) {
+                // We should have a tag for this
+                const removedQueryKey = syncTreeMakeQueryKey_(removedQuery);
+                const removedQueryTag = syncTree.queryToTagMap.get(removedQueryKey);
+                syncTree.queryToTagMap.delete(removedQueryKey);
+                syncTree.tagToQueryMap.delete(removedQueryTag);
+            }
+        }
+    }
+    /**
+     * Static accessor for query tags.
+     */
+    function syncTreeGetNextQueryTag_() {
+        return syncTreeNextQueryTag_++;
+    }
+    /**
+     * For a given new listen, manage the de-duplication of outstanding subscriptions.
+     *
+     * @returns This method can return events to support synchronous data sources
+     */
+    function syncTreeSetupListener_(syncTree, query, view) {
+        const path = query._path;
+        const tag = syncTreeTagForQuery(syncTree, query);
+        const listener = syncTreeCreateListenerForView_(syncTree, view);
+        const events = syncTree.listenProvider_.startListening(syncTreeQueryForListening_(query), tag, listener.hashFn, listener.onComplete);
+        const subtree = syncTree.syncPointTree_.subtree(path);
+        // The root of this subtree has our query. We're here because we definitely need to send a listen for that, but we
+        // may need to shadow other listens as well.
+        if (tag) {
+            assert(!syncPointHasCompleteView(subtree.value), "If we're adding a query, it shouldn't be shadowed");
+        }
+        else {
+            // Shadow everything at or below this location, this is a default listener.
+            const queriesToStop = subtree.fold((relativePath, maybeChildSyncPoint, childMap) => {
+                if (!pathIsEmpty(relativePath) &&
+                    maybeChildSyncPoint &&
+                    syncPointHasCompleteView(maybeChildSyncPoint)) {
+                    return [syncPointGetCompleteView(maybeChildSyncPoint).query];
+                }
+                else {
+                    // No default listener here, flatten any deeper queries into an array
+                    let queries = [];
+                    if (maybeChildSyncPoint) {
+                        queries = queries.concat(syncPointGetQueryViews(maybeChildSyncPoint).map(view => view.query));
+                    }
+                    each(childMap, (_key, childQueries) => {
+                        queries = queries.concat(childQueries);
+                    });
+                    return queries;
+                }
+            });
+            for (let i = 0; i < queriesToStop.length; ++i) {
+                const queryToStop = queriesToStop[i];
+                syncTree.listenProvider_.stopListening(syncTreeQueryForListening_(queryToStop), syncTreeTagForQuery(syncTree, queryToStop));
+            }
+        }
+        return events;
     }
 
     /**
@@ -12774,6 +13915,19 @@
         }
     }
     /**
+     * Queues the specified events and synchronously raises all events (including previously queued ones)
+     * for the specified path.
+     *
+     * It is assumed that the new events are all for the specified path.
+     *
+     * @param path - The path to raise events for.
+     * @param eventDataList - The new events to raise.
+     */
+    function eventQueueRaiseEventsAtPath(eventQueue, path, eventDataList) {
+        eventQueueQueueEvents(eventQueue, eventDataList);
+        eventQueueRaiseQueuedEventsMatchingPredicate(eventQueue, eventPath => pathEquals(eventPath, path));
+    }
+    /**
      * Queues the specified events and synchronously raises all events (including previously queued ones) for
      * locations related to the specified change path (i.e. all ancestors and descendants).
      *
@@ -13073,6 +14227,28 @@
         });
         repo.onDisconnect_ = newSparseSnapshotTree();
         eventQueueRaiseEventsForChangedPath(repo.eventQueue_, newEmptyPath(), events);
+    }
+    function repoAddEventCallbackForQuery(repo, query, eventRegistration) {
+        let events;
+        if (pathGetFront(query._path) === '.info') {
+            events = syncTreeAddEventRegistration(repo.infoSyncTree_, query, eventRegistration);
+        }
+        else {
+            events = syncTreeAddEventRegistration(repo.serverSyncTree_, query, eventRegistration);
+        }
+        eventQueueRaiseEventsAtPath(repo.eventQueue_, query._path, events);
+    }
+    function repoRemoveEventCallbackForQuery(repo, query, eventRegistration) {
+        // These are guaranteed not to raise events, since we're not passing in a cancelError. However, we can future-proof
+        // a little bit by handling the return values anyways.
+        let events;
+        if (pathGetFront(query._path) === '.info') {
+            events = syncTreeRemoveEventRegistration(repo.infoSyncTree_, query, eventRegistration);
+        }
+        else {
+            events = syncTreeRemoveEventRegistration(repo.serverSyncTree_, query, eventRegistration);
+        }
+        eventQueueRaiseEventsAtPath(repo.eventQueue_, query._path, events);
     }
     function repoInterrupt(repo) {
         if (repo.persistentConnection_) {
@@ -13627,6 +14803,127 @@
 
     /**
      * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Encapsulates the data needed to raise an event
+     */
+    class DataEvent {
+        /**
+         * @param eventType - One of: value, child_added, child_changed, child_moved, child_removed
+         * @param eventRegistration - The function to call to with the event data. User provided
+         * @param snapshot - The data backing the event
+         * @param prevName - Optional, the name of the previous child for child_* events.
+         */
+        constructor(eventType, eventRegistration, snapshot, prevName) {
+            this.eventType = eventType;
+            this.eventRegistration = eventRegistration;
+            this.snapshot = snapshot;
+            this.prevName = prevName;
+        }
+        getPath() {
+            const ref = this.snapshot.ref;
+            if (this.eventType === 'value') {
+                return ref._path;
+            }
+            else {
+                return ref.parent._path;
+            }
+        }
+        getEventType() {
+            return this.eventType;
+        }
+        getEventRunner() {
+            return this.eventRegistration.getEventRunner(this);
+        }
+        toString() {
+            return (this.getPath().toString() +
+                ':' +
+                this.eventType +
+                ':' +
+                stringify(this.snapshot.exportVal()));
+        }
+    }
+    class CancelEvent {
+        constructor(eventRegistration, error, path) {
+            this.eventRegistration = eventRegistration;
+            this.error = error;
+            this.path = path;
+        }
+        getPath() {
+            return this.path;
+        }
+        getEventType() {
+            return 'cancel';
+        }
+        getEventRunner() {
+            return this.eventRegistration.getEventRunner(this);
+        }
+        toString() {
+            return this.path.toString() + ':cancel';
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2017 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * A wrapper class that converts events from the database@exp SDK to the legacy
+     * Database SDK. Events are not converted directly as event registration relies
+     * on reference comparison of the original user callback (see `matches()`) and
+     * relies on equality of the legacy SDK's `context` object.
+     */
+    class CallbackContext {
+        constructor(snapshotCallback, cancelCallback) {
+            this.snapshotCallback = snapshotCallback;
+            this.cancelCallback = cancelCallback;
+        }
+        onValue(expDataSnapshot, previousChildName) {
+            this.snapshotCallback.call(null, expDataSnapshot, previousChildName);
+        }
+        onCancel(error) {
+            assert(this.hasCancelCallback, 'Raising a cancel event on a listener with no cancel callback');
+            return this.cancelCallback.call(null, error);
+        }
+        get hasCancelCallback() {
+            return !!this.cancelCallback;
+        }
+        matches(other) {
+            return (this.snapshotCallback === other.snapshotCallback ||
+                (this.snapshotCallback.userCallback !== undefined &&
+                    this.snapshotCallback.userCallback ===
+                        other.snapshotCallback.userCallback &&
+                    this.snapshotCallback.context === other.snapshotCallback.context));
+        }
+    }
+
+    /**
+     * @license
      * Copyright 2020 Google LLC
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13716,6 +15013,182 @@
         }
     }
     /**
+     * A `DataSnapshot` contains data from a Database location.
+     *
+     * Any time you read data from the Database, you receive the data as a
+     * `DataSnapshot`. A `DataSnapshot` is passed to the event callbacks you attach
+     * with `on()` or `once()`. You can extract the contents of the snapshot as a
+     * JavaScript object by calling the `val()` method. Alternatively, you can
+     * traverse into the snapshot by calling `child()` to return child snapshots
+     * (which you could then call `val()` on).
+     *
+     * A `DataSnapshot` is an efficiently generated, immutable copy of the data at
+     * a Database location. It cannot be modified and will never change (to modify
+     * data, you always call the `set()` method on a `Reference` directly).
+     */
+    class DataSnapshot {
+        /**
+         * @param _node - A SnapshotNode to wrap.
+         * @param ref - The location this snapshot came from.
+         * @param _index - The iteration order for this snapshot
+         * @hideconstructor
+         */
+        constructor(_node, 
+        /**
+         * The location of this DataSnapshot.
+         */
+        ref, _index) {
+            this._node = _node;
+            this.ref = ref;
+            this._index = _index;
+        }
+        /**
+         * Gets the priority value of the data in this `DataSnapshot`.
+         *
+         * Applications need not use priority but can order collections by
+         * ordinary properties (see
+         * {@link https://firebase.google.com/docs/database/web/lists-of-data#sorting_and_filtering_data |Sorting and filtering data}
+         * ).
+         */
+        get priority() {
+            // typecast here because we never return deferred values or internal priorities (MAX_PRIORITY)
+            return this._node.getPriority().val();
+        }
+        /**
+         * The key (last part of the path) of the location of this `DataSnapshot`.
+         *
+         * The last token in a Database location is considered its key. For example,
+         * "ada" is the key for the /users/ada/ node. Accessing the key on any
+         * `DataSnapshot` will return the key for the location that generated it.
+         * However, accessing the key on the root URL of a Database will return
+         * `null`.
+         */
+        get key() {
+            return this.ref.key;
+        }
+        /** Returns the number of child properties of this `DataSnapshot`. */
+        get size() {
+            return this._node.numChildren();
+        }
+        /**
+         * Gets another `DataSnapshot` for the location at the specified relative path.
+         *
+         * Passing a relative path to the `child()` method of a DataSnapshot returns
+         * another `DataSnapshot` for the location at the specified relative path. The
+         * relative path can either be a simple child name (for example, "ada") or a
+         * deeper, slash-separated path (for example, "ada/name/first"). If the child
+         * location has no data, an empty `DataSnapshot` (that is, a `DataSnapshot`
+         * whose value is `null`) is returned.
+         *
+         * @param path - A relative path to the location of child data.
+         */
+        child(path) {
+            const childPath = new Path(path);
+            const childRef = child(this.ref, path);
+            return new DataSnapshot(this._node.getChild(childPath), childRef, PRIORITY_INDEX);
+        }
+        /**
+         * Returns true if this `DataSnapshot` contains any data. It is slightly more
+         * efficient than using `snapshot.val() !== null`.
+         */
+        exists() {
+            return !this._node.isEmpty();
+        }
+        /**
+         * Exports the entire contents of the DataSnapshot as a JavaScript object.
+         *
+         * The `exportVal()` method is similar to `val()`, except priority information
+         * is included (if available), making it suitable for backing up your data.
+         *
+         * @returns The DataSnapshot's contents as a JavaScript value (Object,
+         *   Array, string, number, boolean, or `null`).
+         */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        exportVal() {
+            return this._node.val(true);
+        }
+        /**
+         * Enumerates the top-level children in the `IteratedDataSnapshot`.
+         *
+         * Because of the way JavaScript objects work, the ordering of data in the
+         * JavaScript object returned by `val()` is not guaranteed to match the
+         * ordering on the server nor the ordering of `onChildAdded()` events. That is
+         * where `forEach()` comes in handy. It guarantees the children of a
+         * `DataSnapshot` will be iterated in their query order.
+         *
+         * If no explicit `orderBy*()` method is used, results are returned
+         * ordered by key (unless priorities are used, in which case, results are
+         * returned by priority).
+         *
+         * @param action - A function that will be called for each child DataSnapshot.
+         * The callback can return true to cancel further enumeration.
+         * @returns true if enumeration was canceled due to your callback returning
+         * true.
+         */
+        forEach(action) {
+            if (this._node.isLeafNode()) {
+                return false;
+            }
+            const childrenNode = this._node;
+            // Sanitize the return value to a boolean. ChildrenNode.forEachChild has a weird return type...
+            return !!childrenNode.forEachChild(this._index, (key, node) => {
+                return action(new DataSnapshot(node, child(this.ref, key), PRIORITY_INDEX));
+            });
+        }
+        /**
+         * Returns true if the specified child path has (non-null) data.
+         *
+         * @param path - A relative path to the location of a potential child.
+         * @returns `true` if data exists at the specified child path; else
+         *  `false`.
+         */
+        hasChild(path) {
+            const childPath = new Path(path);
+            return !this._node.getChild(childPath).isEmpty();
+        }
+        /**
+         * Returns whether or not the `DataSnapshot` has any non-`null` child
+         * properties.
+         *
+         * You can use `hasChildren()` to determine if a `DataSnapshot` has any
+         * children. If it does, you can enumerate them using `forEach()`. If it
+         * doesn't, then either this snapshot contains a primitive value (which can be
+         * retrieved with `val()`) or it is empty (in which case, `val()` will return
+         * `null`).
+         *
+         * @returns true if this snapshot has any children; else false.
+         */
+        hasChildren() {
+            if (this._node.isLeafNode()) {
+                return false;
+            }
+            else {
+                return !this._node.isEmpty();
+            }
+        }
+        /**
+         * Returns a JSON-serializable representation of this object.
+         */
+        toJSON() {
+            return this.exportVal();
+        }
+        /**
+         * Extracts a JavaScript value from a `DataSnapshot`.
+         *
+         * Depending on the data in a `DataSnapshot`, the `val()` method may return a
+         * scalar type (string, number, or boolean), an array, or an object. It may
+         * also return null, indicating that the `DataSnapshot` is empty (contains no
+         * data).
+         *
+         * @returns The DataSnapshot's contents as a JavaScript value (Object,
+         *   Array, string, number, boolean, or `null`).
+         */
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        val() {
+            return this._node.val();
+        }
+    }
+    /**
      *
      * Returns a `Reference` representing the location in the Database
      * corresponding to the provided path. If no path is provided, the `Reference`
@@ -13792,6 +15265,130 @@
         repoSetWithPriority(ref._repo, ref._path, value, 
         /*priority=*/ null, deferred.wrapCallback(() => { }));
         return deferred.promise;
+    }
+    /**
+     * Represents registration for 'value' events.
+     */
+    class ValueEventRegistration {
+        constructor(callbackContext) {
+            this.callbackContext = callbackContext;
+        }
+        respondsTo(eventType) {
+            return eventType === 'value';
+        }
+        createEvent(change, query) {
+            const index = query._queryParams.getIndex();
+            return new DataEvent('value', this, new DataSnapshot(change.snapshotNode, new ReferenceImpl(query._repo, query._path), index));
+        }
+        getEventRunner(eventData) {
+            if (eventData.getEventType() === 'cancel') {
+                return () => this.callbackContext.onCancel(eventData.error);
+            }
+            else {
+                return () => this.callbackContext.onValue(eventData.snapshot, null);
+            }
+        }
+        createCancelEvent(error, path) {
+            if (this.callbackContext.hasCancelCallback) {
+                return new CancelEvent(this, error, path);
+            }
+            else {
+                return null;
+            }
+        }
+        matches(other) {
+            if (!(other instanceof ValueEventRegistration)) {
+                return false;
+            }
+            else if (!other.callbackContext || !this.callbackContext) {
+                // If no callback specified, we consider it to match any callback.
+                return true;
+            }
+            else {
+                return other.callbackContext.matches(this.callbackContext);
+            }
+        }
+        hasAnyCallback() {
+            return this.callbackContext !== null;
+        }
+    }
+    /**
+     * Represents the registration of a child_x event.
+     */
+    class ChildEventRegistration {
+        constructor(eventType, callbackContext) {
+            this.eventType = eventType;
+            this.callbackContext = callbackContext;
+        }
+        respondsTo(eventType) {
+            let eventToCheck = eventType === 'children_added' ? 'child_added' : eventType;
+            eventToCheck =
+                eventToCheck === 'children_removed' ? 'child_removed' : eventToCheck;
+            return this.eventType === eventToCheck;
+        }
+        createCancelEvent(error, path) {
+            if (this.callbackContext.hasCancelCallback) {
+                return new CancelEvent(this, error, path);
+            }
+            else {
+                return null;
+            }
+        }
+        createEvent(change, query) {
+            assert(change.childName != null, 'Child events should have a childName.');
+            const childRef = child(new ReferenceImpl(query._repo, query._path), change.childName);
+            const index = query._queryParams.getIndex();
+            return new DataEvent(change.type, this, new DataSnapshot(change.snapshotNode, childRef, index), change.prevName);
+        }
+        getEventRunner(eventData) {
+            if (eventData.getEventType() === 'cancel') {
+                return () => this.callbackContext.onCancel(eventData.error);
+            }
+            else {
+                return () => this.callbackContext.onValue(eventData.snapshot, eventData.prevName);
+            }
+        }
+        matches(other) {
+            if (other instanceof ChildEventRegistration) {
+                return (this.eventType === other.eventType &&
+                    (!this.callbackContext ||
+                        !other.callbackContext ||
+                        this.callbackContext.matches(other.callbackContext)));
+            }
+            return false;
+        }
+        hasAnyCallback() {
+            return !!this.callbackContext;
+        }
+    }
+    function addEventListener(query, eventType, callback, cancelCallbackOrListenOptions, options) {
+        let cancelCallback;
+        if (typeof cancelCallbackOrListenOptions === 'object') {
+            cancelCallback = undefined;
+            options = cancelCallbackOrListenOptions;
+        }
+        if (typeof cancelCallbackOrListenOptions === 'function') {
+            cancelCallback = cancelCallbackOrListenOptions;
+        }
+        if (options && options.onlyOnce) {
+            const userCallback = callback;
+            const onceCallback = (dataSnapshot, previousChildName) => {
+                repoRemoveEventCallbackForQuery(query._repo, query, container);
+                userCallback(dataSnapshot, previousChildName);
+            };
+            onceCallback.userCallback = callback.userCallback;
+            onceCallback.context = callback.context;
+            callback = onceCallback;
+        }
+        const callbackContext = new CallbackContext(callback, cancelCallback || undefined);
+        const container = eventType === 'value'
+            ? new ValueEventRegistration(callbackContext)
+            : new ChildEventRegistration(eventType, callbackContext);
+        repoAddEventCallbackForQuery(query._repo, query, container);
+        return () => repoRemoveEventCallbackForQuery(query._repo, query, container);
+    }
+    function onValue(query, callback, cancelCallbackOrListenOptions, options) {
+        return addEventListener(query, 'value', callback, cancelCallbackOrListenOptions, options);
     }
     /**
      * Define reference constructor in various modules
@@ -14650,6 +16247,18 @@
         }
         return _emulatorUrl(auth.config, base);
     }
+    function _parseEnforcementState(enforcementStateStr) {
+        switch (enforcementStateStr) {
+            case 'ENFORCE':
+                return "ENFORCE" /* EnforcementState.ENFORCE */;
+            case 'AUDIT':
+                return "AUDIT" /* EnforcementState.AUDIT */;
+            case 'OFF':
+                return "OFF" /* EnforcementState.OFF */;
+            default:
+                return "ENFORCEMENT_STATE_UNSPECIFIED" /* EnforcementState.ENFORCEMENT_STATE_UNSPECIFIED */;
+        }
+    }
     class NetworkTimeout {
         constructor(auth) {
             this.auth = auth;
@@ -14681,6 +16290,61 @@
         // We know customData is defined on error because errorParams is defined
         error.customData._tokenResponse = response;
         return error;
+    }
+    function isEnterprise(grecaptcha) {
+        return (grecaptcha !== undefined &&
+            grecaptcha.enterprise !== undefined);
+    }
+    class RecaptchaConfig {
+        constructor(response) {
+            /**
+             * The reCAPTCHA site key.
+             */
+            this.siteKey = '';
+            /**
+             * The list of providers and their enablement status for reCAPTCHA Enterprise.
+             */
+            this.recaptchaEnforcementState = [];
+            if (response.recaptchaKey === undefined) {
+                throw new Error('recaptchaKey undefined');
+            }
+            // Example response.recaptchaKey: "projects/proj123/keys/sitekey123"
+            this.siteKey = response.recaptchaKey.split('/')[3];
+            this.recaptchaEnforcementState = response.recaptchaEnforcementState;
+        }
+        /**
+         * Returns the reCAPTCHA Enterprise enforcement state for the given provider.
+         *
+         * @param providerStr - The provider whose enforcement state is to be returned.
+         * @returns The reCAPTCHA Enterprise enforcement state for the given provider.
+         */
+        getProviderEnforcementState(providerStr) {
+            if (!this.recaptchaEnforcementState ||
+                this.recaptchaEnforcementState.length === 0) {
+                return null;
+            }
+            for (const recaptchaEnforcementState of this.recaptchaEnforcementState) {
+                if (recaptchaEnforcementState.provider &&
+                    recaptchaEnforcementState.provider === providerStr) {
+                    return _parseEnforcementState(recaptchaEnforcementState.enforcementState);
+                }
+            }
+            return null;
+        }
+        /**
+         * Returns true if the reCAPTCHA Enterprise enforcement state for the provider is set to ENFORCE or AUDIT.
+         *
+         * @param providerStr - The provider whose enablement state is to be returned.
+         * @returns Whether or not reCAPTCHA Enterprise protection is enabled for the given provider.
+         */
+        isProviderEnabled(providerStr) {
+            return (this.getProviderEnforcementState(providerStr) ===
+                "ENFORCE" /* EnforcementState.ENFORCE */ ||
+                this.getProviderEnforcementState(providerStr) === "AUDIT" /* EnforcementState.AUDIT */);
+        }
+    }
+    async function getRecaptchaConfig(auth, request) {
+        return _performApiRequest(auth, "GET" /* HttpMethod.GET */, "/v2/recaptchaConfig" /* Endpoint.GET_RECAPTCHA_CONFIG */, _addTidIfNecessary(auth, request));
     }
 
     /**
@@ -16634,6 +18298,151 @@
         return `__${prefix}${Math.floor(Math.random() * 1000000)}`;
     }
 
+    /* eslint-disable @typescript-eslint/no-require-imports */
+    const RECAPTCHA_ENTERPRISE_URL = 'https://www.google.com/recaptcha/enterprise.js?render=';
+    const RECAPTCHA_ENTERPRISE_VERIFIER_TYPE = 'recaptcha-enterprise';
+    const FAKE_TOKEN = 'NO_RECAPTCHA';
+    class RecaptchaEnterpriseVerifier {
+        /**
+         *
+         * @param authExtern - The corresponding Firebase {@link Auth} instance.
+         *
+         */
+        constructor(authExtern) {
+            /**
+             * Identifies the type of application verifier (e.g. "recaptcha-enterprise").
+             */
+            this.type = RECAPTCHA_ENTERPRISE_VERIFIER_TYPE;
+            this.auth = _castAuth(authExtern);
+        }
+        /**
+         * Executes the verification process.
+         *
+         * @returns A Promise for a token that can be used to assert the validity of a request.
+         */
+        async verify(action = 'verify', forceRefresh = false) {
+            async function retrieveSiteKey(auth) {
+                if (!forceRefresh) {
+                    if (auth.tenantId == null && auth._agentRecaptchaConfig != null) {
+                        return auth._agentRecaptchaConfig.siteKey;
+                    }
+                    if (auth.tenantId != null &&
+                        auth._tenantRecaptchaConfigs[auth.tenantId] !== undefined) {
+                        return auth._tenantRecaptchaConfigs[auth.tenantId].siteKey;
+                    }
+                }
+                return new Promise(async (resolve, reject) => {
+                    getRecaptchaConfig(auth, {
+                        clientType: "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */,
+                        version: "RECAPTCHA_ENTERPRISE" /* RecaptchaVersion.ENTERPRISE */
+                    })
+                        .then(response => {
+                        if (response.recaptchaKey === undefined) {
+                            reject(new Error('recaptcha Enterprise site key undefined'));
+                        }
+                        else {
+                            const config = new RecaptchaConfig(response);
+                            if (auth.tenantId == null) {
+                                auth._agentRecaptchaConfig = config;
+                            }
+                            else {
+                                auth._tenantRecaptchaConfigs[auth.tenantId] = config;
+                            }
+                            return resolve(config.siteKey);
+                        }
+                    })
+                        .catch(error => {
+                        reject(error);
+                    });
+                });
+            }
+            function retrieveRecaptchaToken(siteKey, resolve, reject) {
+                const grecaptcha = window.grecaptcha;
+                if (isEnterprise(grecaptcha)) {
+                    grecaptcha.enterprise.ready(() => {
+                        grecaptcha.enterprise
+                            .execute(siteKey, { action })
+                            .then(token => {
+                            resolve(token);
+                        })
+                            .catch(() => {
+                            resolve(FAKE_TOKEN);
+                        });
+                    });
+                }
+                else {
+                    reject(Error('No reCAPTCHA enterprise script loaded.'));
+                }
+            }
+            return new Promise((resolve, reject) => {
+                retrieveSiteKey(this.auth)
+                    .then(siteKey => {
+                    if (!forceRefresh && isEnterprise(window.grecaptcha)) {
+                        retrieveRecaptchaToken(siteKey, resolve, reject);
+                    }
+                    else {
+                        if (typeof window === 'undefined') {
+                            reject(new Error('RecaptchaVerifier is only supported in browser'));
+                            return;
+                        }
+                        _loadJS(RECAPTCHA_ENTERPRISE_URL + siteKey)
+                            .then(() => {
+                            retrieveRecaptchaToken(siteKey, resolve, reject);
+                        })
+                            .catch(error => {
+                            reject(error);
+                        });
+                    }
+                })
+                    .catch(error => {
+                    reject(error);
+                });
+            });
+        }
+    }
+    async function injectRecaptchaFields(auth, request, action, captchaResp = false) {
+        const verifier = new RecaptchaEnterpriseVerifier(auth);
+        let captchaResponse;
+        try {
+            captchaResponse = await verifier.verify(action);
+        }
+        catch (error) {
+            captchaResponse = await verifier.verify(action, true);
+        }
+        const newRequest = Object.assign({}, request);
+        if (!captchaResp) {
+            Object.assign(newRequest, { captchaResponse });
+        }
+        else {
+            Object.assign(newRequest, { 'captchaResp': captchaResponse });
+        }
+        Object.assign(newRequest, { 'clientType': "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */ });
+        Object.assign(newRequest, {
+            'recaptchaVersion': "RECAPTCHA_ENTERPRISE" /* RecaptchaVersion.ENTERPRISE */
+        });
+        return newRequest;
+    }
+    async function handleRecaptchaFlow(authInstance, request, actionName, actionMethod) {
+        var _a;
+        if ((_a = authInstance
+            ._getRecaptchaConfig()) === null || _a === void 0 ? void 0 : _a.isProviderEnabled("EMAIL_PASSWORD_PROVIDER" /* RecaptchaProvider.EMAIL_PASSWORD_PROVIDER */)) {
+            const requestWithRecaptcha = await injectRecaptchaFields(authInstance, request, actionName, actionName === "getOobCode" /* RecaptchaActionName.GET_OOB_CODE */);
+            return actionMethod(authInstance, requestWithRecaptcha);
+        }
+        else {
+            return actionMethod(authInstance, request).catch(async (error) => {
+                if (error.code === `auth/${"missing-recaptcha-token" /* AuthErrorCode.MISSING_RECAPTCHA_TOKEN */}`) {
+                    console.log(`${actionName} is protected by reCAPTCHA Enterprise for this project. Automatically triggering the reCAPTCHA flow and restarting the flow.`);
+                    const requestWithRecaptcha = await injectRecaptchaFields(authInstance, request, actionName, actionName === "getOobCode" /* RecaptchaActionName.GET_OOB_CODE */);
+                    return actionMethod(authInstance, requestWithRecaptcha);
+                }
+                else {
+                    return Promise.reject(error);
+                }
+            });
+        }
+    }
+
     /**
      * @license
      * Copyright 2020 Google LLC
@@ -16877,6 +18686,185 @@
             return debugFail('not implemented');
         }
     }
+    // Used for linking an email/password account to an existing idToken. Uses the same request/response
+    // format as updateEmailPassword.
+    async function linkEmailPassword(auth, request) {
+        return _performApiRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:signUp" /* Endpoint.SIGN_UP */, request);
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function signInWithPassword(auth, request) {
+        return _performSignInRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:signInWithPassword" /* Endpoint.SIGN_IN_WITH_PASSWORD */, _addTidIfNecessary(auth, request));
+    }
+    async function sendOobCode(auth, request) {
+        return _performApiRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:sendOobCode" /* Endpoint.SEND_OOB_CODE */, _addTidIfNecessary(auth, request));
+    }
+    async function sendPasswordResetEmail$1(auth, request) {
+        return sendOobCode(auth, request);
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function signInWithEmailLink$1(auth, request) {
+        return _performSignInRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:signInWithEmailLink" /* Endpoint.SIGN_IN_WITH_EMAIL_LINK */, _addTidIfNecessary(auth, request));
+    }
+    async function signInWithEmailLinkForLinking(auth, request) {
+        return _performSignInRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:signInWithEmailLink" /* Endpoint.SIGN_IN_WITH_EMAIL_LINK */, _addTidIfNecessary(auth, request));
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Interface that represents the credentials returned by {@link EmailAuthProvider} for
+     * {@link ProviderId}.PASSWORD
+     *
+     * @remarks
+     * Covers both {@link SignInMethod}.EMAIL_PASSWORD and
+     * {@link SignInMethod}.EMAIL_LINK.
+     *
+     * @public
+     */
+    class EmailAuthCredential extends AuthCredential {
+        /** @internal */
+        constructor(
+        /** @internal */
+        _email, 
+        /** @internal */
+        _password, signInMethod, 
+        /** @internal */
+        _tenantId = null) {
+            super("password" /* ProviderId.PASSWORD */, signInMethod);
+            this._email = _email;
+            this._password = _password;
+            this._tenantId = _tenantId;
+        }
+        /** @internal */
+        static _fromEmailAndPassword(email, password) {
+            return new EmailAuthCredential(email, password, "password" /* SignInMethod.EMAIL_PASSWORD */);
+        }
+        /** @internal */
+        static _fromEmailAndCode(email, oobCode, tenantId = null) {
+            return new EmailAuthCredential(email, oobCode, "emailLink" /* SignInMethod.EMAIL_LINK */, tenantId);
+        }
+        /** {@inheritdoc AuthCredential.toJSON} */
+        toJSON() {
+            return {
+                email: this._email,
+                password: this._password,
+                signInMethod: this.signInMethod,
+                tenantId: this._tenantId
+            };
+        }
+        /**
+         * Static method to deserialize a JSON representation of an object into an {@link  AuthCredential}.
+         *
+         * @param json - Either `object` or the stringified representation of the object. When string is
+         * provided, `JSON.parse` would be called first.
+         *
+         * @returns If the JSON input does not represent an {@link AuthCredential}, null is returned.
+         */
+        static fromJSON(json) {
+            const obj = typeof json === 'string' ? JSON.parse(json) : json;
+            if ((obj === null || obj === void 0 ? void 0 : obj.email) && (obj === null || obj === void 0 ? void 0 : obj.password)) {
+                if (obj.signInMethod === "password" /* SignInMethod.EMAIL_PASSWORD */) {
+                    return this._fromEmailAndPassword(obj.email, obj.password);
+                }
+                else if (obj.signInMethod === "emailLink" /* SignInMethod.EMAIL_LINK */) {
+                    return this._fromEmailAndCode(obj.email, obj.password, obj.tenantId);
+                }
+            }
+            return null;
+        }
+        /** @internal */
+        async _getIdTokenResponse(auth) {
+            switch (this.signInMethod) {
+                case "password" /* SignInMethod.EMAIL_PASSWORD */:
+                    const request = {
+                        returnSecureToken: true,
+                        email: this._email,
+                        password: this._password,
+                        clientType: "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */
+                    };
+                    return handleRecaptchaFlow(auth, request, "signInWithPassword" /* RecaptchaActionName.SIGN_IN_WITH_PASSWORD */, signInWithPassword);
+                case "emailLink" /* SignInMethod.EMAIL_LINK */:
+                    return signInWithEmailLink$1(auth, {
+                        email: this._email,
+                        oobCode: this._password
+                    });
+                default:
+                    _fail(auth, "internal-error" /* AuthErrorCode.INTERNAL_ERROR */);
+            }
+        }
+        /** @internal */
+        async _linkToIdToken(auth, idToken) {
+            switch (this.signInMethod) {
+                case "password" /* SignInMethod.EMAIL_PASSWORD */:
+                    const request = {
+                        idToken,
+                        returnSecureToken: true,
+                        email: this._email,
+                        password: this._password,
+                        clientType: "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */
+                    };
+                    return handleRecaptchaFlow(auth, request, "signUpPassword" /* RecaptchaActionName.SIGN_UP_PASSWORD */, linkEmailPassword);
+                case "emailLink" /* SignInMethod.EMAIL_LINK */:
+                    return signInWithEmailLinkForLinking(auth, {
+                        idToken,
+                        email: this._email,
+                        oobCode: this._password
+                    });
+                default:
+                    _fail(auth, "internal-error" /* AuthErrorCode.INTERNAL_ERROR */);
+            }
+        }
+        /** @internal */
+        _getReauthenticationResolver(auth) {
+            return this._getIdTokenResponse(auth);
+        }
+    }
 
     /**
      * @license
@@ -17037,6 +19025,201 @@
             return request;
         }
     }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Maps the mode string in action code URL to Action Code Info operation.
+     *
+     * @param mode
+     */
+    function parseMode(mode) {
+        switch (mode) {
+            case 'recoverEmail':
+                return "RECOVER_EMAIL" /* ActionCodeOperation.RECOVER_EMAIL */;
+            case 'resetPassword':
+                return "PASSWORD_RESET" /* ActionCodeOperation.PASSWORD_RESET */;
+            case 'signIn':
+                return "EMAIL_SIGNIN" /* ActionCodeOperation.EMAIL_SIGNIN */;
+            case 'verifyEmail':
+                return "VERIFY_EMAIL" /* ActionCodeOperation.VERIFY_EMAIL */;
+            case 'verifyAndChangeEmail':
+                return "VERIFY_AND_CHANGE_EMAIL" /* ActionCodeOperation.VERIFY_AND_CHANGE_EMAIL */;
+            case 'revertSecondFactorAddition':
+                return "REVERT_SECOND_FACTOR_ADDITION" /* ActionCodeOperation.REVERT_SECOND_FACTOR_ADDITION */;
+            default:
+                return null;
+        }
+    }
+    /**
+     * Helper to parse FDL links
+     *
+     * @param url
+     */
+    function parseDeepLink(url) {
+        const link = querystringDecode(extractQuerystring(url))['link'];
+        // Double link case (automatic redirect).
+        const doubleDeepLink = link
+            ? querystringDecode(extractQuerystring(link))['deep_link_id']
+            : null;
+        // iOS custom scheme links.
+        const iOSDeepLink = querystringDecode(extractQuerystring(url))['deep_link_id'];
+        const iOSDoubleDeepLink = iOSDeepLink
+            ? querystringDecode(extractQuerystring(iOSDeepLink))['link']
+            : null;
+        return iOSDoubleDeepLink || iOSDeepLink || doubleDeepLink || link || url;
+    }
+    /**
+     * A utility class to parse email action URLs such as password reset, email verification,
+     * email link sign in, etc.
+     *
+     * @public
+     */
+    class ActionCodeURL {
+        /**
+         * @param actionLink - The link from which to extract the URL.
+         * @returns The {@link ActionCodeURL} object, or null if the link is invalid.
+         *
+         * @internal
+         */
+        constructor(actionLink) {
+            var _a, _b, _c, _d, _e, _f;
+            const searchParams = querystringDecode(extractQuerystring(actionLink));
+            const apiKey = (_a = searchParams["apiKey" /* QueryField.API_KEY */]) !== null && _a !== void 0 ? _a : null;
+            const code = (_b = searchParams["oobCode" /* QueryField.CODE */]) !== null && _b !== void 0 ? _b : null;
+            const operation = parseMode((_c = searchParams["mode" /* QueryField.MODE */]) !== null && _c !== void 0 ? _c : null);
+            // Validate API key, code and mode.
+            _assert(apiKey && code && operation, "argument-error" /* AuthErrorCode.ARGUMENT_ERROR */);
+            this.apiKey = apiKey;
+            this.operation = operation;
+            this.code = code;
+            this.continueUrl = (_d = searchParams["continueUrl" /* QueryField.CONTINUE_URL */]) !== null && _d !== void 0 ? _d : null;
+            this.languageCode = (_e = searchParams["languageCode" /* QueryField.LANGUAGE_CODE */]) !== null && _e !== void 0 ? _e : null;
+            this.tenantId = (_f = searchParams["tenantId" /* QueryField.TENANT_ID */]) !== null && _f !== void 0 ? _f : null;
+        }
+        /**
+         * Parses the email action link string and returns an {@link ActionCodeURL} if the link is valid,
+         * otherwise returns null.
+         *
+         * @param link  - The email action link string.
+         * @returns The {@link ActionCodeURL} object, or null if the link is invalid.
+         *
+         * @public
+         */
+        static parseLink(link) {
+            const actionLink = parseDeepLink(link);
+            try {
+                return new ActionCodeURL(actionLink);
+            }
+            catch (_a) {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Provider for generating {@link EmailAuthCredential}.
+     *
+     * @public
+     */
+    class EmailAuthProvider {
+        constructor() {
+            /**
+             * Always set to {@link ProviderId}.PASSWORD, even for email link.
+             */
+            this.providerId = EmailAuthProvider.PROVIDER_ID;
+        }
+        /**
+         * Initialize an {@link AuthCredential} using an email and password.
+         *
+         * @example
+         * ```javascript
+         * const authCredential = EmailAuthProvider.credential(email, password);
+         * const userCredential = await signInWithCredential(auth, authCredential);
+         * ```
+         *
+         * @example
+         * ```javascript
+         * const userCredential = await signInWithEmailAndPassword(auth, email, password);
+         * ```
+         *
+         * @param email - Email address.
+         * @param password - User account password.
+         * @returns The auth provider credential.
+         */
+        static credential(email, password) {
+            return EmailAuthCredential._fromEmailAndPassword(email, password);
+        }
+        /**
+         * Initialize an {@link AuthCredential} using an email and an email link after a sign in with
+         * email link operation.
+         *
+         * @example
+         * ```javascript
+         * const authCredential = EmailAuthProvider.credentialWithLink(auth, email, emailLink);
+         * const userCredential = await signInWithCredential(auth, authCredential);
+         * ```
+         *
+         * @example
+         * ```javascript
+         * await sendSignInLinkToEmail(auth, email);
+         * // Obtain emailLink from user.
+         * const userCredential = await signInWithEmailLink(auth, email, emailLink);
+         * ```
+         *
+         * @param auth - The {@link Auth} instance used to verify the link.
+         * @param email - Email address.
+         * @param emailLink - Sign-in email link.
+         * @returns - The auth provider credential.
+         */
+        static credentialWithLink(email, emailLink) {
+            const actionCodeUrl = ActionCodeURL.parseLink(emailLink);
+            _assert(actionCodeUrl, "argument-error" /* AuthErrorCode.ARGUMENT_ERROR */);
+            return EmailAuthCredential._fromEmailAndCode(email, actionCodeUrl.code, actionCodeUrl.tenantId);
+        }
+    }
+    /**
+     * Always set to {@link ProviderId}.PASSWORD, even for email link.
+     */
+    EmailAuthProvider.PROVIDER_ID = "password" /* ProviderId.PASSWORD */;
+    /**
+     * Always set to {@link SignInMethod}.EMAIL_PASSWORD.
+     */
+    EmailAuthProvider.EMAIL_PASSWORD_SIGN_IN_METHOD = "password" /* SignInMethod.EMAIL_PASSWORD */;
+    /**
+     * Always set to {@link SignInMethod}.EMAIL_LINK.
+     */
+    EmailAuthProvider.EMAIL_LINK_SIGN_IN_METHOD = "emailLink" /* SignInMethod.EMAIL_LINK */;
 
     /**
      * @license
@@ -17627,6 +19810,26 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    async function signUp(auth, request) {
+        return _performSignInRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:signUp" /* Endpoint.SIGN_UP */, _addTidIfNecessary(auth, request));
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     class UserCredentialImpl {
         constructor(params) {
             this.user = params.user;
@@ -17780,6 +19983,268 @@
         return userCredential;
     }
     /**
+     * Asynchronously signs in with the given credentials.
+     *
+     * @remarks
+     * An {@link AuthProvider} can be used to generate the credential.
+     *
+     * @param auth - The {@link Auth} instance.
+     * @param credential - The auth credential.
+     *
+     * @public
+     */
+    async function signInWithCredential(auth, credential) {
+        return _signInWithCredential(_castAuth(auth), credential);
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    function _setActionCodeSettingsOnRequest(auth, request, actionCodeSettings) {
+        var _a;
+        _assert(((_a = actionCodeSettings.url) === null || _a === void 0 ? void 0 : _a.length) > 0, auth, "invalid-continue-uri" /* AuthErrorCode.INVALID_CONTINUE_URI */);
+        _assert(typeof actionCodeSettings.dynamicLinkDomain === 'undefined' ||
+            actionCodeSettings.dynamicLinkDomain.length > 0, auth, "invalid-dynamic-link-domain" /* AuthErrorCode.INVALID_DYNAMIC_LINK_DOMAIN */);
+        request.continueUrl = actionCodeSettings.url;
+        request.dynamicLinkDomain = actionCodeSettings.dynamicLinkDomain;
+        request.canHandleCodeInApp = actionCodeSettings.handleCodeInApp;
+        if (actionCodeSettings.iOS) {
+            _assert(actionCodeSettings.iOS.bundleId.length > 0, auth, "missing-ios-bundle-id" /* AuthErrorCode.MISSING_IOS_BUNDLE_ID */);
+            request.iOSBundleId = actionCodeSettings.iOS.bundleId;
+        }
+        if (actionCodeSettings.android) {
+            _assert(actionCodeSettings.android.packageName.length > 0, auth, "missing-android-pkg-name" /* AuthErrorCode.MISSING_ANDROID_PACKAGE_NAME */);
+            request.androidInstallApp = actionCodeSettings.android.installApp;
+            request.androidMinimumVersionCode =
+                actionCodeSettings.android.minimumVersion;
+            request.androidPackageName = actionCodeSettings.android.packageName;
+        }
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Updates the password policy cached in the {@link Auth} instance if a policy is already
+     * cached for the project or tenant.
+     *
+     * @remarks
+     * We only fetch the password policy if the password did not meet policy requirements and
+     * there is an existing policy cached. A developer must call validatePassword at least
+     * once for the cache to be automatically updated.
+     *
+     * @param auth - The {@link Auth} instance.
+     *
+     * @private
+     */
+    async function recachePasswordPolicy(auth) {
+        const authInternal = _castAuth(auth);
+        if (authInternal._getPasswordPolicyInternal()) {
+            await authInternal._updatePasswordPolicy();
+        }
+    }
+    /**
+     * Sends a password reset email to the given email address. This method does not throw an error when
+     * there's no user account with the given email address and
+     * [Email Enumeration Protection](https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection) is enabled.
+     *
+     * @remarks
+     * To complete the password reset, call {@link confirmPasswordReset} with the code supplied in
+     * the email sent to the user, along with the new password specified by the user.
+     *
+     * @example
+     * ```javascript
+     * const actionCodeSettings = {
+     *   url: 'https://www.example.com/?email=user@example.com',
+     *   iOS: {
+     *      bundleId: 'com.example.ios'
+     *   },
+     *   android: {
+     *     packageName: 'com.example.android',
+     *     installApp: true,
+     *     minimumVersion: '12'
+     *   },
+     *   handleCodeInApp: true
+     * };
+     * await sendPasswordResetEmail(auth, 'user@example.com', actionCodeSettings);
+     * // Obtain code from user.
+     * await confirmPasswordReset('user@example.com', code);
+     * ```
+     *
+     * @param auth - The {@link Auth} instance.
+     * @param email - The user's email address.
+     * @param actionCodeSettings - The {@link ActionCodeSettings}.
+     *
+     * @public
+     */
+    async function sendPasswordResetEmail(auth, email, actionCodeSettings) {
+        const authInternal = _castAuth(auth);
+        const request = {
+            requestType: "PASSWORD_RESET" /* ActionCodeOperation.PASSWORD_RESET */,
+            email,
+            clientType: "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */
+        };
+        if (actionCodeSettings) {
+            _setActionCodeSettingsOnRequest(authInternal, request, actionCodeSettings);
+        }
+        await handleRecaptchaFlow(authInternal, request, "getOobCode" /* RecaptchaActionName.GET_OOB_CODE */, sendPasswordResetEmail$1);
+    }
+    /**
+     * Creates a new user account associated with the specified email address and password.
+     *
+     * @remarks
+     * On successful creation of the user account, this user will also be signed in to your application.
+     *
+     * User account creation can fail if the account already exists or the password is invalid.
+     *
+     * Note: The email address acts as a unique identifier for the user and enables an email-based
+     * password reset. This function will create a new user account and set the initial user password.
+     *
+     * @param auth - The {@link Auth} instance.
+     * @param email - The user's email address.
+     * @param password - The user's chosen password.
+     *
+     * @public
+     */
+    async function createUserWithEmailAndPassword(auth, email, password) {
+        const authInternal = _castAuth(auth);
+        const request = {
+            returnSecureToken: true,
+            email,
+            password,
+            clientType: "CLIENT_TYPE_WEB" /* RecaptchaClientType.WEB */
+        };
+        const signUpResponse = handleRecaptchaFlow(authInternal, request, "signUpPassword" /* RecaptchaActionName.SIGN_UP_PASSWORD */, signUp);
+        const response = await signUpResponse.catch(error => {
+            if (error.code === `auth/${"password-does-not-meet-requirements" /* AuthErrorCode.PASSWORD_DOES_NOT_MEET_REQUIREMENTS */}`) {
+                void recachePasswordPolicy(auth);
+            }
+            throw error;
+        });
+        const userCredential = await UserCredentialImpl._fromIdTokenResponse(authInternal, "signIn" /* OperationType.SIGN_IN */, response);
+        await authInternal._updateCurrentUser(userCredential.user);
+        return userCredential;
+    }
+    /**
+     * Asynchronously signs in using an email and password.
+     *
+     * @remarks
+     * Fails with an error if the email address and password do not match.
+     * When [Email Enumeration Protection](https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection) is enabled,
+     * this method fails with "auth/invalid-credential" in case of an invalid email/password.
+     *
+     * Note: The user's password is NOT the password used to access the user's email account. The
+     * email address serves as a unique identifier for the user, and the password is used to access
+     * the user's account in your Firebase project. See also: {@link createUserWithEmailAndPassword}.
+     *
+     * @param auth - The {@link Auth} instance.
+     * @param email - The users email address.
+     * @param password - The users password.
+     *
+     * @public
+     */
+    function signInWithEmailAndPassword(auth, email, password) {
+        return signInWithCredential(getModularInstance(auth), EmailAuthProvider.credential(email, password)).catch(async (error) => {
+            if (error.code === `auth/${"password-does-not-meet-requirements" /* AuthErrorCode.PASSWORD_DOES_NOT_MEET_REQUIREMENTS */}`) {
+                void recachePasswordPolicy(auth);
+            }
+            throw error;
+        });
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    async function createAuthUri(auth, request) {
+        return _performApiRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:createAuthUri" /* Endpoint.CREATE_AUTH_URI */, _addTidIfNecessary(auth, request));
+    }
+
+    /**
+     * @license
+     * Copyright 2020 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Gets the list of possible sign in methods for the given email address. This method returns an
+     * empty list when [Email Enumeration Protection](https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection) is enabled, irrespective of the number of
+     * authentication methods available for the given email.
+     *
+     * @remarks
+     * This is useful to differentiate methods of sign-in for the same provider, eg.
+     * {@link EmailAuthProvider} which has 2 methods of sign-in,
+     * {@link SignInMethod}.EMAIL_PASSWORD and
+     * {@link SignInMethod}.EMAIL_LINK.
+     *
+     * @param auth - The {@link Auth} instance.
+     * @param email - The user's email address.
+     *
+     * Deprecated. Migrating off of this method is recommended as a security best-practice.
+     * Learn more in the Identity Platform documentation for [Email Enumeration Protection](https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection).
+     * @public
+     */
+    async function fetchSignInMethodsForEmail(auth, email) {
+        // createAuthUri returns an error if continue URI is not http or https.
+        // For environments like Cordova, Chrome extensions, native frameworks, file
+        // systems, etc, use http://localhost as continue URL.
+        const continueUri = _isHttpOrHttps() ? _getCurrentUrl() : 'http://localhost';
+        const request = {
+            identifier: email,
+            continueUri
+        };
+        const { signinMethods } = await createAuthUri(getModularInstance(auth), request);
+        return signinMethods || [];
+    }
+    /**
      * Adds an observer for changes to the signed-in user's ID token.
      *
      * @remarks
@@ -17828,6 +20293,16 @@
      */
     function onAuthStateChanged(auth, nextOrObserver, error, completed) {
         return getModularInstance(auth).onAuthStateChanged(nextOrObserver, error, completed);
+    }
+    /**
+     * Signs out the current user.
+     *
+     * @param auth - The {@link Auth} instance.
+     *
+     * @public
+     */
+    function signOut(auth) {
+        return getModularInstance(auth).signOut();
     }
 
     const STORAGE_AVAILABLE_KEY = '__sak';
@@ -20147,6 +22622,641 @@
     }
     registerAuth("Browser" /* ClientPlatform.BROWSER */);
 
+    // Function to Navigate Between Webpages
+    function Nav() {
+      const pageLinks = {
+        "signUpPageBtn": "SignUp.html",
+        "forgotPasswordBtn": "ForgotPassword.html",
+        "signInPageBtn": "index.html",
+        "homePageBtn": "Home.html",
+        "settingsBtn": "Settings.html",
+        "quickIntakeBtn": "QuickIntakePopup.html",
+        "crisisStepsBtn": "Emergency2.html",
+        "airQltyBar": "AirQuality2.html",
+        "inhalerBar": "MyInhaler.html",
+        "emergencyBar": "Emergency1.html",
+        "signUpBtn": "Home.html",
+        "sighOut": "Index.html",
+        "signInBtn": "Home.html",
+        "closeBtn1": "MyInhaler.html",
+        "addIntakeBtn": "MyInhaler.html",
+        "homeBtn": "Home.html",
+        "airQualityBtn": "AirQuality01.html",
+        "emergencyBtn": "Emergency1.html"
+      };
+      const navigationButtons = [document.getElementById("forgotPasswordBtn"), document.getElementById("signInPageBtn"), document.getElementById("signUpPageBtn"), document.getElementById("homePageBtn"), document.getElementById("settingsBtn"), document.getElementById("quickIntakeBtn"), document.getElementById("crisisStepsBtn"), document.getElementById("airQltyBar"), document.getElementById("inhalerBar"), document.getElementById("emergencyBar"), document.getElementById("signUpBtn"), document.getElementById("sighOut"), document.getElementById("signInBtn"), document.getElementById("back"), document.getElementById("homeBtn"), document.getElementById("airQualityBtn"), document.getElementById("emergencyBtn"), document.getElementById("closeBtn1"), document.getElementById("addIntakeBtn")];
+      const backPageBtn = document.getElementById("backBtn");
+      if (backPageBtn) {
+        backPageBtn.addEventListener("click", function (e) {
+          history.back();
+        });
+      }
+      navigationButtons.forEach(btn => {
+        if (btn) {
+          btn.addEventListener("click", function (e) {
+            const id = btn.getAttribute("id");
+            if (pageLinks[id]) {
+              window.location.href = pageLinks[id];
+            } else {
+              console.error(`No link defined for button with id ${id}`);
+            }
+          });
+        }
+      });
+    }
+
+    function forgotPassword(firebaseConfig) {
+      const forgotPasswordbtn = document.getElementById("forgotPasswordBtn");
+      if (forgotPasswordbtn) {
+        forgotPasswordbtn.addEventListener("click", function (event) {
+          console.log("Forgot password btn");
+          Nav();
+        });
+      }
+      initializeApp(firebaseConfig);
+      const auth = getAuth();
+      const forgotPasswordLink = document.getElementById("ResetPswdBtn");
+      const emailAddressInput = document.getElementById('inputEmailAddress');
+      if (forgotPasswordLink && emailAddressInput) {
+        forgotPasswordLink.addEventListener('click', function (e) {
+          sendPasswordResetEmail(auth, emailAddressInput.value).then(() => {
+            console.log("Password reset email sent!");
+          }).catch(error => {
+            console.error(`Error sending password reset email: ${error.code}, ${error.message}`);
+          });
+        });
+      }
+    }
+
+    function SignIn(firebaseConfig) {
+      const signUpButton = document.getElementById("signUpPageBtn");
+      if (signUpButton) {
+        signUpButton.addEventListener("click", function (event) {
+          console.log("Sign Up Button Clicked");
+          window.location.href = "./SignUp.html";
+        });
+      }
+      initializeApp(firebaseConfig);
+      console.log("Entered SignIn Function");
+      const auth = getAuth();
+      const signInBtn = document.getElementById("signInBtn");
+      if (signInBtn) {
+        signInBtn.addEventListener("click", function () {
+          const email = document.getElementById("emailInput").value;
+          const password = document.getElementById("passwordInput").value;
+          signInWithEmailAndPassword(auth, email, password).then(userCredential => {
+            const user = userCredential.user;
+            console.log('SignIn successful', user);
+            window.location.href = "./Home.html";
+          }).catch(error => {
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+              alert('Incorrect email or password. Please try again.');
+            } else {
+              // Handle other types of errors
+              alert('An error occurred during sign-in. Please try again.');
+            }
+            console.error('Error during sign-in:', error.message);
+          });
+        });
+        console.log('SignIn event listener attached');
+      } else {
+        console.error('SignIn button not found');
+      }
+    }
+
+    function ErrorHandle(msg = '', status = 'alert') {
+      if (msg && status !== '') {
+        const alert_panel = document.getElementById("errorSection") || '';
+        if (alert_panel) {
+          alert_panel.classList.remove("hide");
+          const alert_msg = document.getElementById("errorMsg") || '';
+          if (alert_msg) {
+            alert_msg.textContent = `Error: ${msg}`;
+            return true;
+          } else {
+            console.log("Unable to display error message to user.");
+            return false;
+          }
+        }
+      }
+      return "Error handler missing argument:'msg'.";
+    }
+
+    function SignUp(firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const auth = getAuth(app);
+      let result;
+      let userNameToPost, emailAddressToPost, passwordToPost;
+      function validate_signup(emailAddress, userName, newPassword, confirmPassword) {
+        // Data Validation
+        if (!userName || userName.length < 3) {
+          ErrorHandle("Username must be at least 3 characters long.");
+          console.error("Username must be at least 3 characters long.");
+          var msg = "Username must be at least 3 characters long.";
+          alert(msg);
+          return msg;
+        }
+        if (!emailAddress || !emailAddress.includes('@')) {
+          ErrorHandle("Invalid email format.");
+          console.error("Invalid email format.");
+          var msg = "Invalid email format.";
+          alert(msg);
+          return;
+        }
+        if (!newPassword || newPassword.length < 6) {
+          ErrorHandle("Password must be at least 6 characters long.");
+          console.error("Password must be at least 6 characters long.");
+          var msg = "Password must be at least 6 characters long.";
+          alert(msg);
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          ErrorHandle("Passwords do not match.");
+          console.error("Passwords do not match.");
+          var msg = "Passwords do not match.";
+          alert(msg);
+          return;
+        }
+        var msg = 'SignUp Validated';
+        return {
+          userName,
+          emailAddress,
+          confirmPassword,
+          msg
+        };
+      }
+      function postNewUser() {
+        createUserWithEmailAndPassword(auth, emailAddressToPost, passwordToPost).then(userCredential => {
+          // User signed up successfully
+          const user = userCredential.user;
+
+          // Additional user data
+          const userData = {
+            email: emailAddressToPost,
+            password: passwordToPost,
+            username: userNameToPost
+            // Add more user details as needed
+          };
+          const userRef = ref(db, `users/${user.uid}`);
+
+          // Set user data in the Realtime Database
+          if (user) {
+            set$1(userRef, userData).then(() => {
+              ErrorHandle(`Signup successful:`);
+              console.log('User data updated in the Realtime Database');
+              window.location.href = "./Home.html";
+            }).catch(error => {
+              ErrorHandle(`Signup failed:`);
+              console.error('Error updating user data in the Realtime Database:', error);
+            });
+          } else {
+            ErrorHandle(`Something went wrong.`);
+            console.error('Something went wrong.');
+          }
+        }).catch(error => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          ErrorHandle(`Signup error:, ${errorCode}, ${errorMessage}`);
+        });
+      }
+      async function checkEmailExists(email) {
+        try {
+          const methods = await fetchSignInMethodsForEmail(auth, email);
+          if (methods.length > 0) {
+            console.log('Email is already in use');
+            ErrorHandle('Email is already in use');
+            return true;
+          } else {
+            console.log('Email is not in use');
+            return false;
+          }
+        } catch (error) {
+          console.error(`Error checking email existence: ${error}`);
+          ErrorHandle(`Error checking email existence: ${error}`);
+          return true;
+        }
+      }
+      function init_signup() {
+        const emailAddress = document.getElementById("emailAdress").value;
+        const userName = document.getElementById("userName").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("passwordConfirm").value;
+
+        //Call the validate_signup function
+        result = validate_signup(emailAddress, userName, newPassword, confirmPassword);
+        if (result) {
+          userNameToPost = result.userName;
+          emailAddressToPost = result.emailAddress;
+          passwordToPost = result.confirmPassword;
+          var msg = result.msg;
+          return true;
+        }
+        ErrorHandle(msg);
+        return false;
+      }
+      const signUpBtn = document.getElementById("signUpBtn") || '';
+      if (signUpBtn) {
+        signUpBtn.addEventListener("click", event => {
+          event.preventDefault();
+          const store_db = init_signup();
+          if (store_db) {
+            async function signUpWithCheckEmail(email) {
+              try {
+                // Check if the email exists
+                let exist = await checkEmailExists(email);
+                if (!exist) {
+                  // If the email does not exist, proceed with signup
+                  await postNewUser();
+                }
+              } catch (error) {
+                // Handle errors, if any
+                console.error('Error during signup:', error);
+              }
+            }
+            signUpWithCheckEmail(emailAddressToPost).then(() => {
+              ErrorHandle('You have successfully sign-up. Please login now.');
+            }).catch(error => {
+              ErrorHandle(`Error during signup: ${error}`);
+            });
+          }
+        });
+      }
+    }
+
+    function Settings(firebaseConfig) {
+      const settingsBtn = document.getElementById("settingsBtn");
+      if (settingsBtn) {
+        settingsBtn.addEventListener("click", function (event) {
+          console.log("Settings btn pressed");
+          window.location.href = './Settings.html';
+        });
+      }
+      console.log("Entered settings");
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const auth = getAuth();
+      let currentUserDB;
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          currentUserDB = ref(database, '/users/' + user.uid);
+          console.log("User DB Reference:", currentUserDB);
+
+          // Synchronize borough and contacts data
+          syncUserData(currentUserDB);
+        } else {
+          console.log("No user is currently signed in.");
+        }
+      });
+      function syncUserData(userDBRef) {
+        const boroughDB = child(userDBRef, '/myBorough');
+        const contactsDB = child(userDBRef, '/myContacts');
+        onValue(boroughDB, snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById("myBoroughVar").value = data.myBorough || "";
+          }
+        });
+        onValue(contactsDB, snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById("phonenb1").value = data.number1 || "";
+            document.getElementById("phonenb2").value = data.number2 || "";
+            document.getElementById("phonenb3").value = data.number3 || "";
+          }
+        });
+        onValue(userDBRef, snapshot => {
+          const data = snapshot.val();
+          console.log(data);
+          if (data) {
+            document.getElementById("usernamevar").value = data.username || "";
+            document.getElementById("emailvar").value = data.email || "";
+            console.log(data.username);
+            console.log(data.emailAddress);
+          }
+        });
+      }
+
+      // Form submission event listener
+      const updateSettings = document.getElementById('update-button');
+      if (updateSettings) {
+        updateSettings.addEventListener('click', function (e) {
+          e.preventDefault();
+          settingsForm();
+        });
+      } else {
+        console.error("Settings form not found.");
+      }
+
+      // Handle settings form submission
+      function settingsForm() {
+        if (!currentUserDB) {
+          console.error("User database reference is not set.");
+          return;
+        }
+        const inputMyBorough = document.getElementById("myBoroughVar");
+        const inputContact1 = document.getElementById("phonenb1");
+        const inputContact2 = document.getElementById("phonenb2");
+        const inputContact3 = document.getElementById("phonenb3");
+        const myBoroughVar = inputMyBorough ? inputMyBorough.value : "";
+        const phoneNumber1 = inputContact1 ? inputContact1.value : "";
+        const phoneNumber2 = inputContact2 ? inputContact2.value : "";
+        const phoneNumber3 = inputContact3 ? inputContact3.value : "";
+        if (!isValidPhoneNumber(phoneNumber1) || !isValidPhoneNumber(phoneNumber2) || !isValidPhoneNumber(phoneNumber3)) {
+          console.log("Invalid Phone Number");
+          alert("Invalid Phone Number");
+          return;
+        }
+
+        // Save data to Firebase
+        saveUserData(currentUserDB, myBoroughVar, phoneNumber1, phoneNumber2, phoneNumber3);
+      }
+      function saveUserData(userDBRef, borough, phone1, phone2, phone3) {
+        const currentBoroughDB = child(userDBRef, '/myBorough/');
+        const phoneNumbersInDb = child(userDBRef, '/myContacts/');
+        set$1(currentBoroughDB, {
+          myBorough: borough
+        }).then(() => console.log("Borough data saved")).catch(error => console.error("Error saving borough data: ", error));
+        set$1(phoneNumbersInDb, {
+          number1: phone1,
+          number2: phone2,
+          number3: phone3
+        }).then(() => console.log("Contact data saved")).catch(error => console.error("Error saving contact data: ", error));
+      }
+
+      // Phone number validation
+      function isValidPhoneNumber(number) {
+        const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+        return phoneRegex.test(number);
+      }
+      const signOutLink = document.getElementById("signOutLink");
+      if (signOutLink) {
+        signOutLink.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevent the default link behavior
+
+          signOut(auth).then(() => {
+            console.log("Signed Out");
+            // Redirect after successful sign out
+            window.location.href = './index.html';
+          }).catch(error => {
+            console.error("Error Signing Out: ", error);
+            alert("Error Signing Out");
+          });
+        });
+      }
+      const backBtn = document.getElementById("backBtn");
+      if (backBtn) {
+        backBtn.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevents any default action associated with the button
+          console.log("Back button pressed");
+          window.history.back(); // Navigates to the previous page in history
+        });
+      }
+    }
+
+    function Emergency1(firebaseConfig) {
+      console.log('Running Emergency1');
+      //Initialize Firebase only once
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+      const auth = getAuth();
+
+      // Setup listeners for UI elements
+      setupCall999Button();
+      setupContactButtons();
+      subscribeToAuthChanges();
+      function setupCall999Button() {
+        const call999btn = document.getElementById("call999Btn");
+        if (call999btn) {
+          console.log("Calling 999");
+          call999btn.addEventListener("click", () => window.location.href = "tel:999");
+        }
+      }
+      function setupContactButtons() {
+        const emergencyContactButtons = [document.getElementById("contact1Btn"), document.getElementById("contact2Btn"), document.getElementById("contact3Btn")];
+        emergencyContactButtons.forEach((button, index) => {
+          if (button) {
+            console.log("Calling Emergency Contacts");
+            button.addEventListener("click", () => initiateCall());
+          }
+        });
+      }
+      function subscribeToAuthChanges() {
+        onAuthStateChanged(auth, user => {
+          if (user) {
+            console.log("userDBRef");
+            const userDBRef = ref(database, '/users/' + user.uid);
+            syncUserData(userDBRef);
+          } else {
+            console.log("No user is currently signed in");
+          }
+        });
+      }
+      function syncUserData(userDBRef) {
+        const contactsDBRef = ref(userDBRef, '/myContacts');
+        console.log("Sync User Data");
+        onValue(contactsDBRef, snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            document.getElementById("phonenb1").value = data.number1 || "";
+            document.getElementById("phonenb2").value = data.number2 || "";
+            document.getElementById("phonenb3").value = data.number3 || "";
+          }
+        });
+      }
+      function initiateCall(contactNumber) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userDBRef = ref(database, '/users/' + currentUser.uid);
+          const contactsDBRef = ref(userDBRef, '/myContacts');
+          onValue(contactsDBRef, snapshot => {
+            const data = snapshot.val();
+            const phoneNumberKey = number$;
+            if (data && data[phoneNumberKey]) {
+              const phoneNumber = data[phoneNumberKey];
+              window.location.href = `tel:${phoneNumber}`;
+            } else {
+              alert("Emergency contact not available.");
+            }
+          });
+        } else {
+          alert("User is not authenticated.");
+        }
+      }
+    }
+
+    //Add Crisis.js
+    // import configureButtonInteractions from "./AddCrisisButtons.js";
+
+
+    //Add Crisis page code
+    function AddCrisis(firebaseConfig) {
+      // Initialize Firebase
+      console.log("AddCrisis");
+      // configureButtonInteractions()
+      // const app = initializeApp(firebaseConfig);
+      // const database = getDatabase(app);
+      // const auth = getAuth();
+      // var currentUser = auth.currentUser;
+      // let currentUserDB, crisisDB;
+      //
+      // onAuthStateChanged(auth, (user) => {
+      //     if (user) {
+      //         currentUser = auth.currentUser;
+      //         const currentUID = user.uid;
+      //
+      //         currentUserDB = ref(database, '/users/' + currentUID);
+      //         crisisDB = child(currentUserDB, '/addCrisis');
+      //     }
+      // })
+      // // Declare constants for form and color buttons
+      // const crisisForm = document.getElementById('crisisForm');
+      // const symptomButtons = document.querySelectorAll('.symptomButton');
+      // const allergenButtons = document.querySelectorAll('.allergenButton');
+      // const locationButtons = document.querySelectorAll('.locationButton');
+      // const resolutionButtons = document.querySelectorAll('.resolutionButton'); // Added resolution buttons
+      //
+      // // Attach submit event listener to the form
+      // crisisForm.addEventListener('submit', function (e) {
+      //     e.preventDefault(); // Prevent the default form submission
+      //     submitForm();
+      //     resetForm();
+      // });
+      //
+      //
+      // symptomButtons.forEach(button => {
+      //     button.addEventListener('click', function () {
+      //         this.classList.toggle('true', !this.classList.contains('true'));
+      //         this.classList.toggle('false', this.classList.contains('true'));
+      //     });
+      // });
+      //
+      // allergenButtons.forEach(button => {
+      //     button.addEventListener('click', function () {
+      //         this.classList.toggle('true', !this.classList.contains('true'));
+      //         this.classList.toggle('false', this.classList.contains('true'));
+      //     });
+      // });
+      //
+      // // Toggle state when location buttons are clicked
+      // locationButtons.forEach(button => {
+      //     button.addEventListener('click', function () {
+      //         this.classList.toggle('true', !this.classList.contains('true'));
+      //         this.classList.toggle('false', this.classList.contains('true'));
+      //     });
+      // });
+      //
+      // // Toggle state when resolution buttons are clicked
+      // resolutionButtons.forEach(button => {
+      //     button.addEventListener('click', function () {
+      //         this.classList.toggle('true', !this.classList.contains('true'));
+      //         this.classList.toggle('false', this.classList.contains('true'));
+      //     });
+      // });
+      //
+      // function submitForm() {
+      //     const dateTimeInput = document.getElementById('dateTimeInput').value;
+      //     const resDateTimeInput = document.getElementById('resDateTimeInput').value;
+      //
+      //     let addCrisisDB = child(currentUserDB, '/addCrisis/');
+      //
+      //     // Create an object with default values for all options
+      //     const defaultOptions = {
+      //         symptoms: ['wheezing', 'cough', 'chestCompressions', 'dysponea', 'fever', 'tingle', 'dizziness'],
+      //         allergens: ['smoke', 'animals', 'dust', 'airQuality', 'greenery', 'stress', 'tempHumidity', 'activities', 'perfumes', 'foodAllergy'],
+      //         locations: ['home', 'workSchool', 'outside', 'friendHouse', 'other'],
+      //         resolutions: ['inhaler', 'hospitalization', 'oxygenMask', 'breathingExercises']
+      //     };
+      //
+      //     // Initialize the data structure
+      //     const newData = {
+      //         dateTimeInput,
+      //         resDateTimeInput,
+      //         selected_symptoms: {},
+      //         selected_allergens: {},
+      //         selected_locations: {},
+      //         selected_resolutions: {}
+      //     };
+      //
+      //     // Set default values
+      //     defaultOptions.symptoms.forEach(symptom => newData.selected_symptoms[symptom] = false);
+      //     defaultOptions.allergens.forEach(allergen => newData.selected_allergens[allergen] = false);
+      //     defaultOptions.locations.forEach(location => newData.selected_locations[location] = false);
+      //     defaultOptions.resolutions.forEach(resolution => newData.selected_resolutions[resolution] = false);
+      //
+      //     // Function to update selected options
+      //     const updateSelectedOptions = (selector, dataCategory) => {
+      //         document.querySelectorAll(selector).forEach(button => {
+      //             if (button.classList.contains('true')) {
+      // //                 newData[dataCategory][button.value] = true;
+      // //             }
+      // //         });
+      // //     };
+      // //
+      // //     // Update data based on selected buttons
+      // //     updateSelectedOptions('.symptomButton.true', 'selected_symptoms');
+      // //     updateSelectedOptions('.allergenButton.true', 'selected_allergens');
+      // //     updateSelectedOptions('.locationButton.true', 'selected_locations');
+      // //     updateSelectedOptions('.resolutionButton.true', 'selected_resolutions');
+      // //
+      // //     // Adding data using push (generates a unique key)
+      // //     push(addCrisisDB, newData);
+      // }
+      //
+      //
+      // function resetForm() {
+      //     // Clear the input values
+      //     document.getElementById('dateTimeInput').value = '';
+      //     document.getElementById('resDateTimeInput').value = '';
+      //
+      //     // Function to reset button states
+      //     const resetButtonStates = (buttons) => {
+      //         buttons.forEach(button => {
+      //             button.classList.remove('true');
+      //             button.classList.add('false');
+      //         });
+      //     };
+      //
+      //     // Reset all button states
+      //     resetButtonStates(document.querySelectorAll('.symptomButton'));
+      //     resetButtonStates(document.querySelectorAll('.allergenButton'));
+      //     resetButtonStates(document.querySelectorAll('.locationButton'));
+      //     resetButtonStates(document.querySelectorAll('.resolutionButton'));
+      //
+      //     // Clear the display result
+      //     const displayResult = document.getElementById('displayResult'); // Assuming there's an element with this ID
+      //     if (displayResult) {
+      //         displayResult.textContent = '';
+      //     }
+      // }
+      //
+      // function setupPopupCloseListener(elementId) {
+      //     var element = document.getElementById(elementId);
+      //     if (element) {
+      //         element.addEventListener("click", function (e) {
+      //             var popup = e.currentTarget.parentNode;
+      //
+      //             function isOverlay(node) {
+      //                 return node && node.classList.contains("popup-overlay");
+      //             }
+      //
+      //             while (popup && !isOverlay(popup)) {
+      //                 popup = popup.parentNode;
+      //             }
+      //
+      //             if (popup && isOverlay(popup)) {
+      //                 popup.style.display = "none";
+      //             }
+      //         });
+      //     }
+      // }
+
+      // // Set up listeners for closing popups
+      //     setupPopupCloseListener("close");
+      //     setupPopupCloseListener("popupaddCrisisBtnContainer");
+    }
+
     class Dosage {
       constructor(time) {
         this.reminderTime = time;
@@ -22464,128 +25574,99 @@
       const app = initializeApp(firebaseConfig);
       const database = getDatabase(app);
       const auth = getAuth();
-      let currentUID, currentUserDB;
-
+      let currentUID;
+      let inhalerDB;
       //identifying current logged in user
       onAuthStateChanged(auth, user => {
         if (user) {
           currentUID = user.uid;
-          currentUserDB = ref(database, '/users/' + currentUID);
-          ref(database, '/users/' + currentUID + '/inhalers');
+          ref(database, '/users/' + currentUID);
+          inhalerDB = ref(database, '/users/' + currentUID + '/inhalers');
         }
       });
 
       //getting HTML buttons
-      // const newInhalerCrisisBtn = document.getElementById("crisisInhalerBtn");
-      // const newInhalerPreventionBtn = document.getElementById("preventionBtn");
-      //
-      // //initialise inhaler type in case user does not choose any
-      const newInhalerType = "Crisis";
-      //
-      // //getting inhaler type button text display
-      // let preventionBtnText = document.getElementById("preventionText")
-      // let crisisBtnText = document.getElementById("crisisText")
-      //
-      // //choosing new inhaler type
-      // newInhalerCrisisBtn.addEventListener('click', function () {
-      //     newInhalerType = "Crisis";
-      //     crisisBtnText.textContent = "Crisis (selected)"
-      //     preventionBtnText.textContent = "Prevention"
-      // })
-      // newInhalerPreventionBtn.addEventListener('click', function () {
-      //     newInhalerType = "Prevention";
-      //     preventionBtnText.textContent = "Prevention (selected)"
-      //     crisisBtnText.textContent = "Crisis"
-      // })
-      //
-      // //setting up for dosage reminders added for new inhaler
-      // const newInhalerDoseBtn = document.getElementById("addReminderBtn");
-      // let reminderCount = 0;
-      // let reminderTimes = [];
-      //
-      // //confirming dosage reminder time to be added for inhaler
-      // newInhalerDoseBtn.addEventListener('click', function () {
-      //     const newReminder = document.getElementById("newDose");
-      //     let newInhalerDoseReminder = new Date(newReminder.value);
-      //     if (newInhalerDoseReminder) {
-      //         if ((newInhalerDoseReminder - Date.now()) > 0) {
-      //             reminderTimes.push(newReminder.value)
-      //             reminderCount++;
-      //             let reminderSection = document.getElementById("dosagePrescriptionSection")
-      //             let newReminderAdded = document.createElement('h3')
-      //             newReminderAdded.className = "inhaler-name"
-      //             newReminderAdded.textContent = "Dosage " + reminderCount.toString() + ": " + newInhalerDoseReminder.toLocaleTimeString()
-      //             reminderSection.appendChild(newReminderAdded)
-      //         } else {
-      //             alert('Reminder submitted is in the past')
-      //         }
-      //     }
-      //
-      // })
-
-      //set button to write inhaler, its fields, and reminders to user's database on click
       const addInhalerBtn = document.getElementById("applyBtn");
-      if (addInhalerBtn) {
-        addInhalerBtn.addEventListener('click', function (event) {
-          event.preventDefault();
-          inhalerForm();
-        });
-      } else {
-        console.error("Inhaler form not found");
-      }
-      function inhalerForm() {
-        if (!currentUserDB) {
-          console.error("User database reference is not set");
-          return;
-        }
-        const newInhalerName = document.getElementById("newInhalerName").value;
-        const newInhalerVol = document.getElementById("newInhalerVolume").value;
-        const newInhalerExpDate = document.getElementById("newInhalerExpDate").value;
-        console.log(newInhalerExpDate);
-        saveUserData(currentUserDB, newInhalerName, newInhalerVol, newInhalerType, newInhalerExpDate);
-      }
-      async function saveUserData(currentUserDB, newInhalerName, newInhalerVol, newInhalerExpDate, newInhalerType, reminderTimes = []) {
-        const expiryTimestamp = new Date(newInhalerExpDate).getTime();
-        if (isNaN(expiryTimestamp)) {
-          console.error('Invalid expiry date');
-          alert("Invalid expiry date");
-          return;
-        }
-        const newInhaler = new Inhaler(newInhalerName, newInhalerVol, newInhalerExpDate, newInhalerType);
-        console.log("Save user data");
-        if (newInhaler.isExpired()) {
-          alert("Inhaler " + newInhaler.getName() + " is expired, add a different one!");
-          return; // Exit the function if the inhaler is expired
-        }
-        if (!currentUserDB) {
-          console.error('User database reference not found');
-          return; // Exit if the database reference is not found
-        }
+      const newInhalerCrisisBtn = document.getElementById("crisisInhalerBtn");
+      const newInhalerPreventionBtn = document.getElementById("preventionBtn");
 
-        // Create new child in list of inhalers with default as non-favourite
-        const newInhalerDB = child(currentUserDB, '/' + newInhaler.getName());
-        try {
-          await set$1(newInhalerDB, {
-            inhaler: newInhaler,
-            fav: ""
-          });
-        } catch (error) {
-          console.error("Error saving inhaler data:", error);
-        }
-        for (let i = 0; i < reminderTimes.length; i++) {
-          newInhaler.setDose(new Date(reminderTimes[i]));
-          let newDose = newInhaler.getNewDose();
-          if (newDose.getReminderTime().getTime() > Date.now()) {
-            let dosageString = newDose.getReminderTime().getTime().toString();
-            let dosageDB = child(newInhalerDB, '/dosage/reminder' + (i + 1).toString());
-            await set$1(dosageDB, {
-              time: dosageString
-            });
+      //initialise inhaler type in case user does not choose any
+      var newInhalerType = "Type Unknown";
+
+      //getting inhaler type button text display
+      let preventionBtnText = document.getElementById("preventionText");
+      let crisisBtnText = document.getElementById("crisisText");
+
+      //choosing new inhaler type
+      newInhalerCrisisBtn.addEventListener('click', function () {
+        newInhalerType = "Crisis";
+        crisisBtnText.textContent = "Crisis (selected)";
+        preventionBtnText.textContent = "Prevention";
+      });
+      newInhalerPreventionBtn.addEventListener('click', function () {
+        newInhalerType = "Prevention";
+        preventionBtnText.textContent = "Prevention (selected)";
+        crisisBtnText.textContent = "Crisis";
+      });
+
+      //setting up for dosage reminders added for new inhaler
+      const newInhalerDoseBtn = document.getElementById("addReminderBtn");
+      let reminderCount = 0;
+      let reminderTimes = [];
+
+      //confirming dosage reminder time to be added for inhaler
+      newInhalerDoseBtn.addEventListener('click', function () {
+        const newReminder = document.getElementById("newDose");
+        let newInhalerDoseReminder = new Date(newReminder.value);
+        if (newInhalerDoseReminder) {
+          if (newInhalerDoseReminder - Date.now() > 0) {
+            reminderTimes.push(newReminder.value);
+            reminderCount++;
+            let reminderSection = document.getElementById("dosagePrescriptionSection");
+            let newReminderAdded = document.createElement('h3');
+            newReminderAdded.className = "inhaler-name";
+            newReminderAdded.textContent = "Dosage " + reminderCount.toString() + ": " + newInhalerDoseReminder.toLocaleTimeString();
+            reminderSection.appendChild(newReminderAdded);
+          } else {
+            alert('Reminder submitted is in the past');
           }
         }
-        console.log('Inhaler is successfully added to user database');
-        alert('Inhaler is successfully added to user database');
-        location.reload(); // Consider alternative methods to update UI without reloading
+      });
+
+      //set button to write inhaler, its fields, and reminders to user's database on click
+      if (addInhalerBtn) {
+        addInhalerBtn.addEventListener('click', function (event) {
+          event.defaultPrevented;
+          const newInhalerName = document.getElementById("newInhalerName").value;
+          const newInhalerVol = document.getElementById("newInhalerVolume").value;
+          const newInhalerExpDate = document.getElementById("newInhalerExpDate").value;
+
+          //create new instance of inhaler to access methods
+          let newInhaler = new Inhaler(newInhalerName, newInhalerVol, newInhalerExpDate, newInhalerType);
+          if (newInhaler.isExpired()) {
+            alert("Inhaler " + newInhaler.getName() + " is expired, add a different one!");
+          } else {
+            if (inhalerDB) {
+              //create new child in list of inhalers with default as non-favourite
+              let newInhalerDB = child(inhalerDB, '/' + newInhaler.getName());
+              set$1(newInhalerDB, {
+                inhaler: newInhaler,
+                fav: false
+              }).then(r => {});
+              for (let i = 0; i <= reminderTimes.length; i++) {
+                newInhaler.setDose(new Date(reminderTimes[i]));
+                let newDose = newInhaler.getNewDose();
+                let dosageDB = child(newInhalerDB, '/dosage/reminder' + (i + 1).toString());
+                if (newDose.getReminderTime().getTime() > Date.now()) {
+                  let dosageString = newDose.getReminderTime().getTime().toString();
+                  set$1(dosageDB, {
+                    time: dosageString
+                  }).then(r => {});
+                }
+              }
+            }
+          }
+        });
       }
     }
 
@@ -22605,13 +25686,12 @@
       appId: "1:583573518616:web:921a17f44e5fca27b3066d",
       measurementId: "G-PLRLWFR1X7"
     };
-
-    // Settings(firebaseConfig);
-    // SignIn(firebaseConfig);
-    // SignUp(firebaseConfig);
-    // Emergency1(firebaseConfig)
-    // forgotPassword(firebaseConfig);
-    // AddCrisis(firebaseConfig)
+    Settings(firebaseConfig);
+    SignIn(firebaseConfig);
+    SignUp(firebaseConfig);
+    Emergency1(firebaseConfig);
+    forgotPassword(firebaseConfig);
+    AddCrisis();
 
     // AddIntakePopup(firebaseConfig);
     addInhalerPopup(firebaseConfig);

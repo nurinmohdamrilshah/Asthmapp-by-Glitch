@@ -1,6 +1,6 @@
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, get, child } from "firebase/database";
+import {getDatabase, ref, get, child, onValue} from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function Home(firebaseConfig) {
@@ -20,6 +20,17 @@ function Home(firebaseConfig) {
             inhalerDB = ref(database, '/users/' + user.uid + '/inhalers');
             //loadInhalerWidget(inhalerDB);
             console.log(currentUID)
+
+            onValue(currentUserDB, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.myBorough) {
+                    localStorage.setItem("userarea", data.myBorough);
+                } else {
+                    console.log("No data or myBorough field found in snapshot");
+                }
+            }, (error) => {
+                console.error("Error reading from Firebase:", error);
+            });
         } else {
             console.log("No user is currently signed in")
         }

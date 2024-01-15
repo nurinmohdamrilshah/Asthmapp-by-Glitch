@@ -381,8 +381,9 @@ async function getAPI(input) {
 // Update area name and AQI
 var areaname = document.getElementById('areaname');
 const areatag = localStorage.getItem('userarea');
+console.log("Area name" +  areatag)
 areaname.innerText = areatag;
-console.log(getAPI(areatag));
+getAPI(areatag);
 
 
 Notification.requestPermission().then((permission)=>{

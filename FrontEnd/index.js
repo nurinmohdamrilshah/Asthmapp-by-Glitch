@@ -35,12 +35,12 @@ import MyUsageLog from "./MyUsageLog.js";
 import log from "./log.js"
 import AddInhalerPopup from "./AddInhalerPopup.js";
 
-// Settings(firebaseConfig);
-// SignIn(firebaseConfig);
-// SignUp(firebaseConfig);
-// Emergency1(firebaseConfig)
-// forgotPassword(firebaseConfig);
-// AddCrisis(firebaseConfig)
+Settings(firebaseConfig);
+SignIn(firebaseConfig);
+SignUp(firebaseConfig);
+Emergency1(firebaseConfig)
+forgotPassword(firebaseConfig);
+AddCrisis(firebaseConfig)
 
 
 // AddIntakePopup(firebaseConfig);

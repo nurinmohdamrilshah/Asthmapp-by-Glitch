@@ -32,6 +32,7 @@ function Settings(firebaseConfig) {
 
 
     // Sync user data with form inputs
+    let currentBorough;
     function syncUserData(userDBRef) {
         const boroughDB = child(userDBRef, '/myBorough');
         const contactsDB = child(userDBRef, '/myContacts');
