@@ -1,10 +1,16 @@
 import forgotPassword from "./ForgotPassword.js";
 import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import Nav from "./Nav.js";
 
 
 function SignIn(firebaseConfig) {
+    const signUpButton = document.getElementById("signUpPageBtn")
+    if (signUpButton){
+        signUpButton.addEventListener("click", function(event){
+            console.log("Sign Up Button Clicked");
+            window.location.href = "./SignUp.html"
+        });
+    }
     const app = initializeApp(firebaseConfig);
     console.log("Entered SignIn Function");
 
@@ -20,10 +26,15 @@ function SignIn(firebaseConfig) {
                 .then((userCredential) => {
                     const user = userCredential.user;
                     console.log('SignIn successful', user);
-                    window.location.href = 'Home.html';
+                    window.location.href = "./Home.html"
                 })
                 .catch((error) => {
-                    // Handle errors here
+                    if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+                        alert('Incorrect email or password. Please try again.');
+                    } else {
+                        // Handle other types of errors
+                        alert('An error occurred during sign-in. Please try again.');
+                    }
                     console.error('Error during sign-in:', error.message);
                 });
         });

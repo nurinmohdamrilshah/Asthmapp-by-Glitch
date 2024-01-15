@@ -1,9 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, set, onValue } from 'firebase/database';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import ErrorHandle from "./ErrorHandle.js";
 
 function Settings(firebaseConfig) {
+    const settingsBtn = document.getElementById("settingsBtn")
+    if (settingsBtn){
+        settingsBtn.addEventListener("click", function(event){
+            console.log("Settings btn pressed");
+            window.location.href = './Settings.html'
+        });
+    }
     console.log("Entered settings");
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -87,7 +94,7 @@ function Settings(firebaseConfig) {
 
         if (!isValidPhoneNumber(phoneNumber1) || !isValidPhoneNumber(phoneNumber2) || !isValidPhoneNumber(phoneNumber3)) {
             console.log("Invalid Phone Number");
-            ErrorHandle("Invalid Phone Number");
+            alert("Invalid Phone Number");
             return;
         }
 
@@ -114,12 +121,31 @@ function Settings(firebaseConfig) {
         return phoneRegex.test(number);
     }
 
-    // Navigation Links
-    const backPageLink = document.getElementById("backBtn");
-    const signOutLink = document.getElementById("signOutLink");
+    const signOutLink = document.getElementById("signOutLink")
+    if (signOutLink) {
+        signOutLink.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
 
-    backPageLink?.addEventListener("click", () => window.location.href = "./Home.html");
-    signOutLink?.addEventListener("click", () => window.location.href = "./index.html");
+            signOut(auth).then(() => {
+                console.log("Signed Out");
+                // Redirect after successful sign out
+                window.location.href = './index.html';
+            }).catch((error) => {
+                console.error("Error Signing Out: ", error);
+                alert("Error Signing Out");
+            });
+        });
+    }
+
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+        backBtn.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevents any default action associated with the button
+            console.log("Back button pressed");
+            window.history.back(); // Navigates to the previous page in history
+        });
+    }
+
 }
 
 export default Settings;
