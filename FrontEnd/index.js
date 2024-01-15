@@ -34,6 +34,7 @@ import MyUsageLog from "./MyUsageLog.js";
 // import SymptomsChart from "./SymptomsChart.js";
 import log from "./log.js"
 import AddInhalerPopup from "./AddInhalerPopup.js";
+import MyInhaler from "./MyInhaler.js";
 
 Settings(firebaseConfig);
 SignIn(firebaseConfig);
@@ -51,5 +52,6 @@ AddInhalerPopup(firebaseConfig)
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
 // log(firebaseConfig)
+MyInhaler(firebaseConfig)
 
 
