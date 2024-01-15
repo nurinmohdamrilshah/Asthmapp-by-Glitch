@@ -14,30 +14,16 @@ if (close) {
         window.location.href = "./Home.html";
     });
 }
-//Used to be for when this page was a popup-kept in case
-var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
-if (newInhalerIntake) {
-    newInhalerIntake.addEventListener("click", function () {
-        var popup = document.getElementById("addIntakePopup");
-        if (!popup) return;
-        var popupStyle = popup.style;
-        if (popupStyle) {
-            popupStyle.display = "flex";
-            popupStyle.zIndex = 100;
-            popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-            popupStyle.alignItems = "center";
-            popupStyle.justifyContent = "center";
-        }
-        popup.setAttribute("closable", "");
-
-        var onClick =
-            popup.onClick ||
-            function (e) {
-                if (e.target === popup && popup.hasAttribute("closable")) {
-                    popupStyle.display = "none";
-                }
-            };
-        popup.addEventListener("click", onClick);
+var close = document.getElementById("closeBtn1");
+if (close) {
+    close.addEventListener("click", function (e) {
+        window.location.href = "./MyInhaler.html";
+    });
+}
+var close = document.getElementById("applyBtn");
+if (close) {
+    close.addEventListener("click", function (e) {
+        window.location.href = "./MyInhaler.html";
     });
 }
 //Bottom navigation
