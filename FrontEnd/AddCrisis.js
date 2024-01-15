@@ -197,44 +197,4 @@ function resetForm() {
     });
     // Clear the display result
     displayResult.textContent = '';
-}
-var popupclose = document.getElementById("close");
-if (popupclose) {
-    popupclose.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(
-                node &&
-                node.classList &&
-                node.classList.contains("popup-overlay")
-            );
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
-var popupaddCrisisBtnContainer = document.getElementById(
-    "popupaddCrisisBtnContainer"
-);
-if (popupaddCrisisBtnContainer) {
-    popupaddCrisisBtnContainer.addEventListener("click", function (e) {
-        var popup = e.currentTarget.parentNode;
-        function isOverlay(node) {
-            return !!(
-                node &&
-                node.classList &&
-                node.classList.contains("popup-overlay")
-            );
-        }
-        while (popup && !isOverlay(popup)) {
-            popup = popup.parentNode;
-        }
-        if (isOverlay(popup)) {
-            popup.style.display = "none";
-        }
-    });
-}
+};

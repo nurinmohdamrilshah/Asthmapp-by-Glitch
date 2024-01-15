@@ -579,7 +579,7 @@ if (quickIntakeBtn) {
 var home = document.getElementById("999Home");
 if (home) {
     home.addEventListener("click", function (e) {
-        //TODO: <a href="tel:999">
+        window.location.href = "./Emergency1.html";
     });
 }
 
