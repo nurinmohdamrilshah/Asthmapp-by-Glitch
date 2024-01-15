@@ -1,3 +1,6 @@
+//QuickIntakePopupNav.js
+//includes all the navigation features of the Quick Intake Popup page
+
 //AddIntakePopupNav.js
 //includes all the navigation features of the Add Intake Popup page
 
@@ -21,10 +24,10 @@ if (close) {
         window.location.href = "./MyInhaler.html";
     });
 }
-var close = document.getElementById("addIntakeBtn");
+var close = document.getElementById("popupcancelBtnContainer");
 if (close) {
     close.addEventListener("click", function (e) {
-        window.location.href = "./MyInhaler.html";
+        window.location.href = "./Home.html";
     });
 }
 
@@ -49,3 +52,4 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
+
