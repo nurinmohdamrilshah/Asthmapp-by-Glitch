@@ -1,19 +1,16 @@
 //AddInhalerPopup.js
 // Import the functions needed from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import {child, get, getDatabase, push, ref, set} from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {Inhaler,Intake,Dosage} from "./Inhaler.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+
 
 //Add Inhaler Page Code
 function addInhalerPopup(firebaseConfig) {
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-    const analytics = getAnalytics(app);
 
     const auth = getAuth();
     let currentUser
@@ -25,8 +22,8 @@ function addInhalerPopup(firebaseConfig) {
         if (user) {
             currentUser = user
             currentUID = user.uid;
-            currentUserDB = ref(database,'/users/'+currentUID)
-            inhalerDB = ref(database,'/users/'+currentUID+'/inhalers')
+            currentUserDB = ref(database, '/users/' + currentUID)
+            inhalerDB = ref(database, '/users/' + currentUID + '/inhalers')
         }
     })
 
@@ -80,7 +77,9 @@ function addInhalerPopup(firebaseConfig) {
     })
 
     //set button to write inhaler, its fields, and reminders to user's database on click
-    addInhalerBtn.addEventListener('click', function () {
+    if (addInhalerBtn) {
+        addInhalerBtn.addEventListener('click', function (event) {
+            event.defaultPrevented
             const newInhalerName = document.getElementById("newInhalerName").value;
             const newInhalerVol = document.getElementById("newInhalerVolume").value;
             const newInhalerExpDate = document.getElementById("newInhalerExpDate").value;
@@ -89,8 +88,7 @@ function addInhalerPopup(firebaseConfig) {
             let newInhaler = new Inhaler(newInhalerName, newInhalerVol, newInhalerExpDate, newInhalerType);
             if (newInhaler.isExpired()) {
                 alert("Inhaler " + newInhaler.getName() + " is expired, add a different one!")
-            }
-            else {
+            } else {
                 if (inhalerDB) {
                     //create new child in list of inhalers with default as non-favourite
                     let newInhalerDB = child(inhalerDB, '/' + newInhaler.getName())
@@ -111,81 +109,12 @@ function addInhalerPopup(firebaseConfig) {
                             })
                         }
                     }
-                    console.log('inhaler is successfully added to user database')
-                    location.reload()
                 }
             }
-        }
-    )
 
-    //Navigation
-    // eventListeners.js
-    //Navigation App Header
-        var topNav = document.getElementById("back");
-    if (topNav) {
-        topNav.addEventListener("click", function (e) {
-            window.location.href = "./MyInhaler.html";
-        });
+        })
     }
-
-    var close = document.getElementById("closeBtn");
-    if (close) {
-        close.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
-        });
-    }
-    //Used to be for when this page was a popup-kept in case
-    var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
-    if (newInhalerIntake) {
-        newInhalerIntake.addEventListener("click", function () {
-            var popup = document.getElementById("addIntakePopup");
-            if (!popup) return;
-            var popupStyle = popup.style;
-            if (popupStyle) {
-                popupStyle.display = "flex";
-                popupStyle.zIndex = 100;
-                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-                popupStyle.alignItems = "center";
-                popupStyle.justifyContent = "center";
-            }
-            popup.setAttribute("closable", "");
-
-            var onClick =
-                popup.onClick ||
-                function (e) {
-                    if (e.target === popup && popup.hasAttribute("closable")) {
-                        popupStyle.display = "none";
-                    }
-                };
-            popup.addEventListener("click", onClick);
-        });
-    }
-    //Bottom navigation
-    var home = document.getElementById("homeBtn");
-    if (home) {
-        home.addEventListener("click", function (e) {
-            window.location.href = "./Home.html";
-        });
-    }
-
-    var cloud = document.getElementById("airQualityBtn");
-    if (cloud) {
-        cloud.addEventListener("click", function (e) {
-            window.location.href = "./AirQuality01.html";
-        });
-    }
-
-    var hospital = document.getElementById("emergencyBtn");
-    if (hospital) {
-        hospital.addEventListener("click", function (e) {
-            window.location.href = "./Emergency1.html";
-        });
-    }
-    document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-    document.getElementById("applyBtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-
 }
-
 export default addInhalerPopup;
 
 
