@@ -1,5 +1,5 @@
 //Navigation
-// eventListeners.js
+//includes all the navigation features of the Add Inhaler Popup page
 //Navigation App Header
 var topNav = document.getElementById("back");
 if (topNav) {
@@ -14,18 +14,7 @@ if (close) {
         window.location.href = "./Home.html";
     });
 }
-var close = document.getElementById("closeBtn1");
-if (close) {
-    close.addEventListener("click", function (e) {
-        window.location.href = "./MyInhaler.html";
-    });
-}
-var close = document.getElementById("applyBtn");
-if (close) {
-    close.addEventListener("click", function (e) {
-        window.location.href = "./MyInhaler.html";
-    });
-}
+
 //Bottom navigation
 var home = document.getElementById("homeBtn");
 if (home) {
@@ -47,5 +36,5 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
-// document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-// document.getElementById("applyBtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
+//document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
+//document.getElementById("applyBtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");

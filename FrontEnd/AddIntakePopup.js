@@ -112,65 +112,6 @@ function AddIntakePopup(firebaseConfig) {
     }).catch((error) => {
     console.error(error);
     });
-
-
-    //Navigation
-    // eventListeners.js
-
-    //Navigation App Header
-    var topNav = document.getElementById("back");
-    if (topNav) {
-        Nav();
-    }
-
-    var close = document.getElementById("closeBtn");
-    if (close) {
-        Nav();
-    }
-    //Used to be for when this page was a popup-kept in case
-    var newInhalerIntake = document.getElementById("newInhalerIntakeBtn");
-    if (newInhalerIntake) {
-        newInhalerIntake.addEventListener("click", function () {
-            var popup = document.getElementById("addIntakePopup");
-            if (!popup) return;
-            var popupStyle = popup.style;
-            if (popupStyle) {
-                popupStyle.display = "flex";
-                popupStyle.zIndex = 100;
-                popupStyle.backgroundColor = "rgba(30, 56, 95, 0.8)";
-                popupStyle.alignItems = "center";
-                popupStyle.justifyContent = "center";
-            }
-            popup.setAttribute("closable", "");
-
-            var onClick =
-                popup.onClick ||
-                function (e) {
-                    if (e.target === popup && popup.hasAttribute("closable")) {
-                        popupStyle.display = "none";
-                    }
-                };
-            popup.addEventListener("click", onClick);
-        });
-    }
-    //Bottom Navigation
-    var home = document.getElementById("homeBtn");
-    if (home) {
-        Nav();
-    }
-
-    var cloud = document.getElementById("airQualityBtn");
-    if (cloud) {
-        Nav();
-    }
-
-    var hospital = document.getElementById("emergencyBtn");
-    if (hospital) {
-        Nav();
-    }
-
-    document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
-    document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
 }
 
 export default AddIntakePopup;
