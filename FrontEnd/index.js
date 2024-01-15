@@ -28,25 +28,28 @@ import Emergency1 from "./Emergency1.js";
 
 import AddCrisis from "./AddCrisis.js";
 import AddIntakePopup from "./AddIntakePopup.js";
-import AllergensChart from "./AllergensChart.js";
+// import AllergensChart from "./AllergensChart.js";
 import Home from "./Home.js"
 import MyUsageLog from "./MyUsageLog.js";
-import SymptomsChart from "./SymptomsChart.js";
+// import SymptomsChart from "./SymptomsChart.js";
 import log from "./log.js"
+import AddInhalerPopup from "./AddInhalerPopup.js";
 
-Settings(firebaseConfig);
-SignIn(firebaseConfig);
-SignUp(firebaseConfig);
-Emergency1(firebaseConfig)
-forgotPassword(firebaseConfig);
+// Settings(firebaseConfig);
+// SignIn(firebaseConfig);
+// SignUp(firebaseConfig);
+// Emergency1(firebaseConfig)
+// forgotPassword(firebaseConfig);
+// AddCrisis(firebaseConfig)
+
 
 // AddIntakePopup(firebaseConfig);
-AllergensChart(firebaseConfig);
-SymptomsChart(firebaseConfig)
+AddInhalerPopup(firebaseConfig)
+// AllergensChart(firebaseConfig);
+// SymptomsChart(firebaseConfig)
 // Home(firebaseConfig);
 // MyUsageLog(firebaseConfig);
 // SymptomsChart(firebaseConfig);
 // log(firebaseConfig)
-// AddCrisis(firebaseConfig)
 
 
