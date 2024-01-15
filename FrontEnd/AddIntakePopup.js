@@ -101,6 +101,8 @@ get(inhalerDB).then((snapshot) => {
 
                         }
                     })
+
+                    window.location.href = "./MyInhaler.html";
                 })
             })
         }
@@ -194,5 +196,4 @@ if (hospital) {
         window.location.href = "./Emergency1.html";
     });
 }
-document.getElementById("closeBtn1")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
 document.getElementById("addintakebtn")?.addEventListener("click", () => window.location.href = "./MyInhaler.html");
