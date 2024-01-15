@@ -1,5 +1,7 @@
 # Asthmapp-by-Glitch
 
+All the code is in the FrontEnd Folder. This is where npm is run
+
 ## Most Pages follow this structure:
 
 Page.html : gives the architechture of the page
